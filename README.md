@@ -11,7 +11,7 @@
 
 ## Milestones 
 
-### Week 1 
+### Week 1 - Introduction
 1. Segmentation metrics. Understand precision & recall.
 - [ ] Implement Precision and Recall
 - [ ] Implement F1-Score
@@ -27,7 +27,7 @@
 5. Optical Flow visualization
 - [ ] Propose a simplification method for a clean visualization
 
-### Week 2
+### Week 2 - Background estimation
 [TO BE UPDATED]
 
 
