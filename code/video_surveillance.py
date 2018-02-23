@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from config.load_configutation import Configuration
 from tools.save_log import Log
 from tools.image_parser import get_image_list
+from metrics import precision
 
 # Train the network
 def background_estimation(cf):
@@ -35,23 +36,26 @@ def background_estimation(cf):
     # Get a list with test results filenames
     testList = get_image_list(cf.results_path, str(cf.test_name+'_'), cf.first_image, cf.result_image_type, cf.nr_images)
 
-    # Display first image
-    img = cv.imread(imageList[0])
-    cv.namedWindow('input image', cv.WINDOW_NORMAL)
-    cv.imshow('input image', img)
-
-    # Display first ground truth image
-    test_img = cv.imread(testList[0])
-    cv.namedWindow('test image', cv.WINDOW_NORMAL)
-    cv.imshow('test image', test_img)
-
-    gt_img = cv.imread(gtList[0])
-    cv.namedWindow('gt image', cv.WINDOW_NORMAL)
-    cv.imshow('gt image', gt_img)
-
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-
+    # # Display first image
+    # img = cv.imread(imageList[0])
+    # cv.namedWindow('input image', cv.WINDOW_NORMAL)
+    # cv.imshow('input image', img)
+    #
+    # # Display first ground truth image
+    # test_img = cv.imread(testList[0])
+    # cv.namedWindow('test image', cv.WINDOW_NORMAL)
+    # cv.imshow('test image', test_img)
+    #
+    # gt_img = cv.imread(gtList[0])
+    # cv.namedWindow('gt image', cv.WINDOW_NORMAL)
+    # cv.imshow('gt image', gt_img)
+    #
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
+    prec, rec, f1 = precision.evaluate(cf)
+    print("PRECISION: "+str(prec))
+    print("RECALL: " + str(rec))
+    print("F1-SCORE: " + str(f1))
     print (' ---> Finish test: ' + cf.test_name + ' <---')
 
 # Main function
