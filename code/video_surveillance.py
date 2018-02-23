@@ -1,8 +1,6 @@
 import argparse
 import os
 import sys
-import matplotlib
-matplotlib.use('Agg')  # Faster plot
 
 import cv2 as cv
 import numpy as np
@@ -37,6 +35,23 @@ def background_estimation(cf):
     print("PRECISION: "+str(prec))
     print("RECALL: " + str(rec))
     print("F1-SCORE: " + str(f1))
+
+    TP, T, F1_score = segmentation_metrics.temporal_evaluation(testList, gtList)
+
+    plt.subplots()
+    plt.subplot(1, 2, 1)
+    plt.plot(TP, label='True Positives')
+    plt.plot(T, label='Foreground pixels')
+    plt.xlabel('time')
+    plt.legend(loc='upper right', fontsize='medium')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(F1_score, label='F1 Score')
+    plt.xlabel('time')
+    plt.legend(loc='upper right', fontsize='medium')
+
+    plt.show()
+
     print (' ---> Finish test: ' + cf.test_name + ' <---')
 
     # # Display first image

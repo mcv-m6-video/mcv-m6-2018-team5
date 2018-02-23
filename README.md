@@ -21,8 +21,9 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [ ] Provide an interpretation of the different values obtained for Test A and Test B.
 
 2. Temporal Analysis of the Results
-- [ ] Graph 1: True Positive & Total Foreground pixels vs #Frames. **Explain and Show BEHAVIOUR**
-- [ ] Graph 2: F1-Score vs Time. **Explain and Show BEHAVIOUR**
+- [x] Graph 1: True Positive & Total Foreground pixels vs #Frames.
+- [x] Graph 2: F1-Score vs Time.
+- [ ] Provide an interpretation of the graphs obtained for Test A and Test B.
 
 3. Quantitative evaluation of Optical Flow
 - [ ] Compute Mean Squared Error in Non-occluded areas (MSEN)
