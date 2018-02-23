@@ -18,14 +18,19 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [ ] Implement Precision and Recall
 - [ ] Implement F1-Score
 - [ ] Compute these metrics for sequences A & B
+- [ ] Provide an interpretation of the different values obtained for Test A and Test B.
+
 2. Temporal Analysis of the Results
 - [ ] Graph 1: True Positive & Total Foreground pixels vs #Frames. **Explain and Show BEHAVIOUR**
 - [ ] Graph 2: F1-Score vs Time. **Explain and Show BEHAVIOUR**
+
 3. Quantitative evaluation of Optical Flow
 - [ ] Compute Mean Squared Error in Non-occluded areas (MSEN)
 - [ ] Compute Percentage of Erroneous Pixels in Non-occluded areas (PEPN)
+
 4. Desynchronization of the Resuls
 - [ ] Force de-synchronized results for background substraction in Highway sequence. **Study and comment the results**
+
 5. Optical Flow visualization
 - [ ] Propose a simplification method for a clean visualization
 
