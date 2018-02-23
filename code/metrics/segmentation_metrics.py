@@ -1,25 +1,18 @@
 import cv2 as cv
 import numpy as np
 import sys
-sys.path.append("code\\tools")
-from tools import image_parser
 
-def evaluate(cf):
+def evaluate(testList, gtList):
     TP = 0
     TN = 0
     FP = 0
     FN = 0
     count = 0
 
-    # Get a list with groung truth images filenames
-    gt_list = image_parser.get_image_list(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
-
-    # Get a list with test results filenames
-    results_list = image_parser.get_image_list(cf.results_path, str(cf.test_name+'_'), cf.first_image, cf.result_image_type, cf.nr_images)
-    for name in results_list:
+    for name in gtList:
         img = cv.imread(name, cv.IMREAD_GRAYSCALE)
         img = cv.normalize(img, alpha=0, beta=1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
-        gt_img = cv.imread(gt_list[count], cv.IMREAD_GRAYSCALE)
+        gt_img = cv.imread(gtList[count], cv.IMREAD_GRAYSCALE)
         gt_img = cv.normalize(gt_img, alpha=0, beta=1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
         h, w = np.shape(img)
         for i in range(0, h):

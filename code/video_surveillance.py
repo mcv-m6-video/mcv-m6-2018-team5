@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from config.load_configutation import Configuration
 from tools.save_log import Log
 from tools.image_parser import get_image_list
-from metrics import precision
+from metrics import segmentation_metrics
 
 # Train the network
 def background_estimation(cf):
@@ -24,9 +24,6 @@ def background_estimation(cf):
 
     #Start trying to load some images and their groundtruth
 
-    # We know how many more images we want to process: cf.nr_images
-    # It would be nice to store the images filenames in an array to work more easily
-
     # Get a list with input images filenames
     imageList = get_image_list(cf.dataset_path,'in', cf.first_image, cf.image_type, cf.nr_images)
 
@@ -36,27 +33,25 @@ def background_estimation(cf):
     # Get a list with test results filenames
     testList = get_image_list(cf.results_path, str(cf.test_name+'_'), cf.first_image, cf.result_image_type, cf.nr_images)
 
-    # # Display first image
-    # img = cv.imread(imageList[0])
-    # cv.namedWindow('input image', cv.WINDOW_NORMAL)
-    # cv.imshow('input image', img)
-    #
-    # # Display first ground truth image
-    # test_img = cv.imread(testList[0])
-    # cv.namedWindow('test image', cv.WINDOW_NORMAL)
-    # cv.imshow('test image', test_img)
-    #
-    # gt_img = cv.imread(gtList[0])
-    # cv.namedWindow('gt image', cv.WINDOW_NORMAL)
-    # cv.imshow('gt image', gt_img)
-    #
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
-    prec, rec, f1 = precision.evaluate(cf)
+    prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
     print("PRECISION: "+str(prec))
     print("RECALL: " + str(rec))
     print("F1-SCORE: " + str(f1))
     print (' ---> Finish test: ' + cf.test_name + ' <---')
+
+    # # Display first image
+    # img = cv.imread(imageList[0])
+    # cv.namedWindow('input image', cv.WINDOW_NORMAL)
+    # cv.imshow('input image', img)
+    # # Display first ground truth image
+    # test_img = cv.imread(testList[0])
+    # cv.namedWindow('test image', cv.WINDOW_NORMAL)
+    # cv.imshow('test image', test_img)
+    # gt_img = cv.imread(gtList[0])
+    # cv.namedWindow('gt image', cv.WINDOW_NORMAL)
+    # cv.imshow('gt image', gt_img)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
 
 # Main function
 def main():
