@@ -27,10 +27,13 @@ def background_estimation(cf):
     # It would be nice to store the images filenames in an array to work more easily
 
     # Get a list with input images filenames
-    imageList = get_image_list(cf.dataset_path, cf.first_image, cf.image_type, cf.nr_images)
+    imageList = get_image_list(cf.dataset_path,'in', cf.first_image, cf.image_type, cf.nr_images)
 
     # Get a list with groung truth images filenames
-    gtList = get_image_list(cf.gt_path, cf.first_gt, cf.gt_image_type, cf.nr_images)
+    gtList = get_image_list(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
+
+    # Get a list with test results filenames
+    testList = get_image_list(cf.results_path, str(cf.test_name+'_'), cf.first_image, cf.result_image_type, cf.nr_images)
 
     # Display first image
     img = cv.imread(imageList[0])
@@ -38,6 +41,10 @@ def background_estimation(cf):
     cv.imshow('input image', img)
 
     # Display first ground truth image
+    test_img = cv.imread(testList[0])
+    cv.namedWindow('test image', cv.WINDOW_NORMAL)
+    cv.imshow('test image', test_img)
+
     gt_img = cv.imread(gtList[0])
     cv.namedWindow('gt image', cv.WINDOW_NORMAL)
     cv.imshow('gt image', gt_img)

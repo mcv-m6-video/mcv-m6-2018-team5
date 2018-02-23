@@ -23,8 +23,8 @@ class Configuration():
         cf.test_name = self.test_name
 
         cf.dataset_path = os.path.abspath(cf.dataset_path)
-        cf.results_AB = os.path.abspath(cf.results_AB)
-
+        cf.gt_path = os.path.abspath(cf.gt_path)
+        cf.results_path = os.path.abspath(cf.results_path)
 
         if cf.save_results:
 
