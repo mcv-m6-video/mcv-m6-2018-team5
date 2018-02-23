@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from config.load_configutation import Configuration
 from tools.save_log import Log
+from tools.image_parser import get_image_list
 
 # Train the network
 def background_estimation(cf):
@@ -22,25 +23,27 @@ def background_estimation(cf):
 
     #Start trying to load some images and their groundtruth
 
-    # Display first image
-    image_path = os.path.join(cf.dataset_path, cf.first_image_to_process + '.' + cf.image_type)
-    img = cv.imread(image_path)
-    cv.namedWindow(cf.first_image_to_process, cv.WINDOW_NORMAL)
-    cv.imshow(cf.first_image_to_process, img)
-
-    # Display first ground truth image
-    gt_image_path = os.path.join(cf.gt_path, cf.first_gt_to_process + '.' + cf.gt_image_type)
-    gt_img = cv.imread(gt_image_path)
-    cv.namedWindow(cf.first_gt_to_process, cv.WINDOW_NORMAL)
-    cv.imshow(cf.first_gt_to_process, gt_img)
-
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-
     # We know how many more images we want to process: cf.nr_images
     # It would be nice to store the images filenames in an array to work more easily
 
+    # Get a list with input images filenames
+    imageList = get_image_list(cf.dataset_path, cf.first_image, cf.image_type, cf.nr_images)
 
+    # Get a list with groung truth images filenames
+    gtList = get_image_list(cf.gt_path, cf.first_gt, cf.gt_image_type, cf.nr_images)
+
+    # Display first image
+    img = cv.imread(imageList[0])
+    cv.namedWindow('input image', cv.WINDOW_NORMAL)
+    cv.imshow('input image', img)
+
+    # Display first ground truth image
+    gt_img = cv.imread(gtList[0])
+    cv.namedWindow('gt image', cv.WINDOW_NORMAL)
+    cv.imshow('gt image', gt_img)
+
+    cv.waitKey(0)
+    cv.destroyAllWindows()
 
     print (' ---> Finish test: ' + cf.test_name + ' <---')
 
