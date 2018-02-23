@@ -15,9 +15,9 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 ### Week 1 - Introduction
 1. Segmentation metrics. Understand precision & recall.
-- [ ] Implement Precision and Recall
-- [ ] Implement F1-Score
-- [ ] Compute these metrics for sequences A & B
+- [x] Implement Precision and Recall
+- [x] Implement F1-Score
+- [x] Compute these metrics for sequences A & B
 - [ ] Provide an interpretation of the different values obtained for Test A and Test B.
 
 2. Temporal Analysis of the Results
@@ -41,3 +41,8 @@ The goal of this project is to learn the basic concepts and techniques related t
 ## How to run the code:
 
 [**TODO:** Add info about paths, how to run experiments, ....]
+Task 1. Evaluate sequences A and B
+- `video_surveillance.py -c config/highway -t test_A`
+
+- `video_surveillance.py -c config/highway -t test_B`
+
