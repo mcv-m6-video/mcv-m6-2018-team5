@@ -1,5 +1,7 @@
 # Video Surveillance for Road Traffic Monitoring
 
+The goal of this project is to learn the basic concepts and techniques related to video sequences and apply them for surveillance applications
+
 ## Team 5:
 
 | Name | E-mail | GitHub |
