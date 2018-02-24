@@ -10,9 +10,10 @@ def evaluate(testList, gtList):
     num_images = len(testList)
     for test_image,gt_image in zip(testList,gtList):
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
-        img = cv.normalize(img, alpha=0, beta=1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
-        gt_img = cv.normalize(gt_img, alpha=0, beta=1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+        ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
+
         h, w = np.shape(img)
         for i in range(0, h):
             for j in range(0, w):
@@ -28,9 +29,9 @@ def evaluate(testList, gtList):
                         FN += 1
 
     print("TP: "+str(TP))
-    print("FP" + str(FP))
+    print("FP: " + str(FP))
     print("TN: "+str(TN))
-    print("FN" + str(FN))
+    print("FN: " + str(FN))
 
     precision = (TP / float(TP + FP))
     recall = TP / float(TP + FN)
@@ -51,9 +52,8 @@ def temporal_evaluation(testList, gtList):
         TN = 0
         FN = 0
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
-        img = cv.normalize(img, img, alpha=0, beta=1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
-        gt_img = cv.normalize(gt_img, gt_img, alpha=0, beta=1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+        ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
         h, w = np.shape(img)
         for i in range(0, h):
             for j in range(0, w):
