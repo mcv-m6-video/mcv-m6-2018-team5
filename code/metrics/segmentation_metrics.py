@@ -28,9 +28,9 @@ def evaluate(testList, gtList):
                         FN += 1
 
     print("TP: "+str(TP))
-    print("FP" + str(FP))
+    print("FP: " + str(FP))
     print("TN: "+str(TN))
-    print("FN" + str(FN))
+    print("FN: " + str(FN))
 
     precision = (TP / float(TP + FP))
     recall = TP / float(TP + FN)
