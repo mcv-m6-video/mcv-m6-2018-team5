@@ -52,6 +52,8 @@ def background_estimation(cf):
 
     plt.show()
 
+    segmentation_metrics.desynchronization(testList, gtList, [0, 5, 10])
+
     print (' ---> Finish test: ' + cf.test_name + ' <---')
 
     # # Display first image

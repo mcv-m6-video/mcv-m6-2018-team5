@@ -29,8 +29,9 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [ ] Compute Mean Squared Error in Non-occluded areas (MSEN)
 - [ ] Compute Percentage of Erroneous Pixels in Non-occluded areas (PEPN)
 
-4. Desynchronization of the Resuls
-- [ ] Force de-synchronized results for background substraction in Highway sequence. **Study and comment the results**
+4. Desynchronization of the Results
+- [x] Force de-synchronized results for background substraction in Highway sequence.
+- [ ] Study and comment the results
 
 5. Optical Flow visualization
 - [ ] Propose a simplification method for a clean visualization
