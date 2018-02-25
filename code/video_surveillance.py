@@ -1,22 +1,21 @@
 import argparse
+import logging
 import os
-import sys
 
 import matplotlib.pyplot as plt
 
 from config.load_configutation import Configuration
 from metrics import segmentation_metrics
 from tools.image_parser import get_image_list
-from tools.save_log import Log
+from tools.log import setup_logging
 
 
 # Train the network
 def background_estimation(cf):
-    if cf.save_results:
-        # Enable log file
-        sys.stdout = Log(cf.log_file)
 
-    print (' ---> Init test: ' + cf.test_name + ' <---')
+    logger = logging.getLogger(__name__)
+
+    logger.info(' ---> Init test: ' + cf.test_name + ' <---')
 
     if cf.dataset_name == 'highway':
         # Get a list with input images filenames
@@ -37,9 +36,9 @@ def background_estimation(cf):
 
     if cf.compute_metrics:
         prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
-        print("PRECISION: " + str(prec))
-        print("RECALL: " + str(rec))
-        print("F1-SCORE: " + str(f1))
+        logger.info("PRECISION: " + str(prec))
+        logger.info("RECALL: " + str(rec))
+        logger.info("F1-SCORE: " + str(f1))
 
         TP, T, F1_score = segmentation_metrics.temporal_evaluation(testList, gtList)
 
@@ -72,7 +71,7 @@ def background_estimation(cf):
         if cf.save_results and cf.save_plots:
             plt.savefig(os.path.join(cf.output_folder, "task_4.png"))
 
-    print (' ---> Finish test: ' + cf.test_name + ' <---')
+    logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
     # # Display first image
     # img = cv.imread(imageList[0])
@@ -110,6 +109,13 @@ def main():
     # Load the configuration file
     configuration = Configuration(arguments.config_path, arguments.test_name)
     cf = configuration.load()
+
+    # Set up logging
+    if cf.save_results:
+        log_file = cf.log_file
+    else:
+        log_file = None
+    setup_logging(log_file)
 
     # Week 1
     background_estimation(cf)

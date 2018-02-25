@@ -1,8 +1,12 @@
+import logging
+
 import cv2 as cv
 import numpy as np
 
 
 def evaluate(testList, gtList):
+    logger = logging.getLogger(__name__)
+
     TP = 0
     TN = 0
     FP = 0
@@ -25,10 +29,10 @@ def evaluate(testList, gtList):
                     else:
                         FN += 1
 
-    print("TP: " + str(TP))
-    print("FP: " + str(FP))
-    print("TN: " + str(TN))
-    print("FN: " + str(FN))
+    logger.info("TP: " + str(TP))
+    logger.info("FP: " + str(FP))
+    logger.info("TN: " + str(TN))
+    logger.info("FN: " + str(FN))
 
     precision = (TP / float(TP + FP))
     recall = TP / float(TP + FN)

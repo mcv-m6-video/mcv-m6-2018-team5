@@ -1,7 +1,7 @@
 # Dataset
 dataset_name                 = 'kitti'                          # Dataset name
 dataset_path                 = 'datasets/kitti/image_0'         # Dataset path
-gt_path                      = 'datasets/kitti/flow_noc'     # Groung truth path
+gt_path                      = 'datasets/kitti/flow_noc'        # Ground truth path
 results_path                 = 'datasets/kitti/results'
 
 # Input Images
