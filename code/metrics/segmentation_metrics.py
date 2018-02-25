@@ -8,7 +8,6 @@ def evaluate(testList, gtList):
     TN = 0
     FP = 0
     FN = 0
-    num_images = len(testList)
     for test_image,gt_image in zip(testList,gtList):
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
@@ -42,7 +41,6 @@ def temporal_evaluation(testList, gtList):
     TP = []
     T = []
     F1_score = []
-
     for test_image, gt_image in zip(testList, gtList):
         TP_temp = 0
         FP = 0
@@ -75,11 +73,12 @@ def temporal_evaluation(testList, gtList):
     return TP,T,F1_score
 
 def desynchronization(testList, gtList, frames):
-
+    num_desynch = 0
+    num_image = 0
+    F1_score = np.empty((len(frames), len(testList)))
     for frame in frames:
-        F1_score = []
+        # F1_score = []
         gtList_des = list(gtList)
-
         if frame != 0:
             del gtList_des[0:frame-1]
 
@@ -108,10 +107,16 @@ def desynchronization(testList, gtList, frames):
             precision = (TP / float(TP + FP))
             recall = TP / float(TP + FN)
 
-            F1_score.append(2 * precision * recall / (precision + recall))
+            F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall)
+            num_image += 1
 
-        plt.plot(F1_score, label=str(frame) + ' de-synchronization frames')
+        # plt.plot(F1_score[num_desynch], label=str(frame) + ' de-synchronization frames')
+        num_desynch += 1
+        num_image = 0
 
-    plt.xlabel('time')
-    plt.legend(loc='upper right', fontsize='medium')
-    plt.show()
+    # plt.xlabel('time')
+    # plt.legend(loc='upper right', fontsize='medium')
+    # plt.show()
+
+    return F1_score
+

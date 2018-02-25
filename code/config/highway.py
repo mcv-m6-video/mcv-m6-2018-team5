@@ -11,7 +11,12 @@ image_type                   = 'jpg'        # Input image type
 gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
+# Compute Metrics
+compute_metrics              = True
+# Compute Optical flow
+optical_flow                 = False
+
 # Save results
 save_results                 = True
-output_folder                = 'results'    # Output folder to save the results of the test
-save_plots                   = False        # Save the plots to disk
+output_folder                = 'results'   # Output folder to save the results of the test
+save_plots                   = True        # Save the plots to disk
