@@ -1,11 +1,13 @@
 import imp
 import os
 
-class Configuration():
+
+class Configuration(object):
     def __init__(self, config_path, test_name):
 
         self.config_path = config_path
         self.test_name = test_name
+        self.configuration = None
 
     def load(self):
 

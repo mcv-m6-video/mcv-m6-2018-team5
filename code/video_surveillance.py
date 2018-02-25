@@ -2,43 +2,42 @@ import argparse
 import os
 import sys
 
-import cv2 as cv
-import numpy as np
 import matplotlib.pyplot as plt
 
 from config.load_configutation import Configuration
-from tools.save_log import Log
-from tools.image_parser import get_image_list
 from metrics import segmentation_metrics
+from tools.image_parser import get_image_list
+from tools.save_log import Log
+
 
 # Train the network
 def background_estimation(cf):
-
     if cf.save_results:
         # Enable log file
-         sys.stdout = Log(cf.log_file)
+        sys.stdout = Log(cf.log_file)
 
     print (' ---> Init test: ' + cf.test_name + ' <---')
 
     if cf.dataset_name == 'highway':
         # Get a list with input images filenames
-        imageList = get_image_list(cf.dataset_path,'in', cf.first_image, cf.image_type, cf.nr_images)
+        imageList = get_image_list(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
 
         # Get a list with groung truth images filenames
         gtList = get_image_list(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
         # Get a list with test results filenames
-        testList = get_image_list(cf.results_path, str(cf.test_name+'_'), cf.first_image, cf.result_image_type, cf.nr_images)
+        testList = get_image_list(cf.results_path, str(cf.test_name + '_'), cf.first_image, cf.result_image_type,
+                                  cf.nr_images)
 
     # if cf.dataset_name == 'kitti':
-        # Modify get_image_list method to load kitti images
+    # Modify get_image_list method to load kitti images
 
     # if cf.optical_flow:
-        # Call the method to compute optical flow
+    # Call the method to compute optical flow
 
     if cf.compute_metrics:
         prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
-        print("PRECISION: "+str(prec))
+        print("PRECISION: " + str(prec))
         print("RECALL: " + str(rec))
         print("F1-SCORE: " + str(f1))
 
@@ -89,9 +88,9 @@ def background_estimation(cf):
     # cv.waitKey(0)
     # cv.destroyAllWindows()
 
+
 # Main function
 def main():
-
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Video surveillance')
     parser.add_argument('-c', '--config_path', type=str,
@@ -101,12 +100,12 @@ def main():
 
     arguments = parser.parse_args()
 
-    assert arguments.config_path is not None, 'Please provide a configuration'\
-                                              'path using -c config/path/name'\
+    assert arguments.config_path is not None, 'Please provide a configuration' \
+                                              'path using -c config/path/name' \
                                               ' in the command line'
-    assert arguments.test_name is not None, 'Please provide a name for the '\
-                                           'test using -e test_name in the '\
-                                           'command line'
+    assert arguments.test_name is not None, 'Please provide a name for the ' \
+                                            'test using -e test_name in the ' \
+                                            'command line'
 
     # Load the configuration file
     configuration = Configuration(arguments.config_path, arguments.test_name)
@@ -114,6 +113,7 @@ def main():
 
     # Week 1
     background_estimation(cf)
+
 
 # Entry point of the script
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-import os
 import sys
+
 
 # Save the printf to a log file
 class Log(object):

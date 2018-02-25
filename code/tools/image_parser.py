@@ -1,5 +1,6 @@
 import os
 
+
 # Method to get a list of the image filenames
 def get_image_list(dataset_path, image_prefix, first_image_nr, image_type, nr_images):
     imageList = []
