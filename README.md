@@ -43,8 +43,19 @@ The goal of this project is to learn the basic concepts and techniques related t
 ## How to run the code:
 
 [**TODO:** Add info about paths, how to run experiments, ....]
-Task 1. Evaluate sequences A and B
+
 - `video_surveillance.py -c config/highway -t test_A`
 
 - `video_surveillance.py -c config/highway -t test_B`
 
+In order to run the code, the datasets must be on the path *code/datasets/*.
+
+The datasets needed to run the code and their folder organization are the following:
+
+| ChangeDetection Dataset | Description | 
+| :---: | :---: | 
+| *highway/input/* |  ChangeDetection dataset | 
+| *highway/groundtruth/*  |  ChangeDetection dataset ground truth | 
+| *highway/results_testAB_changedetection/* |  ChangeDetection results using parameters A and B |
+
+[TODO: (Proposal) Add more tables for every dataset used]
