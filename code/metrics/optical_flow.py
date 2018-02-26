@@ -1,28 +1,19 @@
 from __future__ import division
-import logging
+
 import cv2 as cv
 import numpy as np
-import math
 
 
 def evaluate(testList, gtList):
-    logger = logging.getLogger(__name__)
-
     msen = []
     pepn = []
     for test_image, gt_image in zip(testList, gtList):
 
         # The optical flow images
-        img = cv.imread(test_image, cv.CV_LOAD_IMAGE_COLOR)
-        gt_img = cv.imread(gt_image, cv.CV_LOAD_IMAGE_COLOR)
+        img = cv.imread(test_image, cv.IMREAD_COLOR)
+        gt_img = cv.imread(gt_image, cv.IMREAD_COLOR)
 
-        h = len(img)
-        w = len(img[0])
-        # Check if background interpolation is needed
-        if h == len(gt_img) and w == len(gt_img[0]):
-            interpolate = False
-        else:
-            interpolate = True
+        assert img.shape == gt_img.shape
 
         # MSEN: Mean Square Error in Non-occluded areas
         # PEPN: Percentage of Erroneous Pixels in Non-occluded areas
@@ -30,41 +21,45 @@ def evaluate(testList, gtList):
         msen.append(error_msen)
         pepn.append(error_pepn)
 
-        # PEPN: Percentage of Erroneous Pixels in Non-occluded areas
-        # error_pepn = flow_errors_PEPN(img, gt_img)
-        # pepn.append(error_pepn)
-
     return msen, pepn
 
 
 def flow_errors_MSEN_PEPN(img, gt_img):
-    msen = 0
-    pepn = 0
-    h = len(img)
-    w = len(img[0])
-    # Check if background interpolation is needed
-    if h != len(gt_img) and w != len(gt_img[0]):
-        print('Error: image sizes does not match')
-    else:
-        error_pixels = 0
-        total_pixels = h * w
-        # Access all pixels
-        for row in range(0, h):
-            for col in range(0, w):
-                fu = gt_img[row, col][0] - img[row, col][0]
-                fv = gt_img[row, col][1] - img[row, col][1]
-                f_error = math.sqrt(fu * fu + fv * fv)
-                msen += f_error
-                if f_error > 3:
-                    error_pixels += 1
+    optical_flow, _ = read_flow_field(img)
+    optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
 
-        # Normalize errors
-        msen = msen / total_pixels
-        pepn = error_pixels / max(total_pixels, 1)
+    optical_flow_se = np.square(optical_flow - optical_flow_gt)
+    motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
+
+    error_pixels = np.logical_and(
+        motion_vector_errors > 3.0,
+        valid_pixels_gt
+    )
+
+    num_valid_pixels = np.count_nonzero(valid_pixels_gt)
+
+    msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels
+    pepn = np.count_nonzero(error_pixels) / num_valid_pixels
 
     return msen, pepn
 
 
+def read_flow_field(img):
+    # BGR -> RGB
+    img = img[:, :, ::-1]
+
+    h, w, c = img.shape
+    optical_flow = np.zeros((h, w, 2), dtype=float)
+
+    optical_flow[:, :, 0] = (img[:, :, 0] - 2**15) / 64.0
+    optical_flow[:, :, 1] = (img[:, :, 1] - 2**15) / 64.0
+    # TODO: Check why none of the pixels in the last channel are different than 0
+    valid_pixels = np.ones((h, w), dtype=bool)
+
+    return optical_flow, valid_pixels
+
+
+"""
 # Method in Kitti C++ evaluate_flow.cpp
 def flow_errors_outlier(img, gt_img):
     h = len(img)
@@ -142,28 +137,4 @@ def flow_errors_average(img, gt_img):
     density = num_pixels_result / max(num_pixels, 1)
     errors.append(density)
     return errors
-
-
-# Method in Kitti C++ io_flow.h
-# Method to construct flow image from PNG file
-def read_flow_field(img):
-    h = len(img)
-    w = len(img[0])
-    optical_flow = np.empty((h, w, 3))
-    # optical_flow_image = np.zeros((h, w, 3), np.uint8)
-
-    # Access BGR intensity values
-    for i in range(0, h):
-        for j in range(0, w):
-            blue = img[i, j][0]
-            green = img[i, j][1]
-            red = img[i, j][2]
-            if blue > 0:
-                # Set optical flow u-component at given value
-                optical_flow[i, j][0] = (red - 32768.0) / 64.0
-                # Set optical flow v-component at given value
-                optical_flow[i, j][1] = (green - 32768.0) / 64.0
-                # Set optical flow at given pixel to valid/invalid
-                optical_flow[i, j][2] = 1
-
-    return optical_flow
+"""

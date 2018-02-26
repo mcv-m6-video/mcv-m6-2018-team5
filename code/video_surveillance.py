@@ -84,6 +84,8 @@ def background_estimation(cf):
         if cf.evaluate:
             # Call the method to evaluate the optical flow
             msen, pepn = optical_flow.evaluate(testList, gtList)
+            logger.info('Mean Squared Error: {}'.format(msen))
+            logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
