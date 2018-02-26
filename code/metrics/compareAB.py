@@ -20,6 +20,8 @@ def press(event):
         img3.set_data(testA_img)
         img4.set_data(testB_img)
 
+        text.set_text('Frame ' + str(idx))
+
         fig.canvas.draw()
 
 
@@ -38,7 +40,6 @@ testBList = get_image_list_highway_dataset('..\\datasets\\highway\\results_testA
 fig, axes = plt.subplots(2, 2, subplot_kw={'xticks': [], 'yticks': []})
 fig.canvas.mpl_connect('key_press_event', press)
 
-
 img = cv.imread(imageList[idx])
 gt = cv.imread(gtList[idx])
 testA_img = cv.imread(testAList[idx]) *255
@@ -52,5 +53,7 @@ img3 = axes.flat[2].imshow(testA_img)
 axes.flat[2].set_title('Test A')
 img4 = axes.flat[3].imshow(testB_img)
 axes.flat[3].set_title('Test B')
+
+text = axes.flat[3].text(.5, .5, 'Frame ' + str(idx), horizontalalignment='right', verticalalignment='bottom')
 
 plt.show()
