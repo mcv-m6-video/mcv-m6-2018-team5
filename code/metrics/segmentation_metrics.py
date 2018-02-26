@@ -75,7 +75,7 @@ def temporal_evaluation(testList, gtList):
 def desynchronization(testList, gtList, frames):
     num_desynch = 0
     num_image = 0
-    F1_score = np.empty((len(frames), len(testList)))
+    F1_score = np.zeros((len(frames), len(testList)))
     for frame in frames:
         # F1_score = []
         gtList_des = list(gtList)
