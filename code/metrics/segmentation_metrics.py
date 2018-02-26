@@ -57,7 +57,6 @@ def temporal_evaluation(testList, gtList):
 
         true_pos = np.count_nonzero((img == 1) & (gt_img == 1))
         false_pos = np.count_nonzero((img == 1) & (gt_img == 0))
-        true_neg = np.count_nonzero((img == 0) & (gt_img == 0))
         false_neg = np.count_nonzero((img == 0) & (gt_img == 1))
 
         total_predictions = true_pos + false_pos
@@ -84,41 +83,21 @@ def desynchronization(testList, gtList, frames):
             del gtList_des[0:frame - 1]
 
         for test_image, gt_image in zip(testList, gtList_des):
-            TP = 0
-            FP = 0
-            TN = 0
-            FN = 0
             img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
-            h, w = np.shape(img)
-            for i in range(0, h):
-                for j in range(0, w):
-                    if img[i, j] == 1:
-                        if img[i, j] == gt_img[i, j]:
-                            TP += 1
-                        else:
-                            FP += 1
-                    else:
-                        if img[i, j] == gt_img[i, j]:
-                            TN += 1
-                        else:
-                            FN += 1
 
-            if TP != 0 or FP != 0:
-                precision = (TP / float(TP + FP))
-            else:
-                precision = 0
+            true_pos = np.count_nonzero((img == 1) & (gt_img == 1))
+            false_pos = np.count_nonzero((img == 1) & (gt_img == 0))
+            false_neg = np.count_nonzero((img == 0) & (gt_img == 1))
 
-            if TP != 0 or FN != 0:
-                recall = TP / float(TP + FN)
-            else:
-                recall = 0
+            total_predictions = true_pos + false_pos
+            total_true = true_pos + false_neg
 
-            if precision != 0 or recall != 0:
-                F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall)
-            else:
-                F1_score[num_desynch][num_image] = 0
+            precision = (true_pos / total_predictions) if total_predictions > 0 else 0.0
+            recall = (true_pos / total_true) if total_true > 0 else 0.0
+
+            F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall + EPSILON)
             num_image += 1
 
         num_desynch += 1

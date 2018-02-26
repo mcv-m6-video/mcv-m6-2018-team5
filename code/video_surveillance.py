@@ -19,7 +19,7 @@ def background_estimation(cf):
 
     if cf.dataset_name == 'highway':
         # Get a list with input images filenames
-        imageList = get_image_list_highway_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
+        # imageList = get_image_list_highway_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
 
         # Get a list with groung truth images filenames
         gtList = get_image_list_highway_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
@@ -73,7 +73,7 @@ def background_estimation(cf):
 
     if cf.dataset_name == 'kitti':
         # Get a list with input images filenames
-        imageList = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
+        # imageList = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
 
         # Get a list with groung truth images filenames
         gtList = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
@@ -85,22 +85,7 @@ def background_estimation(cf):
             # Call the method to evaluate the optical flow
             msen, pepn = optical_flow.evaluate(testList, gtList)
 
-
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
-
-    # # Display first image
-    # img = cv.imread(imageList[0])
-    # cv.namedWindow('input image', cv.WINDOW_NORMAL)
-    # cv.imshow('input image', img)
-    # # Display first ground truth image
-    # test_img = cv.imread(testList[0])
-    # cv.namedWindow('test image', cv.WINDOW_NORMAL)
-    # cv.imshow('test image', test_img)
-    # gt_img = cv.imread(gtList[0])
-    # cv.namedWindow('gt image', cv.WINDOW_NORMAL)
-    # cv.imshow('gt image', gt_img)
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
 
 
 # Main function
