@@ -1,3 +1,4 @@
+from __future__ import division
 import logging
 import cv2 as cv
 import numpy as np
@@ -23,8 +24,10 @@ def evaluate(testList, gtList):
             interpolate = True
 
         # MSEN: Mean Square Error in Non-occluded areas
-        error_msen = flow_error_MSEN(img, gt_img)
+        # PEPN: Percentage of Erroneous Pixels in Non-occluded areas
+        error_msen, error_pepn = flow_errors_MSEN_PEPN(img, gt_img)
         msen.append(error_msen)
+        pepn.append(error_pepn)
 
         # PEPN: Percentage of Erroneous Pixels in Non-occluded areas
         # error_pepn = flow_errors_PEPN(img, gt_img)
@@ -32,31 +35,32 @@ def evaluate(testList, gtList):
 
     return msen, pepn
 
-# MSEN: Mean Square Error in Non-occluded areas
-def flow_error_MSEN(img, gt_img):
+def flow_errors_MSEN_PEPN(img, gt_img):
+    msen = 0
+    pepn = 0
     h = len(img)
     w = len(img[0])
     # Check if background interpolation is needed
     if h != len(gt_img) and w != len(gt_img[0]):
         print('Error: image sizes does not match')
-        return
+    else:
+        error_pixels = 0
+        total_pixels = h*w;
+        # Access all pixels
+        for row in range(0, h):
+            for col in range(0, w):
+                fu = gt_img[row, col][0] - img[row, col][0]
+                fv = gt_img[row, col][1] - img[row, col][1]
+                f_error = math.sqrt(fu * fu + fv * fv);
+                msen += f_error
+                if f_error > 3:
+                    error_pixels += 1
 
-    error = 0
-    num_pixels = 0
-    # Access all pixels
-    for row in range(0, h):
-        for col in range(0, w):
-            fu = gt_img[row, col][0] - img[row, col][0]
-            fv = gt_img[row, col][1] - img[row, col][1]
-            f_error = math.sqrt(fu * fu + fv * fv);
-            if f_error > 3:
-                error += f_error
-                num_pixels += 1
+        # Normalize errors
+        msen = msen / total_pixels
+        pepn = error_pixels / max(total_pixels, 1)
 
-    # Normalize error
-    error = error / max(num_pixels, 1)
-
-    return error
+    return msen, pepn
 
 # Method in Kitti C++ evaluate_flow.cpp
 def flow_errors_outlier(img, gt_img):
