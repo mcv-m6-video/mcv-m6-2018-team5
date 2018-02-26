@@ -5,8 +5,8 @@ import os
 import matplotlib.pyplot as plt
 
 from config.load_configutation import Configuration
-from metrics import segmentation_metrics
-from tools.image_parser import get_image_list
+from metrics import segmentation_metrics, optical_flow
+from tools.image_parser import get_image_list_highway_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
 
 
@@ -19,57 +19,67 @@ def background_estimation(cf):
 
     if cf.dataset_name == 'highway':
         # Get a list with input images filenames
-        imageList = get_image_list(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
+        imageList = get_image_list_highway_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
 
         # Get a list with groung truth images filenames
-        gtList = get_image_list(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
+        gtList = get_image_list_highway_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
         # Get a list with test results filenames
-        testList = get_image_list(cf.results_path, str(cf.test_name + '_'), cf.first_image, cf.result_image_type,
+        testList = get_image_list_highway_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image, cf.result_image_type,
                                   cf.nr_images)
 
-    # if cf.dataset_name == 'kitti':
-    # Modify get_image_list method to load kitti images
+        if cf.segmentation_metrics:
+            prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
+            logger.info("PRECISION: " + str(prec))
+            logger.info("RECALL: " + str(rec))
+            logger.info("F1-SCORE: " + str(f1))
 
-    # if cf.optical_flow:
-    # Call the method to compute optical flow
+        if cf.temporal_metrics:
+            TP, T, F1_score = segmentation_metrics.temporal_evaluation(testList, gtList)
 
-    if cf.compute_metrics:
-        prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
-        logger.info("PRECISION: " + str(prec))
-        logger.info("RECALL: " + str(rec))
-        logger.info("F1-SCORE: " + str(f1))
+            plt.subplots()
+            plt.subplot(1, 2, 1)
+            plt.plot(TP, label='True Positives')
+            plt.plot(T, label='Foreground pixels')
+            plt.xlabel('time')
+            plt.legend(loc='upper right', fontsize='medium')
 
-        TP, T, F1_score = segmentation_metrics.temporal_evaluation(testList, gtList)
+            plt.subplot(1, 2, 2)
+            plt.plot(F1_score, label='F1 Score')
+            plt.xlabel('time')
+            plt.legend(loc='upper right', fontsize='medium')
+            plt.show(block=False)
 
-        plt.subplots()
-        plt.subplot(1, 2, 1)
-        plt.plot(TP, label='True Positives')
-        plt.plot(T, label='Foreground pixels')
-        plt.xlabel('time')
-        plt.legend(loc='upper right', fontsize='medium')
+            if cf.save_results and cf.save_plots:
+                plt.savefig(os.path.join(cf.output_folder, "task_2.png"))
 
-        plt.subplot(1, 2, 2)
-        plt.plot(F1_score, label='F1 Score')
-        plt.xlabel('time')
-        plt.legend(loc='upper right', fontsize='medium')
-        plt.show(block=False)
+        if cf.desynchronization:
+            F1_score = segmentation_metrics.desynchronization(testList, gtList, cf.desynchronization_frames)
 
-        if cf.save_results and cf.save_plots:
-            plt.savefig(os.path.join(cf.output_folder, "task_2.png"))
+            for i in range(0, len(cf.desynchronization_frames)):
+                plt.plot(F1_score[i], label=str(cf.desynchronization_frames[i]) + ' de-synchronization frames')
 
-        desynch_frames = [0, 5, 10]
-        F1_score = segmentation_metrics.desynchronization(testList, gtList, [0, 5, 10])
+            plt.xlabel('time')
+            plt.legend(loc='upper right', fontsize='medium')
+            plt.show(block=False)
 
-        for i in range(0, len(desynch_frames)):
-            plt.plot(F1_score[i], label=str(desynch_frames[i]) + ' de-synchronization frames')
+            if cf.save_results and cf.save_plots:
+                plt.savefig(os.path.join(cf.output_folder, "task_4.png"))
 
-        plt.xlabel('time')
-        plt.legend(loc='upper right', fontsize='medium')
-        plt.show(block=False)
+    if cf.dataset_name == 'kitti':
+        # Get a list with input images filenames
+        imageList = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
 
-        if cf.save_results and cf.save_plots:
-            plt.savefig(os.path.join(cf.output_folder, "task_4.png"))
+        # Get a list with groung truth images filenames
+        gtList = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
+
+        # Get a list with test results filenames
+        testList = get_image_list_kitti_dataset(cf.results_path, cf.image_sequences, cf.image_type, 'LKflow_')
+
+        if cf.evaluate:
+            # Call the method to evaluate the optical flow
+            optical_flow.evaluate(testList, gtList)
+
 
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
