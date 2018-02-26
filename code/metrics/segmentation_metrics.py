@@ -114,12 +114,7 @@ def desynchronization(testList, gtList, frames):
             F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall)
             num_image += 1
 
-        # plt.plot(F1_score[num_desynch], label=str(frame) + ' de-synchronization frames')
         num_desynch += 1
         num_image = 0
-
-    # plt.xlabel('time')
-    # plt.legend(loc='upper right', fontsize='medium')
-    # plt.show()
 
     return F1_score
