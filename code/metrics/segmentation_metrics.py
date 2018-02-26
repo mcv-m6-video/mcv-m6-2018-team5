@@ -1,8 +1,13 @@
+from __future__ import division
+
 import logging
 
 import cv2 as cv
 import numpy as np
 import time
+
+
+EPSILON = 1e-8
 
 
 def evaluate(testList, gtList):
@@ -32,9 +37,12 @@ def evaluate(testList, gtList):
     logger.info("TN: " + str(TN))
     logger.info("FN: " + str(FN))
 
-    precision = (TP / float(TP + FP))
-    recall = TP / float(TP + FN)
-    F1_score = 2 * precision * recall / (precision + recall)
+    total_predictions = TP + FP
+    total_true = TP + FN
+
+    precision = (TP / total_predictions) if total_predictions > 0 else 0.0
+    recall = TP / total_true if total_true > 0 else 0.0
+    F1_score = 2 * precision * recall / (precision + recall + EPSILON)
     return precision, recall, F1_score
 
 
@@ -43,43 +51,24 @@ def temporal_evaluation(testList, gtList):
     T = []
     F1_score = []
     for test_image, gt_image in zip(testList, gtList):
-        TP_temp = 0
-        FP = 0
-        TN = 0
-        FN = 0
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
         ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
-        h, w = np.shape(img)
-        for i in range(0, h):
-            for j in range(0, w):
-                if img[i, j] == 1:
-                    if img[i, j] == gt_img[i, j]:
-                        TP_temp += 1
-                    else:
-                        FP += 1
-                else:
-                    if img[i, j] == gt_img[i, j]:
-                        TN += 1
-                    else:
-                        FN += 1
 
-        if TP_temp != 0 or FP != 0:
-            precision = (TP_temp / float(TP_temp + FP))
-        else:
-            precision = 0
-        if TP != 0 or FN != 0:
-            recall = TP_temp / float(TP_temp + FN)
-        else:
-            recall = 0
+        true_pos = np.count_nonzero((img == 1) & (gt_img == 1))
+        false_pos = np.count_nonzero((img == 1) & (gt_img == 0))
+        true_neg = np.count_nonzero((img == 0) & (gt_img == 0))
+        false_neg = np.count_nonzero((img == 0) & (gt_img == 1))
 
-        TP.append(TP_temp)
-        T.append(TP_temp + FN)
+        total_predictions = true_pos + false_pos
+        total_true = true_pos + false_neg
 
-        if precision != 0 or recall != 0:
-            F1_score.append(2 * precision * recall / (precision + recall))
-        else:
-            F1_score.append(0)
+        precision = (true_pos / total_predictions) if total_predictions > 0 else 0.0
+        recall = (true_pos / total_true) if total_true > 0 else 0.0
+
+        TP.append(true_pos)
+        T.append(total_true)
+        F1_score.append(2 * precision * recall / (precision + recall + EPSILON))
 
     return TP, T, F1_score
 
