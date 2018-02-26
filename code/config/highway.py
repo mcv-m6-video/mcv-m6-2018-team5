@@ -1,7 +1,7 @@
 # Dataset
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
-gt_path                      = 'datasets/highway/groundtruth'   # Groung truth path
+gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
 results_path                 = 'datasets/highway/results_testAB_changedetection'
 
 # Input Images

@@ -4,6 +4,7 @@ import cv2 as cv
 import numpy as np
 import math
 
+
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ def evaluate(testList, gtList):
 
     return msen, pepn
 
+
 def flow_errors_MSEN_PEPN(img, gt_img):
     msen = 0
     pepn = 0
@@ -45,13 +47,13 @@ def flow_errors_MSEN_PEPN(img, gt_img):
         print('Error: image sizes does not match')
     else:
         error_pixels = 0
-        total_pixels = h*w;
+        total_pixels = h * w
         # Access all pixels
         for row in range(0, h):
             for col in range(0, w):
                 fu = gt_img[row, col][0] - img[row, col][0]
                 fv = gt_img[row, col][1] - img[row, col][1]
-                f_error = math.sqrt(fu * fu + fv * fv);
+                f_error = math.sqrt(fu * fu + fv * fv)
                 msen += f_error
                 if f_error > 3:
                     error_pixels += 1
@@ -61,6 +63,7 @@ def flow_errors_MSEN_PEPN(img, gt_img):
         pepn = error_pixels / max(total_pixels, 1)
 
     return msen, pepn
+
 
 # Method in Kitti C++ evaluate_flow.cpp
 def flow_errors_outlier(img, gt_img):
@@ -80,19 +83,20 @@ def flow_errors_outlier(img, gt_img):
         for col in range(0, w):
             fu = gt_img[row, col][0] - img[row, col][0]
             fv = gt_img[row, col][1] - img[row, col][1]
-            f_error = math.sqrt(fu*fu + fv*fv);
+            f_error = math.sqrt(fu * fu + fv * fv);
             if gt_img[row, col][2] == 1:
                 errors[0] += f_error
                 num_pixels += 1
                 if img[row, col][2] == 1:
                     errors[1] += f_error
-                    num_pixels_result +=1
+                    num_pixels_result += 1
 
     # Normalize errors
     errors[0] = errors[0] / max(num_pixels, 1)
     errors[1] = errors[1] / max(num_pixels_result, 1)
 
     return errors
+
 
 # Method in Kitti C++ evaluate_flow.cpp
 def flow_errors_average(img, gt_img):
@@ -112,17 +116,17 @@ def flow_errors_average(img, gt_img):
         for col in range(0, w):
             fu = gt_img[row, col][0] - img[row, col][0]
             fv = gt_img[row, col][1] - img[row, col][1]
-            f_error = math.sqrt(fu*fu + fv*fv);
+            f_error = math.sqrt(fu * fu + fv * fv);
             if gt_img[row, col][2] == 1:
                 for i in range(0, 5):
-                    if f_error > i+1:
-                        errors[i*2] +=1
+                    if f_error > i + 1:
+                        errors[i * 2] += 1
                 num_pixels += 1
                 if img[row, col][2] == 1:
                     for i in range(0, 5):
                         if f_error > i + 1:
-                            errors[i*2 + 1] += 1
-                    num_pixels_result +=1
+                            errors[i * 2 + 1] += 1
+                    num_pixels_result += 1
 
     # Check number of pixels
     if num_pixels == 0:
@@ -135,14 +139,14 @@ def flow_errors_average(img, gt_img):
         errors /= max(num_pixels_result, 1)
 
     # Density
-    density = num_pixels_result / max(num_pixels,1)
+    density = num_pixels_result / max(num_pixels, 1)
     errors.append(density)
     return errors
+
 
 # Method in Kitti C++ io_flow.h
 # Method to construct flow image from PNG file
 def read_flow_field(img):
-
     h = len(img)
     w = len(img[0])
     optical_flow = np.empty((h, w, 3))

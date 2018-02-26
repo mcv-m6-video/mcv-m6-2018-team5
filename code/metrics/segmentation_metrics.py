@@ -2,6 +2,7 @@ import logging
 
 import cv2 as cv
 import numpy as np
+import time
 
 
 def evaluate(testList, gtList):
@@ -11,24 +12,21 @@ def evaluate(testList, gtList):
     TN = 0
     FP = 0
     FN = 0
+
+    start = time.time()
     for test_image, gt_image in zip(testList, gtList):
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
         ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
-        h, w = np.shape(img)
-        for i in range(0, h):
-            for j in range(0, w):
-                if img[i, j] == 1:
-                    if img[i, j] == gt_img[i, j]:
-                        TP += 1
-                    else:
-                        FP += 1
-                else:
-                    if img[i, j] == gt_img[i, j]:
-                        TN += 1
-                    else:
-                        FN += 1
 
+        TP += np.count_nonzero((img == 1) & (gt_img == 1))
+        FP += np.count_nonzero((img == 1) & (gt_img == 0))
+        TN += np.count_nonzero((img == 0) & (gt_img == 0))
+        FN += np.count_nonzero((img == 0) & (gt_img == 1))
+
+    end = time.time()
+
+    logger.info("Time to process {} images: {:.2f} s".format(len(testList), end - start))
     logger.info("TP: " + str(TP))
     logger.info("FP: " + str(FP))
     logger.info("TN: " + str(TN))

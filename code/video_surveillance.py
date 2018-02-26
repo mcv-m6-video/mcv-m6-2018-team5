@@ -25,8 +25,8 @@ def background_estimation(cf):
         gtList = get_image_list_highway_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
         # Get a list with test results filenames
-        testList = get_image_list_highway_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image, cf.result_image_type,
-                                  cf.nr_images)
+        testList = get_image_list_highway_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image,
+                                                  cf.result_image_type, cf.nr_images)
 
         if cf.segmentation_metrics:
             prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
