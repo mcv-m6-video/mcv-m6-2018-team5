@@ -66,12 +66,22 @@ def temporal_evaluation(testList, gtList):
                     else:
                         FN += 1
 
-        precision = (TP_temp / float(TP_temp + FP))
-        recall = TP_temp / float(TP_temp + FN)
+        if TP_temp != 0 and FP != 0:
+            precision = (TP_temp / float(TP_temp + FP))
+        else:
+            precision = 0
+        if TP != 0 and FN != 0:
+            recall = TP_temp / float(TP_temp + FN)
+        else:
+            recall = 0
 
         TP.append(TP_temp)
         T.append(TP_temp + FN)
-        F1_score.append(2 * precision * recall / (precision + recall))
+
+        if precision != 0 and recall != 0:
+            F1_score.append(2 * precision * recall / (precision + recall))
+        else:
+            F1_score.append(0)
 
     return TP, T, F1_score
 
@@ -108,10 +118,20 @@ def desynchronization(testList, gtList, frames):
                         else:
                             FN += 1
 
-            precision = (TP / float(TP + FP))
-            recall = TP / float(TP + FN)
+            if TP != 0 and FP != 0:
+                precision = (TP / float(TP + FP))
+            else:
+                precision = 0
 
-            F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall)
+            if TP != 0 and FN != 0:
+                recall = TP / float(TP + FN)
+            else:
+                recall = 0
+
+            if precision != 0 and recall != 0:
+                F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall)
+            else:
+                F1_score[num_desynch][num_image] = 0
             num_image += 1
 
         num_desynch += 1

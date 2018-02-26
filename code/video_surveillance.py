@@ -37,21 +37,24 @@ def background_estimation(cf):
         if cf.temporal_metrics:
             TP, T, F1_score = segmentation_metrics.temporal_evaluation(testList, gtList)
 
-            plt.subplots()
-            plt.subplot(1, 2, 1)
             plt.plot(TP, label='True Positives')
             plt.plot(T, label='Foreground pixels')
             plt.xlabel('time')
             plt.legend(loc='upper right', fontsize='medium')
+            plt.show(block=False)
+            if cf.save_results and cf.save_plots:
+                plt.savefig(os.path.join(cf.output_folder, "task_2_1.png"))
 
-            plt.subplot(1, 2, 2)
+            plt.close()
+
             plt.plot(F1_score, label='F1 Score')
             plt.xlabel('time')
             plt.legend(loc='upper right', fontsize='medium')
             plt.show(block=False)
-
             if cf.save_results and cf.save_plots:
-                plt.savefig(os.path.join(cf.output_folder, "task_2.png"))
+                plt.savefig(os.path.join(cf.output_folder, "task_2_2.png"))
+
+            plt.close()
 
         if cf.desynchronization:
             F1_score = segmentation_metrics.desynchronization(testList, gtList, cf.desynchronization_frames)
@@ -65,6 +68,8 @@ def background_estimation(cf):
 
             if cf.save_results and cf.save_plots:
                 plt.savefig(os.path.join(cf.output_folder, "task_4.png"))
+
+            plt.close()
 
     if cf.dataset_name == 'kitti':
         # Get a list with input images filenames
