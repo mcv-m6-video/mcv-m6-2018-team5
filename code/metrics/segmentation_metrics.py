@@ -118,17 +118,17 @@ def desynchronization(testList, gtList, frames):
                         else:
                             FN += 1
 
-            if TP != 0 and FP != 0:
+            if TP != 0 or FP != 0:
                 precision = (TP / float(TP + FP))
             else:
                 precision = 0
 
-            if TP != 0 and FN != 0:
+            if TP != 0 or FN != 0:
                 recall = TP / float(TP + FN)
             else:
                 recall = 0
 
-            if precision != 0 and recall != 0:
+            if precision != 0 or recall != 0:
                 F1_score[num_desynch][num_image] = 2 * precision * recall / (precision + recall)
             else:
                 F1_score[num_desynch][num_image] = 0
