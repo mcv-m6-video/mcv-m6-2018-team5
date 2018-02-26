@@ -5,16 +5,11 @@ gt_path                      = 'datasets/kitti/flow_noc'        # Ground truth p
 results_path                 = 'datasets/kitti/results'
 
 # Input Images
-nr_images                    = 2
-first_image                  = '000047_10'   # Fist image filename
-image_type                   = 'png'         # Input image type
-gt_image_type                = 'png'         # Ground truth image type
-result_image_type            = 'png'
+image_sequences              = ['000045_10', '000157_10']   # List of the sequences
+image_type                   = 'png'                        # Input image type
 
-# Compute Metrics
-compute_metrics              = False
-# Compute Optical flow
-optical_flow                 = True
+# Evaluate Optical Flow
+evaluate                     = True
 
 # Save results
 save_results                 = True
