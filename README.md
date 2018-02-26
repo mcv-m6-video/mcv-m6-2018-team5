@@ -42,11 +42,15 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 ## How to run the code:
 
-[**TODO:** Add info about paths, how to run experiments, ....]
+For tasks 1, 2, and 4:
 
-- `video_surveillance.py -c config/highway -t test_A`
+- `video_surveillance.py -c config/highway.py -t test_A`
 
-- `video_surveillance.py -c config/highway -t test_B`
+- `video_surveillance.py -c config/highway.py -t test_B`
+
+For tasks 3 and 5:
+
+[**TODO:** Add how to run experiments using kitti dataset....]
 
 In order to run the code, the datasets must be on the path *code/datasets/*.
 
