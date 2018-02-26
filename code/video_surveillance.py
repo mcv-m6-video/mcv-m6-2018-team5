@@ -78,7 +78,7 @@ def background_estimation(cf):
 
         if cf.evaluate:
             # Call the method to evaluate the optical flow
-            optical_flow.evaluate(testList, gtList)
+            msen, pepn = optical_flow.evaluate(testList, gtList)
 
 
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
