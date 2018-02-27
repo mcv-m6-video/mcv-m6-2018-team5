@@ -40,7 +40,7 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     module = np.sqrt(np.square(optical_flow[:, :, 0]) + np.square(optical_flow[:, :, 1]))
     module = (module / np.max(module))
     angle = np.degrees(np.arctan(np.divide(optical_flow[:, :, 1], optical_flow[:, :, 0])))
-    angle = np.mod(360, angle + 360)
+    angle = np.mod(angle + 360, 360)
 
     optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3), 'float32')
     optical_flow_hsv[:, :, 0] = angle
