@@ -51,7 +51,7 @@ For tasks 1, 2, and 4:
 
 For tasks 3 and 5:
 
-[**TODO:** Add how to run experiments using kitti dataset....]
+- `video_surveillance.py -c config/kitti.py -t test_flow`
 
 In order to run the code, the datasets must be on the path *code/datasets/*.
 
@@ -69,4 +69,3 @@ The datasets needed to run the code and their folder organization are the follow
 | *kitti/flow_noc/*|  Kitti dataset ground truth | 
 | *kitti/results/*|  Kitti dataset results | 
 
-[TODO: (Proposal) Add more tables for every dataset used]
