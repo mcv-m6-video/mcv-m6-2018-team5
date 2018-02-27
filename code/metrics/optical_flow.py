@@ -38,16 +38,16 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     optical_flow, valid_pixels_img = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
 
     module = np.sqrt(np.square(optical_flow[:, :, 0]) + np.square(optical_flow[:, :, 1]))
-    module = (module / np.max(module)) * 100
-    angle = np.degrees(np.arctan(np.divide(optical_flow[:, :, 1],optical_flow[:, :, 0])))
+    module = (module / np.max(module))
+    angle = np.degrees(np.arctan(np.divide(optical_flow[:, :, 1], optical_flow[:, :, 0])))
+    angle = np.mod(360, angle + 360)
 
-    optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3))
+    optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3), 'float32')
     optical_flow_hsv[:, :, 0] = angle
     optical_flow_hsv[:, :, 1] = module
-    optical_flow_hsv[:, :, 2] = np.ones((img.shape[0], img.shape[1])) * 100
+    optical_flow_hsv[:, :, 2] = np.ones((img.shape[0], img.shape[1]))
 
     optical_flow_rgb = cv.cvtColor(optical_flow_hsv, cv.COLOR_HSV2BGR)
-
 
     plt.imshow(img, cmap='gray')
     plt.imshow(optical_flow_rgb, alpha=0.7)
