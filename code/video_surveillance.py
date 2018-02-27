@@ -4,6 +4,7 @@ import os
 
 import cv2 as cv
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import numpy as np
 
 from config.load_configutation import Configuration
@@ -95,9 +96,11 @@ def background_estimation(cf):
 
                 # Histogram
                 plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
+                formatter = mticker.FuncFormatter(lambda v, pos: str(v * 100))
+                plt.gca().yaxis.set_major_formatter(formatter)
                 plt.axvline(mse, c='darkred', linestyle=':', label='Mean Squared Error')
                 plt.xlabel('Squared Error (Non-occluded areas)')
-                plt.ylabel('Frequency')
+                plt.ylabel('% of Pixels')
                 plt.title('Sequence {}'.format(seq_name))
                 plt.legend()
                 plt.show(block=False)
