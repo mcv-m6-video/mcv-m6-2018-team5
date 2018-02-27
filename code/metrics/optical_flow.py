@@ -2,6 +2,48 @@ from __future__ import division
 
 import cv2 as cv
 import numpy as np
+from skimage.measure import block_reduce
+import matplotlib.pyplot as plt
+
+def plot_optical_flow(img_path):
+
+    img = cv.imread(img_path, cv.IMREAD_UNCHANGED)
+    # Get the optical flow image
+    optical_flow, valid_pixels_img = read_flow_field(img)
+
+    # Downsample input image
+    # optical_flow_ds = block_reduce(optical_flow, block_size=(4, 4, 1), func=np.mean)
+
+    # h, w, _ = optical_flow.shape
+    # X, Y = np.meshgrid(np.arange(0, h), np.arange(0, w))
+    # U = optical_flow[:,:,0]
+    # V = optical_flow[:,:,1]
+    #
+    # # Some examples of quiver on Internet
+    # plt.figure()
+    # plt.title('Arrows scale with plot width, not view')
+    # Q = plt.quiver(X, Y, U, V, units='width')
+    # qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E',
+    #                    coordinates='figure')
+    #
+    # plt.figure()
+    # plt.title("pivot='mid'; every third arrow; units='inches'")
+    # Q = plt.quiver(X[::3, ::3], Y[::3, ::3], U[::3, ::3], V[::3, ::3],
+    #                pivot='mid', units='inches')
+    # qk = plt.quiverkey(Q, 0.9, 0.9, 1, r'$1 \frac{m}{s}$', labelpos='E',
+    #                    coordinates='figure')
+    # plt.scatter(X[::3, ::3], Y[::3, ::3], color='r', s=5)
+    #
+    # plt.figure()
+    # plt.title("pivot='tip'; scales with x view")
+    # M = np.hypot(U, V)
+    # Q = plt.quiver(X, Y, U, V, M, units='x', pivot='tip', width=0.022,
+    #                scale=1 / 0.15)
+    # qk = plt.quiverkey(Q, 0.9, 0.9, 1, r'$1 \frac{m}{s}$', labelpos='E',
+    #                    coordinates='figure')
+    # plt.scatter(X, Y, color='k', s=5)
+    #
+    # plt.show(block=False)
 
 
 def evaluate(testList, gtList):
@@ -10,8 +52,8 @@ def evaluate(testList, gtList):
     for test_image, gt_image in zip(testList, gtList):
 
         # The optical flow images
-        img = cv.imread(test_image, cv.IMREAD_COLOR)
-        gt_img = cv.imread(gt_image, cv.IMREAD_COLOR)
+        img = cv.imread(test_image, cv.IMREAD_UNCHANGED)
+        gt_img = cv.imread(gt_image, cv.IMREAD_UNCHANGED)
 
         assert img.shape == gt_img.shape
 
@@ -23,29 +65,24 @@ def evaluate(testList, gtList):
 
     return msen, pepn
 
-
 def flow_errors_MSEN_PEPN(img, gt_img):
+    assert img.shape == gt_img.shape
 
-    # optical_flow, _ = read_flow_field(img)
-    # optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
-    # optical_flow_se = np.square(optical_flow - optical_flow_gt)
-    # motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
-    # error_pixels = np.logical_and(
-    #     motion_vector_errors > 3.0,
-    #     valid_pixels_gt
-    # )
-    # num_valid_pixels = np.count_nonzero(valid_pixels_gt)
-    # msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels
-    # pepn = np.count_nonzero(error_pixels) / num_valid_pixels
-
-    optical_flow_se = np.square(img - gt_img)
+    optical_flow, valid_pixels_img = read_flow_field(img)
+    optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
+    optical_flow_se = np.square(optical_flow - optical_flow_gt)
     motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
-    error_pixels = motion_vector_errors > 3.0
-    # In this case the valid pixels are the image size
-    h, w, c = img.shape
-    num_valid_pixels = h*w
-    msen = np.sum(optical_flow_se) / num_valid_pixels
-    pepn = np.count_nonzero(error_pixels) / num_valid_pixels
+    error_pixels = np.logical_and(
+        motion_vector_errors > 3.0,
+        valid_pixels_gt
+    )
+    num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
+    num_valid_pixels_result = np.count_nonzero(valid_pixels_img)
+    msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels_gt
+    if num_valid_pixels_result > 0:
+        msen /= num_valid_pixels_result
+
+    pepn = np.count_nonzero(error_pixels) / num_valid_pixels_gt
 
     return msen, pepn
 
@@ -58,11 +95,9 @@ def read_flow_field(img):
 
     optical_flow[:, :, 0] = (img[:, :, 0] - 2**15) / 64.0
     optical_flow[:, :, 1] = (img[:, :, 1] - 2**15) / 64.0
-    # TODO: Check why none of the pixels in the last channel are different than 0
     valid_pixels = np.ones((h, w), dtype=bool)
 
     return optical_flow, valid_pixels
-
 
 """
 # Method in Kitti C++ evaluate_flow.cpp
