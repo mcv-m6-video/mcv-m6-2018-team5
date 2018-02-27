@@ -6,45 +6,28 @@ from skimage.measure import block_reduce
 import matplotlib.pyplot as plt
 
 
-def plot_optical_flow(img_path):
+def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_name, output_path):
 
-    img = cv.imread(img_path, cv.IMREAD_UNCHANGED)
+    # Get the original image
+    img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
+
     # Get the optical flow image
-    optical_flow, valid_pixels_img = read_flow_field(img)
+    optical_flow, valid_pixels_img = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
 
-    # Downsample input image
-    # optical_flow_ds = block_reduce(optical_flow, block_size=(4, 4, 1), func=np.mean)
+    # Downsample optical flow image
+    optical_flow_ds = block_reduce(optical_flow, block_size=(downsample_factor, downsample_factor, 1), func=np.mean)
+    x_pos = np.arange(0, img.shape[1], downsample_factor)
+    y_pos = np.arange(0, img.shape[0], downsample_factor)
+    X = np.meshgrid(x_pos)
+    Y = np.meshgrid(y_pos)
 
-    # h, w, _ = optical_flow.shape
-    # X, Y = np.meshgrid(np.arange(0, h), np.arange(0, w))
-    # U = optical_flow[:,:,0]
-    # V = optical_flow[:,:,1]
-    #
-    # # Some examples of quiver on Internet
-    # plt.figure()
-    # plt.title('Arrows scale with plot width, not view')
-    # Q = plt.quiver(X, Y, U, V, units='width')
-    # qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E',
-    #                    coordinates='figure')
-    #
-    # plt.figure()
-    # plt.title("pivot='mid'; every third arrow; units='inches'")
-    # Q = plt.quiver(X[::3, ::3], Y[::3, ::3], U[::3, ::3], V[::3, ::3],
-    #                pivot='mid', units='inches')
-    # qk = plt.quiverkey(Q, 0.9, 0.9, 1, r'$1 \frac{m}{s}$', labelpos='E',
-    #                    coordinates='figure')
-    # plt.scatter(X[::3, ::3], Y[::3, ::3], color='r', s=5)
-    #
-    # plt.figure()
-    # plt.title("pivot='tip'; scales with x view")
-    # M = np.hypot(U, V)
-    # Q = plt.quiver(X, Y, U, V, M, units='x', pivot='tip', width=0.022,
-    #                scale=1 / 0.15)
-    # qk = plt.quiverkey(Q, 0.9, 0.9, 1, r'$1 \frac{m}{s}$', labelpos='E',
-    #                    coordinates='figure')
-    # plt.scatter(X, Y, color='k', s=5)
-    #
-    # plt.show(block=False)
+    plt.imshow(img, cmap='gray')
+    plt.quiver(X, Y, optical_flow_ds[:, :, 0], optical_flow_ds[:, :, 1], color='yellow')
+    plt.axis('off')
+    plt.title(sequence_name)
+    plt.show(block=False)
+    plt.savefig(output_path)
+    plt.close()
 
 
 def evaluate(testList, gtList):

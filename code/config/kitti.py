@@ -11,6 +11,7 @@ image_type                   = 'png'                        # Input image type
 # Evaluate Optical Flow
 evaluate                     = True
 plot_optical_flow            = True
+optical_flow_downsample      = 16
 
 # Save results
 save_results                 = True
