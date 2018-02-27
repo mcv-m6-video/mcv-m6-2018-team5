@@ -70,7 +70,7 @@ def evaluate(testList, gtList):
         errors_pixels.append(error_pixels)
         valid_pixels_list.append(valid_pixels)
 
-    return msen, pepn, motion_vector_errors, error_pixels, valid_pixels_list
+    return msen, pepn, motion_vector_errors, errors_pixels, valid_pixels_list
 
 
 def flow_errors_MSEN_PEPN(img, gt_img):

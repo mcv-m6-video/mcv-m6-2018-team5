@@ -90,8 +90,8 @@ def background_estimation(cf):
             logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
             # Histogram
-            for mse, se, vp, seq_name, original_image in zip(msen, squared_errors, valid_pixels,
-                                                             cf.image_sequences, imageList):
+            for mse, se, pe, vp, seq_name, original_image in zip(msen, squared_errors, pixel_errors, valid_pixels,
+                                                                 cf.image_sequences, imageList):
 
                 # Histogram
                 plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
@@ -108,7 +108,15 @@ def background_estimation(cf):
                 # Representation of errors as an image
                 im_data = cv.imread(original_image, cv.IMREAD_GRAYSCALE)
                 plt.imshow(im_data, cmap='gray')
+                se_valid = np.zeros_like(se)
+                se_valid[vp] = se[vp]
+                se_valid *= pe
+                plt.imshow(se_valid, cmap='jet', alpha=0.5, label='Squared Errors')
+                plt.axis('off')
+                plt.title('Sequence {}'.format(seq_name))
                 plt.show(block=False)
+                save_path = os.path.join(cf.output_folder, "task_3_error_image_{}.png".format(seq_name))
+                plt.savefig(save_path)
                 plt.close()
 
         if cf.plot_optical_flow:
