@@ -28,14 +28,14 @@ The goal of this project is to learn the basic concepts and techniques related t
 3. Quantitative evaluation of Optical Flow
 - [x] Compute Mean Squared Error in Non-occluded areas (MSEN)
 - [x] Compute Percentage of Erroneous Pixels in Non-occluded areas (PEPN)
-- [ ] Analysis and visualization of errors
+- [x] Analysis and visualization of errors
 
 4. Desynchronization of the sequence
 - [x] Force de-synchronized results for background subtraction in Highway sequence
 - [x] Study and comment the results
 
 5. Optical Flow visualization
-- [ ] Propose a simplification method for a clean visualization
+- [x] Propose a simplification method for a clean visualization
 
 ### Week 2 - Background estimation
 [TO BE UPDATED]
