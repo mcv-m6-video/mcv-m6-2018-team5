@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 
+import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -74,7 +75,7 @@ def background_estimation(cf):
 
     if cf.dataset_name == 'kitti':
         # Get a list with input images filenames
-        # imageList = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
+        imageList = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
 
         # Get a list with groung truth images filenames
         gtList = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
@@ -89,7 +90,10 @@ def background_estimation(cf):
             logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
             # Histogram
-            for mse, se, vp, seq_name in zip(msen, squared_errors, valid_pixels, cf.image_sequences):
+            for mse, se, vp, seq_name, original_image in zip(msen, squared_errors, valid_pixels,
+                                                             cf.image_sequences, imageList):
+
+                # Histogram
                 plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
                 plt.axvline(mse, c='darkred', linestyle=':', label='Mean Squared Error')
                 plt.xlabel('Squared Error (Non-occluded areas)')
@@ -97,11 +101,15 @@ def background_estimation(cf):
                 plt.title('Sequence {}'.format(seq_name))
                 plt.legend()
                 plt.show(block=False)
-                plt.savefig(os.path.join(cf.output_folder, "task_3_histogram_{}.png".format(seq_name)))
+                save_path = os.path.join(cf.output_folder, "task_3_histogram_{}.png".format(seq_name))
+                plt.savefig(save_path)
+                plt.close()
 
-            # for pe in pixel_errors:
-            #     plt.hist(pe, bins=20)
-            #     plt.show(block=False)
+                # Representation of errors as an image
+                im_data = cv.imread(original_image, cv.IMREAD_GRAYSCALE)
+                plt.imshow(im_data, cmap='gray')
+                plt.show(block=False)
+                plt.close()
 
         if cf.plot_optical_flow:
             for test_image, gt_image in zip(testList, gtList):
