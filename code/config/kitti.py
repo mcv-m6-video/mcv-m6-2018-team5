@@ -10,6 +10,7 @@ image_type                   = 'png'                        # Input image type
 
 # Evaluate Optical Flow
 evaluate                     = True
+plot_optical_flow            = True
 
 # Save results
 save_results                 = True
