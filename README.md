@@ -18,12 +18,12 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Implement Precision and Recall
 - [x] Implement F1-Score
 - [x] Compute these metrics for sequences A & B
-- [ ] Provide an interpretation of the different values obtained for Test A and Test B.
+- [x] Provide an interpretation of the different values obtained for Test A and Test B.
 
 2. Temporal Analysis of the Results
 - [x] Graph 1: True Positive & Total Foreground pixels vs #Frames.
 - [x] Graph 2: F1-Score vs Time.
-- [ ] Provide an interpretation of the graphs obtained for Test A and Test B.
+- [x] Provide an interpretation of the graphs obtained for Test A and Test B.
 
 3. Quantitative evaluation of Optical Flow
 - [ ] Compute Mean Squared Error in Non-occluded areas (MSEN)
@@ -31,7 +31,7 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 4. Desynchronization of the sequence
 - [x] Force de-synchronized results for background subtraction in Highway sequence
-- [ ] Study and comment the results
+- [x] Study and comment the results
 
 5. Optical Flow visualization
 - [ ] Propose a simplification method for a clean visualization
@@ -58,8 +58,14 @@ The datasets needed to run the code and their folder organization are the follow
 
 | ChangeDetection Dataset | Description | 
 | :---: | :---: | 
-| *highway/input/* |  ChangeDetection dataset | 
+| *highway/input/* |  ChangeDetection dataset input images | 
 | *highway/groundtruth/*  |  ChangeDetection dataset ground truth | 
 | *highway/results_testAB_changedetection/* |  ChangeDetection results using parameters A and B |
+
+| Kitti Dataset | Description | 
+| :---: | :---: | 
+| *kitti//image_0/*|  Kitti dataset input images | 
+| *kitti/flow_noc/*|  Kitti dataset ground truth | 
+| *kitti/results/*|  Kitti dataset results | 
 
 [TODO: (Proposal) Add more tables for every dataset used]
