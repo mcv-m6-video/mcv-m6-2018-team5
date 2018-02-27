@@ -72,17 +72,17 @@ def flow_errors_MSEN_PEPN(img, gt_img):
 
     optical_flow, _ = read_flow_field(img)
     optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
+    num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
+
     optical_flow_diff = optical_flow - optical_flow_gt
     optical_flow_se = np.square(optical_flow_diff)
     motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
+    msen = np.sum(motion_vector_errors[valid_pixels_gt]) / num_valid_pixels_gt  # Only considering valid pixels
+
     error_pixels = np.logical_and(
         motion_vector_errors > 3.0,
         valid_pixels_gt
     )
-    num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
-    # Considering non-valid vectors
-    msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels_gt  # TODO: do we need sqrt?
-
     pepn = (np.count_nonzero(error_pixels) / num_valid_pixels_gt) * 100
 
     return msen, pepn
