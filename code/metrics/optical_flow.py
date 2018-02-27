@@ -50,6 +50,9 @@ def plot_optical_flow(img_path):
 def evaluate(testList, gtList):
     msen = []
     pepn = []
+    motion_vector_errors = []
+    errors_pixels = []
+    valid_pixels_list = []
     for test_image, gt_image in zip(testList, gtList):
 
         # The optical flow images
@@ -60,11 +63,14 @@ def evaluate(testList, gtList):
 
         # MSEN: Mean Square Error in Non-occluded areas
         # PEPN: Percentage of Erroneous Pixels in Non-occluded areas
-        error_msen, error_pepn = flow_errors_MSEN_PEPN(img, gt_img)
+        error_msen, error_pepn, motion_vector_error, error_pixels, valid_pixels = flow_errors_MSEN_PEPN(img, gt_img)
         msen.append(error_msen)
         pepn.append(error_pepn)
+        motion_vector_errors.append(motion_vector_error)
+        errors_pixels.append(error_pixels)
+        valid_pixels_list.append(valid_pixels)
 
-    return msen, pepn
+    return msen, pepn, motion_vector_errors, error_pixels, valid_pixels_list
 
 
 def flow_errors_MSEN_PEPN(img, gt_img):
@@ -85,7 +91,7 @@ def flow_errors_MSEN_PEPN(img, gt_img):
     )
     pepn = (np.count_nonzero(error_pixels) / num_valid_pixels_gt) * 100
 
-    return msen, pepn
+    return msen, pepn, motion_vector_errors, error_pixels, valid_pixels_gt
 
 
 def read_flow_field(img):

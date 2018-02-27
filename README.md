@@ -26,8 +26,9 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Provide an interpretation of the graphs obtained for Test A and Test B.
 
 3. Quantitative evaluation of Optical Flow
-- [ ] Compute Mean Squared Error in Non-occluded areas (MSEN)
-- [ ] Compute Percentage of Erroneous Pixels in Non-occluded areas (PEPN)
+- [x] Compute Mean Squared Error in Non-occluded areas (MSEN)
+- [x] Compute Percentage of Erroneous Pixels in Non-occluded areas (PEPN)
+- [ ] Analysis and visualization of errors
 
 4. Desynchronization of the sequence
 - [x] Force de-synchronized results for background subtraction in Highway sequence

@@ -3,6 +3,8 @@ import logging
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
+
 from config.load_configutation import Configuration
 from metrics import segmentation_metrics, optical_flow
 from tools.image_parser import get_image_list_highway_dataset, get_image_list_kitti_dataset
@@ -82,12 +84,26 @@ def background_estimation(cf):
 
         if cf.evaluate:
             # Call the method to evaluate the optical flow
-            msen, pepn = optical_flow.evaluate(testList, gtList)
+            msen, pepn, squared_errors, pixel_errors, valid_pixels = optical_flow.evaluate(testList, gtList)
             logger.info('Mean Squared Error: {}'.format(msen))
             logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
-        if cf.plot_optical_flow:
+            # Histogram
+            for mse, se, vp, seq_name in zip(msen, squared_errors, valid_pixels, cf.image_sequences):
+                plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
+                plt.axvline(mse, c='darkred', linestyle=':', label='Mean Squared Error')
+                plt.xlabel('Squared Error (Non-occluded areas)')
+                plt.ylabel('Frequency')
+                plt.title('Sequence {}'.format(seq_name))
+                plt.legend()
+                plt.show(block=False)
+                plt.savefig(os.path.join(cf.output_folder, "task_3_histogram_{}.png".format(seq_name)))
 
+            # for pe in pixel_errors:
+            #     plt.hist(pe, bins=20)
+            #     plt.show(block=False)
+
+        if cf.plot_optical_flow:
             for test_image, gt_image in zip(testList, gtList):
                 optical_flow.plot_optical_flow(test_image)
 
