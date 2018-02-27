@@ -25,24 +25,29 @@ def evaluate(testList, gtList):
 
 
 def flow_errors_MSEN_PEPN(img, gt_img):
-    optical_flow, _ = read_flow_field(img)
-    optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
 
-    optical_flow_se = np.square(optical_flow - optical_flow_gt)
+    # optical_flow, _ = read_flow_field(img)
+    # optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
+    # optical_flow_se = np.square(optical_flow - optical_flow_gt)
+    # motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
+    # error_pixels = np.logical_and(
+    #     motion_vector_errors > 3.0,
+    #     valid_pixels_gt
+    # )
+    # num_valid_pixels = np.count_nonzero(valid_pixels_gt)
+    # msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels
+    # pepn = np.count_nonzero(error_pixels) / num_valid_pixels
+
+    optical_flow_se = np.square(img - gt_img)
     motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
-
-    error_pixels = np.logical_and(
-        motion_vector_errors > 3.0,
-        valid_pixels_gt
-    )
-
-    num_valid_pixels = np.count_nonzero(valid_pixels_gt)
-
-    msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels
+    error_pixels = motion_vector_errors > 3.0
+    # In this case the valid pixels are the image size
+    h, w, c = img.shape
+    num_valid_pixels = h*w
+    msen = np.sum(optical_flow_se) / num_valid_pixels
     pepn = np.count_nonzero(error_pixels) / num_valid_pixels
 
     return msen, pepn
-
 
 def read_flow_field(img):
     # BGR -> RGB
