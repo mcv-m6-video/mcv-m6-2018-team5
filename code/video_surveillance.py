@@ -125,7 +125,9 @@ def background_estimation(cf):
         if cf.plot_optical_flow:
             for image, test_image, seq_name in zip(imageList, testList, cf.image_sequences):
                 output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(seq_name))
-                optical_flow.plot_optical_flow(image, test_image, cf.optical_flow_downsample, seq_name, output_path)
+                #optical_flow.plot_optical_flow(image, test_image, cf.optical_flow_downsample, seq_name, output_path)
+                output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(seq_name))
+                optical_flow.plot_optical_flow_hsv(image, test_image, seq_name, output_path)
 
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

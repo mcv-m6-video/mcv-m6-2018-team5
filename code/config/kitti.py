@@ -9,7 +9,7 @@ image_sequences              = ['000045_10', '000157_10']   # List of the sequen
 image_type                   = 'png'                        # Input image type
 
 # Evaluate Optical Flow
-evaluate                     = True
+evaluate                     = False
 plot_optical_flow            = True
 optical_flow_downsample      = 16
 
