@@ -5,6 +5,7 @@ import numpy as np
 from skimage.measure import block_reduce
 import matplotlib.pyplot as plt
 
+
 def plot_optical_flow(img_path):
 
     img = cv.imread(img_path, cv.IMREAD_UNCHANGED)
@@ -65,39 +66,39 @@ def evaluate(testList, gtList):
 
     return msen, pepn
 
+
 def flow_errors_MSEN_PEPN(img, gt_img):
     assert img.shape == gt_img.shape
 
-    optical_flow, valid_pixels_img = read_flow_field(img)
+    optical_flow, _ = read_flow_field(img)
     optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
-    optical_flow_se = np.square(optical_flow - optical_flow_gt)
+    optical_flow_diff = optical_flow - optical_flow_gt
+    optical_flow_se = np.square(optical_flow_diff)
     motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))
     error_pixels = np.logical_and(
         motion_vector_errors > 3.0,
         valid_pixels_gt
     )
     num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
-    num_valid_pixels_result = np.count_nonzero(valid_pixels_img)
-    msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels_gt
-    if num_valid_pixels_result > 0:
-        msen /= num_valid_pixels_result
+    # Considering non-valid vectors
+    msen = np.sum(optical_flow_se[valid_pixels_gt]) / num_valid_pixels_gt  # TODO: do we need sqrt?
 
-    pepn = np.count_nonzero(error_pixels) / num_valid_pixels_gt
+    pepn = (np.count_nonzero(error_pixels) / num_valid_pixels_gt) * 100
 
     return msen, pepn
+
 
 def read_flow_field(img):
     # BGR -> RGB
     img = img[:, :, ::-1]
 
-    h, w, c = img.shape
-    optical_flow = np.zeros((h, w, 2), dtype=float)
-
-    optical_flow[:, :, 0] = (img[:, :, 0] - 2**15) / 64.0
-    optical_flow[:, :, 1] = (img[:, :, 1] - 2**15) / 64.0
-    valid_pixels = np.ones((h, w), dtype=bool)
+    optical_flow = img[:, :, :2].astype(float)
+    optical_flow -= 2**15
+    optical_flow /= 64.0
+    valid_pixels = img[:, :, 2] == 1.0
 
     return optical_flow, valid_pixels
+
 
 """
 # Method in Kitti C++ evaluate_flow.cpp
