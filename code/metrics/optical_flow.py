@@ -12,7 +12,7 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
     img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
     # Get the optical flow image
-    optical_flow, valid_pixels_img = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+    optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
 
     # Downsample optical flow image
     optical_flow_ds = block_reduce(optical_flow, block_size=(downsample_factor, downsample_factor, 1), func=np.mean)
@@ -35,28 +35,26 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
     # Get the optical flow image
-    optical_flow, valid_pixels_img = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+    optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
 
-    module = np.sqrt(np.square(optical_flow[:, :, 0]) + np.square(optical_flow[:, :, 1]))
-    module = (module / np.max(module))
-    angle = np.degrees(np.arctan(np.divide(optical_flow[:, :, 1], optical_flow[:, :, 0])))
-    angle = np.mod(angle + 360, 360)
+    magnitude, angle = cv.cartToPolar(np.square(optical_flow[:, :, 0]), np.square(optical_flow[:, :, 1]))
+    magnitude = cv.normalize(magnitude, 0, 255, norm_type=cv.NORM_MINMAX)
+    angle = angle * 180 / np.pi / 2
 
-    optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3), 'float32')
-    optical_flow_hsv[:, :, 0] = angle
-    optical_flow_hsv[:, :, 1] = module
-    optical_flow_hsv[:, :, 2] = np.ones((img.shape[0], img.shape[1]))
-
+    optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.float32)
+    optical_flow_hsv[..., 0] = angle
+    optical_flow_hsv[..., 1] = 255
+    optical_flow_hsv[:, :, 2] = magnitude
+    # optical_flow_hsv[:, :, 1] = np.ones((img.shape[0], img.shape[1]), dtype=np.float32)
     optical_flow_rgb = cv.cvtColor(optical_flow_hsv, cv.COLOR_HSV2BGR)
 
     plt.imshow(img, cmap='gray')
-    plt.imshow(optical_flow_rgb, alpha=0.7)
+    plt.imshow(optical_flow_rgb, alpha=0.5)
     plt.axis('off')
     plt.title(sequence_name)
     plt.show(block=False)
     plt.savefig(output_path)
     plt.close()
-
 
 def evaluate(testList, gtList):
     msen = []
