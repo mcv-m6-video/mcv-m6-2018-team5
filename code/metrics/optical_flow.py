@@ -37,9 +37,9 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     # Get the optical flow image
     optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
 
-    magnitude, angle = cv.cartToPolar(np.square(optical_flow[:, :, 0]), np.square(optical_flow[:, :, 1]))
+    magnitude, angle = cv.cartToPolar(np.square(optical_flow[:, :, 0]), np.square(optical_flow[:, :, 1]),
+                                      None, None, True)
     magnitude = cv.normalize(magnitude, 0, 255, norm_type=cv.NORM_MINMAX)
-    angle = angle * 180 / np.pi / 2
 
     optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.float32)
     optical_flow_hsv[..., 0] = angle
