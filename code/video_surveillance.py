@@ -95,9 +95,21 @@ def background_estimation(cf):
                                                                  cf.image_sequences, imageList):
 
                 # Histogram
-                plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
+                # plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
+
+                n, bins, patches = plt.hist(np.ravel(se[vp]), bins=200, normed=True, color='grey')
                 formatter = mticker.FuncFormatter(lambda v, pos: str(v * 100))
                 plt.gca().yaxis.set_major_formatter(formatter)
+
+                # Change the color map
+                color_map = plt.cm.get_cmap('jet')
+                # scale values to interval [0,1]
+                bin_centers = 0.5 * (bins[:-1] + bins[1:])
+                col = bin_centers - min(bin_centers)
+                col /= max(col)
+                for c, p in zip(col, patches):
+                    plt.setp(p, 'facecolor', color_map(c))
+
                 plt.axvline(mse, c='darkred', linestyle=':', label='Mean Squared Error')
                 plt.xlabel('Squared Error (Non-occluded areas)')
                 plt.ylabel('% of Pixels')
