@@ -22,12 +22,11 @@ def evaluate(testList, gtList):
     for test_image, gt_image in zip(testList, gtList):
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
-        ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
 
-        TP += np.count_nonzero((img == 1) & (gt_img == 1))
-        FP += np.count_nonzero((img == 1) & (gt_img == 0))
-        TN += np.count_nonzero((img == 0) & (gt_img == 0))
-        FN += np.count_nonzero((img == 0) & (gt_img == 1))
+        TP += np.count_nonzero((img == 1) & (gt_img == 255))
+        FP += np.count_nonzero((img == 1) & ((gt_img == 0) | (gt_img == 50)))
+        TN += np.count_nonzero((img == 0) & ((gt_img == 0) | (gt_img == 50)))
+        FN += np.count_nonzero((img == 0) & (gt_img == 255))
 
     end = time.time()
 
@@ -53,11 +52,10 @@ def temporal_evaluation(testList, gtList):
     for test_image, gt_image in zip(testList, gtList):
         img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
-        ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
 
-        true_pos = np.count_nonzero((img == 1) & (gt_img == 1))
-        false_pos = np.count_nonzero((img == 1) & (gt_img == 0))
-        false_neg = np.count_nonzero((img == 0) & (gt_img == 1))
+        true_pos = np.count_nonzero((img == 1) & (gt_img == 255))
+        false_pos = np.count_nonzero((img == 1) & ((gt_img == 0) | (gt_img == 50)))
+        false_neg = np.count_nonzero((img == 0) & (gt_img == 255))
 
         total_predictions = true_pos + false_pos
         total_true = true_pos + false_neg
@@ -85,11 +83,10 @@ def desynchronization(testList, gtList, frames):
         for test_image, gt_image in zip(testList, gtList_des):
             img = cv.imread(test_image, cv.IMREAD_GRAYSCALE)
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
-            ret, gt_img = cv.threshold(gt_img, 150, 1, cv.THRESH_BINARY)
 
-            true_pos = np.count_nonzero((img == 1) & (gt_img == 1))
-            false_pos = np.count_nonzero((img == 1) & (gt_img == 0))
-            false_neg = np.count_nonzero((img == 0) & (gt_img == 1))
+            true_pos = np.count_nonzero((img == 1) & (gt_img == 255))
+            false_pos = np.count_nonzero((img == 1) & ((gt_img == 0) | (gt_img == 50)))
+            false_neg = np.count_nonzero((img == 0) & (gt_img == 255))
 
             total_predictions = true_pos + false_pos
             total_true = true_pos + false_neg
