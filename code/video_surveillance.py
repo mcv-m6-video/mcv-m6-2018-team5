@@ -9,7 +9,7 @@ import numpy as np
 
 from config.load_configutation import Configuration
 from metrics import segmentation_metrics, optical_flow
-from tools.image_parser import get_image_list_highway_dataset, get_image_list_kitti_dataset
+from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
 
 
@@ -25,10 +25,10 @@ def background_estimation(cf):
         # imageList = get_image_list_highway_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
 
         # Get a list with groung truth images filenames
-        gtList = get_image_list_highway_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
+        gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
         # Get a list with test results filenames
-        testList = get_image_list_highway_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image,
+        testList = get_image_list_changedetection_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image,
                                                   cf.result_image_type, cf.nr_images)
 
         if cf.segmentation_metrics:
