@@ -11,9 +11,9 @@ from metrics import segmentation_metrics, optical_flow
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
 from tools import visualization
+from tools import background_modeling
 
-# Train the network
-def background_estimation(cf):
+def evaluation_metrics(cf):
 
     logger = logging.getLogger(__name__)
 
@@ -87,6 +87,24 @@ def background_estimation(cf):
 
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
+def background_estimation(cf):
+
+    logger = logging.getLogger(__name__)
+
+    # Get a list with input images filenames
+    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
+
+    alpha = 1
+
+    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
+    foregrounds = background_modeling.foreground_estimation(imageList[(len(imageList) / 2 + 1):], mean, variance, alpha)
+
+    if cf.save_results:
+        image = int(cf.first_image)
+        for fore in foregrounds:
+            fore = np.array(fore, dtype='uint8')
+            cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, str(image) + '.png'), fore)
+            image += 1
 
 # Main function
 def main():
@@ -118,6 +136,9 @@ def main():
     setup_logging(log_file)
 
     # Week 1
+    #evaluation_metrics(cf)
+
+    # Week 2
     background_estimation(cf)
 
 
