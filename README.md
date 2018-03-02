@@ -38,7 +38,19 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Propose a simplification method for a clean visualization
 
 ### Week 2 - Background estimation
-[TO BE UPDATED]
+1. Gaussian Modelling
+- [ ] Create a Gaussian function to model each background pixel using the first 50% of the video sequence
+- [ ] Segment the foreground pixels for the second 50% of the video sequence
+- [ ] Evaluate the segmentation: Compute True Positive, True Negative, False Positive, False Negative, Precision, Recall, F1-score vs alpha
+- [ ] Evaluate the segmentation: Precision-Recall vs alpha curve, Area Under the Curve, F1-score vs alpha curve
+2. Adaptive Modelling
+- [ ] Segment the foreground pixels for the second 50% of the video sequence and left background adapt
+- [ ] Optimize alpha and rho with grid search to maximize F1-score
+- [ ] Compare Gaussian Modelling vs. Adaptive Modelling for all three sequences using F1-score and Area Under the Curve
+3. Compare with state of the art implementations
+- [ ]  TODO: FILL IN WHEN THE WEEK2 ISSUE IS RAISED
+4. Color Sequences
+- [ ] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
 
 
 ## How to run the code:
