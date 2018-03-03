@@ -111,6 +111,7 @@ def background_estimation(cf):
     if cf.evaluate_foreground:
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
         precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
                                                             foreground_img_list, foreground_gt_list,
@@ -119,6 +120,13 @@ def background_estimation(cf):
                                                 cf.output_folder)
 
         visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
+
+        for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, F1_score):
+            logger.info(
+                '[alpha={:.2f}]   precision={}    recall={}    f1={}'.format(
+                    alpha_value, prec, rec, f1
+                )
+            )
 
     else:
         if cf.modelling_method == 'gaussian':

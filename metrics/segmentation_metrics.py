@@ -13,29 +13,19 @@ from tools.background_modeling import foreground_estimation, adaptive_foreground
 EPSILON = 1e-8
 
 def evaluate_single_image(test_img, gt_img):
-    TP = 0
-    TN = 0
-    FP = 0
-    FN = 0
+    TP = np.count_nonzero((test_img == 1) & (gt_img == 255))
+    FP = np.count_nonzero((test_img == 1) & ((gt_img == 0) | (gt_img == 50)))
+    TN = np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
+    FN = np.count_nonzero((test_img == 0) & (gt_img == 255))
+    return TP, FP, TN, FN
 
-    TP += np.count_nonzero((test_img == 1) & (gt_img == 255))
-    FP += np.count_nonzero((test_img == 1) & ((gt_img == 0) | (gt_img == 50)))
-    TN += np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
-    FN += np.count_nonzero((test_img == 0) & (gt_img == 255))
-
-    precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
-    recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
-    F1_score = (2 * precision * recall) / (precision + recall + EPSILON)
-    return TP, FP, TN, FN, F1_score
-
-
-def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=1,
+def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
                                    rho=0.5):
     precision = []
     recall = []
     F1_score = []
     for al in alpha:
-        metrics = np.zeros(5)
+        metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):
             if modelling_method == 'gaussian':
                 foreground = foreground_estimation(test_image, mean, variance, al)
