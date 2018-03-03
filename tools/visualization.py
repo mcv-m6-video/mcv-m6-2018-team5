@@ -6,6 +6,7 @@ import numpy as np
 import os
 from skimage.measure import block_reduce
 from metrics.optical_flow import read_flow_field
+from sklearn.metrics import auc
 
 def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
                               output_folder=""):
@@ -24,6 +25,11 @@ def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
 
 
 def plot_precision_recall_curve(precision, recall, output_folder=""):
+    precision.insert(0, precision[0])
+    precision.insert(len(precision), precision[-1])
+    recall.insert(0, 1)
+    recall.insert(len(recall), 0)
+    area = auc(recall, precision)
     plt.step(recall, precision, color='b', alpha=0.2,
              where='post')
     plt.fill_between(recall, precision, step='post', alpha=0.2,
@@ -31,9 +37,9 @@ def plot_precision_recall_curve(precision, recall, output_folder=""):
     average_precision = reduce(lambda x, y: x + y, precision) / len(precision)
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.ylim([min(precision), max(precision)])
-    plt.xlim([min(recall), max(recall)])
-    plt.title('Precision-Recall curve: Avg Prec ={0:0.2f}'.format(average_precision))
+    plt.ylim([0, 1])
+    plt.xlim([0, 1])
+    plt.title('Precision-Recall curve: Avg Prec ={0:0.2f} AUC={1:0.3f}'.format(average_precision, area))
     if output_folder != "":
         plt.savefig(os.path.join(output_folder, "task_1_2_precision_recall.png"))
     plt.show(block=False)
