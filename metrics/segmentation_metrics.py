@@ -1,10 +1,15 @@
 from __future__ import division
 
+import os
+import sys
 import logging
 import time
 
 import cv2 as cv
 import numpy as np
+
+
+from tools.background_modeling import foreground_estimation,adaptive_foreground_estimation
 
 EPSILON = 1e-8
 
@@ -25,10 +30,20 @@ def evaluate_single_image(test_img, gt_img):
     F1_score = 2 * precision * recall / (precision + recall + EPSILON)
     return TP, FP, TN, FN, F1_score
 
+def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, variance, alpha = 1,
+                                   rho = 0.5):
+    TP = []
+    TN = []
+    FP = []
+    FN = []
+    F1_score = []
 
-def evaluate_foreground_estimation(background, gt):
-    return evaluate_single_image(background, gt)
-
+    for test_image, gt_image in zip(imageList, gtList):
+        if modelling_method == 'gaussian':
+            foreground = foreground_estimation(test_image, mean, variance, alpha)
+        elif modelling_method == 'adaptive':
+            foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+        # TP, FP, TN, FN, F1_score = evaluate_single_image(background, gt)
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)
