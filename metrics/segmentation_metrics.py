@@ -8,7 +8,7 @@ import time
 import cv2 as cv
 import numpy as np
 
-from tools.background_modeling import *
+from tools.background_modeling import foreground_estimation, adaptive_foreground_estimation, mog_foreground_estimation, mog2_foreground_estimation, gmg_foreground_estimation, lsbp_foreground_estimation
 
 EPSILON = 1e-8
 
@@ -33,7 +33,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
     elif modelling_method == 'gmg':
         fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
     elif modelling_method == 'lsbp':
-        fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
+        fgbg = cv.createBackgroundSubtractorLSBP()
 
     for al in alpha:
         metrics = np.zeros(4)
@@ -45,11 +45,11 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             elif modelling_method == 'mog':
                 foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
             elif modelling_method == 'mog2':
-                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+                foreground, fgbg = mog2_foreground_estimation(test_image, fgbg)
             elif modelling_method == 'gmg':
-                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+                foreground, fgbg = gmg_foreground_estimation(test_image, fgbg)
             elif modelling_method == 'lsbp':
-                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+                foreground, fgbg = lsbp_foreground_estimation(test_image, fgbg)
             foreground = np.array(foreground, dtype='uint8')
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             metrics += evaluate_single_image(foreground, gt_img)
