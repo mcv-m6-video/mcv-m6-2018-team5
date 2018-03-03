@@ -47,5 +47,27 @@ def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
     # The mean for the Background pixels (back) is adapted, the mean for the foreground pixels remains the same
     mean = (rho * img_background + (1 - rho) * mean) * back + mean * (1 - back)
     # The variance for the Background pixels (back) is adapted, the variance for the foreground pixels remains the same
-    variance = (rho * np.square(img_background - mean) + (1 - rho) * variance) * back + variance * (1 - back)
+
+    variance = (rho * np.square(img_background - mean) + (1-rho)*(variance))*back + (variance)*(1-back)
     return foreground, mean, variance
+
+def mog_foreground_estimation(img, fgbg):
+    img = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    foreground = fgbg.apply(img)
+    return foreground, fgbg
+
+def mog2_foreground_estimation(img, fgbg):
+    img = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    foreground = fgbg.apply(img)
+    return foreground, fgbg
+
+def gmg_foreground_estimation(img, fgbg):
+    img = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    foreground = fgbg.apply(img)
+    return foreground, fgbg
+
+def lsbp_foreground_estimation(img, fgbg):
+    img = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    foreground = fgbg.apply(img)
+    return foreground, fgbg
+

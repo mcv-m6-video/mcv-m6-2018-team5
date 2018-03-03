@@ -8,7 +8,7 @@ import time
 import cv2 as cv
 import numpy as np
 
-from tools.background_modeling import foreground_estimation, adaptive_foreground_estimation
+from tools.background_modeling import *
 
 EPSILON = 1e-8
 
@@ -21,9 +21,20 @@ def evaluate_single_image(test_img, gt_img):
 
 def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
                                    rho=0.5):
+
     precision = []
     recall = []
     F1_score = []
+
+    if modelling_method == 'mog':
+        fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+    elif modelling_method == 'mog2':
+        fgbg = cv.createBackgroundSubtractorMOG2()
+    elif modelling_method == 'gmg':
+        fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
+    elif modelling_method == 'lsbp':
+        fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
+
     for al in alpha:
         metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):
@@ -31,6 +42,14 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
                 foreground = foreground_estimation(test_image, mean, variance, al)
             elif modelling_method == 'adaptive':
                 foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+            elif modelling_method == 'mog':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            elif modelling_method == 'mog2':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            elif modelling_method == 'gmg':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            elif modelling_method == 'lsbp':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
             foreground = np.array(foreground, dtype='uint8')
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             metrics += evaluate_single_image(foreground, gt_img)
@@ -47,7 +66,6 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
         F1_score.append(tmp_F1)
 
     return precision, recall, F1_score
-
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)
