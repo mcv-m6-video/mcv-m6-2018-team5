@@ -15,6 +15,7 @@ from tools import background_modeling
 from tools import visualization
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
+from tools.mkdirs import mkdirs
 
 
 def evaluation_metrics(cf):
@@ -95,38 +96,54 @@ def evaluation_metrics(cf):
 def background_estimation(cf):
     logger = logging.getLogger(__name__)
 
-    # Get a list with input images filenames
-    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
-
-    # Get a list with groung truth images filenames
-    gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
-
-    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
+    imageList = get_image_list_changedetection_dataset(
+        cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+    )
+    gtList = get_image_list_changedetection_dataset(
+        cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+    )
+    background_img_list = imageList[:len(imageList) // 2]
+    foreground_img_list = imageList[(len(imageList) // 2):]
 
     if cf.evaluate_foreground:
+        logger.info('Running foreground evaluation')
+        mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
         alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
         segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method, imageList, gtList, mean, variance,
                                                             alpha_range, cf.rho)
     else:
         if cf.modelling_method == 'gaussian':
-            ## GAUSSIAN MODELLING:
-            for image in imageList[(len(imageList) / 2 + 1):]:
-                foreground = background_modeling.foreground_estimation(image, mean, variance, cf.save_alpha)
+            logger.info('Running single Gaussian background estimation')
+            # Model with a single Gaussian
+            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+            for image in foreground_img_list:
+                foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
-                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore * 255)
         elif cf.modelling_method == 'adaptive':
-            ## ADAPTIVE MODELLING:
-            for image in imageList[(len(imageList) / 2 + 1):]:
-                foreground = background_modeling.adaptive_foreground_estimation(image, mean, variance, cf.alpha, cf.rho)
+            logger.info('Running adaptive single Gaussian background estimation')
+            # Model with a single Gaussian, adaptive during foreground estimation
+            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+            for image in foreground_img_list:
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation(
+                    image, mean, variance, cf.alpha, cf.rho
+                )
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
+
 
 # Main function
 def main():
