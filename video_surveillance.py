@@ -3,6 +3,7 @@
 from __future__ import division
 
 import argparse
+import itertools
 import logging
 import os
 
@@ -128,16 +129,19 @@ def background_estimation(cf):
             logger.info('Running single Gaussian background estimation')
             # Model with a single Gaussian
             mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+
+            # TODO: task 1.1, represent Gaussian modelling
+
             if cf.save_results:
                 logger.info('Saving results in {}'.format(cf.results_path))
                 mkdirs(cf.results_path)
-            for image in foreground_img_list:
-                foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
-                if cf.save_results:
+                for image in foreground_img_list:
+                    foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
-                    fore = np.array(foreground, dtype='uint8')
-                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore * 255)
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+
         elif cf.modelling_method == 'adaptive':
             logger.info('Running adaptive single Gaussian background estimation')
             # Model with a single Gaussian, adaptive during foreground estimation
@@ -145,16 +149,61 @@ def background_estimation(cf):
             if cf.save_results:
                 logger.info('Saving results in {}'.format(cf.results_path))
                 mkdirs(cf.results_path)
-            for image in foreground_img_list:
-                foreground, mean, variance = background_modeling.adaptive_foreground_estimation(
-                    image, mean, variance, cf.alpha, cf.rho
-                )
-                if cf.save_results:
+                for image in foreground_img_list:
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation(
+                        image, mean, variance, cf.alpha, cf.rho
+                    )
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
-                    fore = np.array(foreground, dtype='uint8')
+                    fore = np.array(foreground, dtype='uint8')  * 255
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
-                               fore * 255)
+                               fore)
+
+            if cf.find_best_parameters:
+                # Grid search over rho and alpha parameter space
+                logger.info('Finding best alpha and rho parameters for adaptive Gaussian model.')
+                alpha_range = np.linspace(
+                    cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], cf.evaluate_alpha_values
+                )
+                rho_range = np.linspace(
+                    cf.evaluate_rho_range[0], cf.evaluate_rho_range[1], cf.evaluate_rho_values
+                )
+                num_iterations = len(rho_range) * len(alpha_range)
+                logger.info('Running {} iterations'.format(num_iterations))
+
+                score_grid = np.zeros((len(alpha_range), len(rho_range)))  # score = F1-score
+                precision_grid = np.zeros_like(score_grid)  # for representacion purposes
+                recall_grid = np.zeros_like(score_grid)  # for representation purposes
+                best_parameters = dict(alpha=-1, rho=-1)
+                max_score = 0
+                for i, (alpha, rho) in enumerate(itertools.product(alpha_range, rho_range)):
+                    logger.info('[{} of {}]\talpha={:.2f}\trho={:.2f}'.format(i+1, num_iterations, alpha, rho))
+
+                    # Indices in parameter grid
+                    i_idx = np.argwhere(alpha_range == alpha)
+                    j_idx = np.argwhere(rho_range == rho)
+
+                    # Compute evaluation metrics for this combination of parameters
+                    _, _, _, _, precision, recall, F1_score = segmentation_metrics.evaluate_list_foreground_estimation(
+                        cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha, rho
+                    )
+                    # Store them in the array
+                    score_grid[i_idx, j_idx] = F1_score
+                    precision_grid[i_idx, j_idx] = precision
+                    recall_grid[i_idx, j_idx] = recall
+
+                    # Compare and select best parameters according to best score
+                    if F1_score > max_score:
+                        max_score = F1_score
+                        best_parameters = dict(alpha=alpha, rho=rho)
+
+                logger.info('Finished grid search')
+                logger.info('Best parameters: alpha={alpha}\trho={rho}'.format(**best_parameters))
+                logger.info('Best F1-score: {:.3f}'.format(max_score))
+
+                visualization.plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range,
+                                                                 best_parameters, best_score=max_score,
+                                                                 metric='F1-score')
 
 
 # Main function
