@@ -99,12 +99,12 @@ def background_estimation(cf):
     imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type,
                                                        cf.nr_images)
 
-    alpha = 1
-
     """ GAUSSIAN MODELLING """
-    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
+    alpha = 1
+    logger.info('Single gaussian modeling with parameter: alpha={}'.format(alpha))
+    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) // 2])
 
-    for image in imageList[(len(imageList) / 2 + 1):]:
+    for image in imageList[(len(imageList) // 2):]:
         foreground = background_modeling.foreground_estimation(image, mean, variance, alpha)
         if cf.save_results:
             image = int(cf.first_image)
@@ -115,7 +115,10 @@ def background_estimation(cf):
     """ ADAPTIVE MODELLING """
     rho = 0.5
     alpha = 1.1
-    foregrounds = background_modeling.adaptive_foreground_estimation(imageList[(len(imageList) / 2 + 1):], mean, variance, alpha, rho)
+    logger.info('Single Gaussian adaptive modeling with parameters: alpha={}, rho={}'.format(alpha, rho))
+    foregrounds = background_modeling.adaptive_foreground_estimation(
+        imageList[(len(imageList) // 2):], mean, variance, alpha, rho
+    )
 
     if cf.save_results:
         image = int(cf.first_image)
