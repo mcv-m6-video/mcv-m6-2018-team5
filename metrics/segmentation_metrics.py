@@ -25,16 +25,14 @@ def evaluate_single_image(test_img, gt_img):
 
     precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
-    F1_score = 2 * precision * recall / (precision + recall + EPSILON)
+    F1_score = (2 * precision * recall) / (precision + recall + EPSILON)
     return TP, FP, TN, FN, F1_score
 
 
 def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=1,
                                    rho=0.5):
-    TP = []
-    FP = []
-    TN = []
-    FN = []
+    precision = []
+    recall = []
     F1_score = []
     for al in alpha:
         metrics = np.zeros(5)
@@ -47,13 +45,18 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             metrics += evaluate_single_image(foreground, gt_img)
 
-        TP.append(metrics[0])
-        FP.append(metrics[1])
-        TN.append(metrics[2])
-        FN.append(metrics[3])
-        F1_score.append(metrics[4])
+        TP = metrics[0]
+        FP = metrics[1]
+        FN = metrics[3]
+        tmp_precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
+        tmp_recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
+        tmp_F1 = (2 * tmp_precision * tmp_recall) / (tmp_precision + tmp_recall + EPSILON)
 
-    return TP, TN, FP, FN, F1_score
+        precision.append(tmp_precision)
+        recall.append(tmp_recall)
+        F1_score.append(tmp_F1)
+
+    return precision, recall, F1_score
 
 
 def evaluate(testList, gtList):

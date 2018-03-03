@@ -37,7 +37,6 @@ def foreground_estimation(img, mean, variance, alpha):
     foreground = (img >= threshold)
     return foreground
 
-
 def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
     threshold = alpha * (np.sqrt(variance) + 2)
     img = cv.imread(img, cv.IMREAD_GRAYSCALE)

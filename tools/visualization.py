@@ -7,12 +7,45 @@ import os
 from skimage.measure import block_reduce
 from metrics.optical_flow import read_flow_field
 
+def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
+                              output_folder=""):
+    plt.title('Precision, Recall and F1-score vs Threshold')
+    plt.plot(threshold, precision, label="Precision")
+    plt.plot(threshold, recall, label="Recall")
+    plt.plot(threshold, F1_score, label="F1-score")
+    plt.xlabel('Threshold')
+    plt.ylabel('Metric')
+    leg = plt.legend(loc='upper right', ncol=1, shadow=True, fancybox=True)
+    leg.get_frame().set_alpha(0.5)
+    if output_folder != "":
+        plt.savefig(os.path.join(output_folder, "task_1_2_threshold.png"))
+    plt.show(block=False)
+    plt.close()
+
+
+def plot_precision_recall_curve(precision, recall, output_folder=""):
+    plt.step(recall, precision, color='b', alpha=0.2,
+             where='post')
+    plt.fill_between(recall, precision, step='post', alpha=0.2,
+                     color='b')
+    average_precision = reduce(lambda x, y: x + y, precision) / len(precision)
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.ylim([min(precision), max(precision)])
+    plt.xlim([min(recall), max(recall)])
+    plt.title('Precision-Recall curve: Avg Prec ={0:0.2f}'.format(average_precision))
+    if output_folder != "":
+        plt.savefig(os.path.join(output_folder, "task_1_2_precision_recall.png"))
+    plt.show(block=False)
+    plt.close()
 
 def plot_true_positives(TP, T, output_folder=""):
     plt.plot(TP, label='True Positives')
     plt.plot(T, label='Foreground pixels')
     plt.xlabel('time')
     plt.legend(loc='upper right', fontsize='medium')
+    plt.ylim([0.0, 1.05])
+    plt.xlim([0.0, 1.0])
     plt.show(block=False)
     if output_folder != "":
         plt.savefig(os.path.join(output_folder, "task_2_1.png"))

@@ -17,7 +17,6 @@ from tools.image_parser import get_image_list_changedetection_dataset, get_image
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
 
-
 def evaluation_metrics(cf):
     logger = logging.getLogger(__name__)
 
@@ -112,10 +111,14 @@ def background_estimation(cf):
     if cf.evaluate_foreground:
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
-        alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
-        TP, TN, FP, FN, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
+        precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
                                                             foreground_img_list, foreground_gt_list,
                                                             mean, variance, alpha_range, cf.rho)
+        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
+                                                cf.output_folder)
+
+        visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
 
     else:
         if cf.modelling_method == 'gaussian':
