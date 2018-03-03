@@ -7,6 +7,7 @@ import os
 from skimage.measure import block_reduce
 from metrics.optical_flow import read_flow_field
 
+
 def plot_true_positives(TP, T, output_folder=""):
     plt.plot(TP, label='True Positives')
     plt.plot(T, label='Foreground pixels')
@@ -17,6 +18,7 @@ def plot_true_positives(TP, T, output_folder=""):
         plt.savefig(os.path.join(output_folder, "task_2_1.png"))
     plt.close()
 
+
 def plot_F1_score(F1_score, output_folder=""):
     plt.plot(F1_score, label='F1 Score')
     plt.xlabel('time')
@@ -26,8 +28,8 @@ def plot_F1_score(F1_score, output_folder=""):
         plt.savefig(os.path.join(output_folder, "task_2_2.png"))
     plt.close()
 
-def plot_desynch_vs_time(F1_score, desynchronization_frames, output_folder=""):
 
+def plot_desynch_vs_time(F1_score, desynchronization_frames, output_folder=""):
     for i in range(0, len(desynchronization_frames)):
         plt.plot(F1_score[i], label=str(desynchronization_frames[i]) + ' de-synchronization frames')
 
@@ -40,8 +42,8 @@ def plot_desynch_vs_time(F1_score, desynchronization_frames, output_folder=""):
 
     plt.close()
 
-def plot_histogram_msen(msen, squared_errors, seq_name, output_folder="", nbins = 50):
 
+def plot_histogram_msen(msen, squared_errors, seq_name, output_folder="", nbins=50):
     fig = plt.figure()
     color_map = plt.cm.get_cmap('jet')
     # Histogram
@@ -54,7 +56,7 @@ def plot_histogram_msen(msen, squared_errors, seq_name, output_folder="", nbins 
     col /= max(col)
     for c, p in zip(col, patches):
         plt.setp(p, 'facecolor', color_map(c))
-    #Add colorbar
+    # Add colorbar
     norm = mpl.colors.Normalize(vmin=np.min(squared_errors), vmax=np.max(squared_errors))
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=norm)
     sm._A = []
@@ -70,6 +72,7 @@ def plot_histogram_msen(msen, squared_errors, seq_name, output_folder="", nbins 
         save_path = os.path.join(output_folder, "task_3_histogram_{}.png".format(seq_name))
         plt.savefig(save_path)
     plt.close()
+
 
 def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name, output_folder=""):
     # Representation of errors as an image
@@ -88,8 +91,8 @@ def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name,
     plt.savefig(save_path)
     plt.close()
 
-def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_path):
 
+def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_path):
     # Get the original image
     img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
@@ -115,8 +118,8 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     plt.savefig(output_path)
     plt.close()
 
-def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_name, output_path):
 
+def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_name, output_path):
     # Get the original image
     img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 

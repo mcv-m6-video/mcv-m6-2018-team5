@@ -104,4 +104,4 @@ ENV/
 .idea/
 
 # datasets folder
-/code/datasets
+datasets/

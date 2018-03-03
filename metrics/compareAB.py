@@ -1,10 +1,10 @@
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import cv2 as cv
+import matplotlib.pyplot as plt
 
-from tools.image_parser import get_image_list_highway_dataset
+from tools.image_parser import get_image_list_changedetection_dataset
 
 idx = 0
+
 
 def press(event):
     global idx
@@ -25,16 +25,19 @@ def press(event):
         fig.canvas.draw()
 
 
-
 # Get a list with input images filenames
-imageList = get_image_list_highway_dataset('..\\datasets\\highway\\input' , 'in', '001201', 'jpg', 200)
+imageList = get_image_list_changedetection_dataset('..\\datasets\\highway\\input', 'in', '001201', 'jpg', 200)
 
 # Get a list with groung truth images filenames
-gtList = get_image_list_highway_dataset('..\\datasets\\highway\\groundtruth', 'gt', '001201', 'png' , 200)
+gtList = get_image_list_changedetection_dataset('..\\datasets\\highway\\groundtruth', 'gt', '001201', 'png', 200)
 
 # Get a list with test results filenames
-testAList = get_image_list_highway_dataset('..\\datasets\\highway\\results_testAB_changedetection', str('test_A_'), '001201', 'png' , 200)
-testBList = get_image_list_highway_dataset('..\\datasets\\highway\\results_testAB_changedetection', str('test_B_'), '001201', 'png' , 200)
+testAList = get_image_list_changedetection_dataset('..\\datasets\\highway\\results_testAB_changedetection',
+                                                   str('test_A_'),
+                                                   '001201', 'png', 200)
+testBList = get_image_list_changedetection_dataset('..\\datasets\\highway\\results_testAB_changedetection',
+                                                   str('test_B_'),
+                                                   '001201', 'png', 200)
 
 # Display first image
 fig, axes = plt.subplots(2, 2, subplot_kw={'xticks': [], 'yticks': []})
@@ -42,8 +45,8 @@ fig.canvas.mpl_connect('key_press_event', press)
 
 img = cv.imread(imageList[idx])
 gt = cv.imread(gtList[idx])
-testA_img = cv.imread(testAList[idx]) *255
-testB_img = cv.imread(testBList[idx]) *255
+testA_img = cv.imread(testAList[idx]) * 255
+testB_img = cv.imread(testBList[idx]) * 255
 
 img1 = axes.flat[0].imshow(img)
 axes.flat[0].set_title('Input image')

@@ -1,18 +1,15 @@
 from __future__ import division
 
-import os
-import sys
 import logging
-import cv2 as cv
-import numpy as np
 import time
 
-from tools.background_modeling import foreground_estimation
+import cv2 as cv
+import numpy as np
 
 EPSILON = 1e-8
 
-def evaluate_single_image(test_img, gt_img):
 
+def evaluate_single_image(test_img, gt_img):
     TP = 0
     TN = 0
     FP = 0
@@ -28,8 +25,10 @@ def evaluate_single_image(test_img, gt_img):
     F1_score = 2 * precision * recall / (precision + recall + EPSILON)
     return TP, FP, TN, FN, F1_score
 
+
 def evaluate_foreground_estimation(background, gt):
-    TP, FP, TN, FN, F1_score = evaluate_single_image(background, gt)
+    return evaluate_single_image(background, gt)
+
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)

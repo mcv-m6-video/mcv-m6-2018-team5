@@ -54,17 +54,49 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [ ] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
 
 
-## How to run the code:
+## How to run the code
+
+### General information
+
+The Command Line Interface (CLI) usage is the following:
+
+```
+$ python video_surveillance.py 
+usage: video_surveillance.py [-h] -c CONFIG_PATH -t TEST_NAME
+                             {evaluate_metrics,background_estimation}
+
+```
+
+It provides the following help information:
+```
+usage: video_surveillance.py [-h] -c CONFIG_PATH -t TEST_NAME
+                             {evaluate_metrics,background_estimation}
+
+Video surveillance application, Team 5
+
+positional arguments:
+  {evaluate_metrics,background_estimation}
+                        Task to run
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_PATH, --config-path CONFIG_PATH
+                        Configuration file path
+  -t TEST_NAME, --test-name TEST_NAME
+                        Name of the test
+```
+
+### Week 1
 
 For tasks 1, 2, and 4:
 
-- `video_surveillance.py -c config/highway.py -t test_A`
+- `python video_surveillance.py evaluate_metrics --config-path config/highway.py --test-name test_A`
 
-- `video_surveillance.py -c config/highway.py -t test_B`
+- `python video_surveillance.py evaluate_metrics --config-path config/highway.py --test-name test_B`
 
 For tasks 3 and 5:
 
-- `video_surveillance.py -c config/kitti.py -t test_flow`
+- `python video_surveillance.py evaluate_metrics --config-path config/kitti.py --test-name test_flow`
 
 In order to run the code, the datasets must be on the path *code/datasets/*.
 
@@ -82,3 +114,12 @@ The datasets needed to run the code and their folder organization are the follow
 | *kitti/flow_noc/*|  Kitti dataset ground truth | 
 | *kitti/results/*|  Kitti dataset results | 
 
+### Week 2
+
+For tasks 1 and 2, for each of the sequences:
+
+- `python video_surveillance.py background_estimation --config-path config/highway.py --test-name highway`
+- `python video_surveillance.py background_estimation --config-path config/traffic.py --test-name traffic`
+- `python video_surveillance.py background_estimation --config-path config/fall.py --test-name fall`
+
+**TODO**: UPDATED & COMPLETE THIS SECTION

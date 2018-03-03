@@ -3,6 +3,7 @@ from __future__ import division
 import cv2 as cv
 import numpy as np
 
+
 def evaluate(testList, gtList):
     msen = []
     pepn = []
@@ -10,7 +11,6 @@ def evaluate(testList, gtList):
     errors_pixels = []
     valid_pixels_list = []
     for test_image, gt_image in zip(testList, gtList):
-
         # The optical flow images
         img = cv.imread(test_image, cv.IMREAD_UNCHANGED)
         gt_img = cv.imread(gt_image, cv.IMREAD_UNCHANGED)
@@ -55,7 +55,7 @@ def read_flow_field(img):
     img = img[:, :, ::-1]
 
     optical_flow = img[:, :, :2].astype(float)
-    optical_flow -= 2**15
+    optical_flow -= 2 ** 15
     optical_flow /= 64.0
     valid_pixels = img[:, :, 2] == 1.0
 

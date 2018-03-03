@@ -1,20 +1,23 @@
+#! /usr/bin/env python
+
+from __future__ import division
+
 import argparse
 import logging
 import os
 
 import cv2 as cv
-import matplotlib.pyplot as plt
 import numpy as np
 
 from config.load_configutation import Configuration
 from metrics import segmentation_metrics, optical_flow
+from tools import background_modeling
+from tools import visualization
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
-from tools import visualization
-from tools import background_modeling
+
 
 def evaluation_metrics(cf):
-
     logger = logging.getLogger(__name__)
 
     logger.info(' ---> Init test: ' + cf.test_name + ' <---')
@@ -22,11 +25,12 @@ def evaluation_metrics(cf):
     if cf.dataset_name == 'highway':
 
         # Get a list with groung truth images filenames
-        gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
+        gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type,
+                                                        cf.nr_images)
 
         # Get a list with test results filenames
         testList = get_image_list_changedetection_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image,
-                                                  cf.result_image_type, cf.nr_images)
+                                                          cf.result_image_type, cf.nr_images)
         if cf.segmentation_metrics:
             prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
             logger.info("PRECISION: " + str(prec))
@@ -81,22 +85,23 @@ def evaluation_metrics(cf):
                 output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(seq_name))
                 visualization.plot_optical_flow(image, test_image, cf.optical_flow_downsample, seq_name, output_path)
 
-                #HSV plot
+                # HSV plot
                 output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(seq_name))
                 visualization.plot_optical_flow_hsv(image, test_image, seq_name, output_path)
 
     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
-def background_estimation(cf):
 
+def background_estimation(cf):
     logger = logging.getLogger(__name__)
 
     # Get a list with input images filenames
-    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
+    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type,
+                                                       cf.nr_images)
 
     alpha = 1
 
-    ## GAUSSIAN MODELLING:
+    """ GAUSSIAN MODELLING """
     mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
 
     for image in imageList[(len(imageList) / 2 + 1):]:
@@ -107,10 +112,9 @@ def background_estimation(cf):
             cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, str(image) + '.png'), fore)
             image += 1
 
-    ## ADAPTIVE MODELLING:
+    """ ADAPTIVE MODELLING """
     rho = 0.5
     alpha = 1.1
-    #mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
     foregrounds = background_modeling.adaptive_foreground_estimation(imageList[(len(imageList) / 2 + 1):], mean, variance, alpha, rho)
 
     if cf.save_results:
@@ -119,14 +123,21 @@ def background_estimation(cf):
             fore = np.array(fore, dtype='uint8')
             cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, 'ADAPTIVE_'+str(image) + '.png'), fore*255)
             image += 1
+
+
 # Main function
 def main():
+    # Task choices
+    tasks = {
+        'evaluate_metrics': evaluation_metrics,
+        'background_estimation': background_estimation,
+    }
+
     # Get parameters from arguments
-    parser = argparse.ArgumentParser(description='Video surveillance')
-    parser.add_argument('-c', '--config_path', type=str,
-                        default=None, help='Configuration file path')
-    parser.add_argument('-t', '--test_name', type=str,
-                        default=None, help='Name of the test')
+    parser = argparse.ArgumentParser(description='Video surveillance application, Team 5')
+    parser.add_argument('task', choices=tasks.keys(), help='Task to run')
+    parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')
+    parser.add_argument('-t', '--test-name', type=str, required=True, help='Name of the test')
 
     arguments = parser.parse_args()
 
@@ -148,11 +159,9 @@ def main():
         log_file = None
     setup_logging(log_file)
 
-    # Week 1
-    #evaluation_metrics(cf)
-
-    # Week 2
-    background_estimation(cf)
+    # Run task
+    task_fn = tasks[arguments.task]
+    task_fn(cf)
 
 
 # Entry point of the script
