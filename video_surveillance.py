@@ -107,13 +107,14 @@ def background_estimation(cf):
     )
     background_img_list = imageList[:len(imageList) // 2]
     foreground_img_list = imageList[(len(imageList) // 2):]
+    foreground_gt_list = gtList[(len(imageList) // 2):]
 
     if cf.evaluate_foreground:
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
         alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
-        segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method, imageList, gtList, mean, variance,
-                                                            alpha_range, cf.rho)
+        segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method, foreground_img_list, foreground_gt_list,
+                                                            mean, variance, alpha_range, cf.rho)
     else:
         if cf.modelling_method == 'gaussian':
             logger.info('Running single Gaussian background estimation')

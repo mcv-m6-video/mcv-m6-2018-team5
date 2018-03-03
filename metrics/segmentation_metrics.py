@@ -9,10 +9,10 @@ import cv2 as cv
 import numpy as np
 
 from tools.background_modeling import foreground_estimation, adaptive_foreground_estimation
+import matplotlib.pyplot as plt
 
 EPSILON = 1e-8
 
-import matplotlib.pyplot as plt
 def evaluate_single_image(test_img, gt_img):
     TP = 0
     TN = 0

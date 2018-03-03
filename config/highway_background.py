@@ -21,7 +21,7 @@ desynchronization_frames      = [0, 5, 10]  # Nr frames to desynchronize
 alpha                         = 1
 rho                           = 0.5
 modelling_method              = 'gaussian'  # adaptive instead
-evaluate_foreground           = False
+evaluate_foreground           = True
 evaluate_alpha_range          = [0.01, 5]
 
 # Save results
