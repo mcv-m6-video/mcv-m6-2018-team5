@@ -41,14 +41,15 @@ The goal of this project is to learn the basic concepts and techniques related t
 1. Gaussian Modelling
 - [ ] Create a Gaussian function to model each background pixel using the first 50% of the video sequence
 - [ ] Segment the foreground pixels for the second 50% of the video sequence
-- [ ] Evaluate the segmentation: Compute True Positive, True Negative, False Positive, False Negative, Precision, Recall, F1-score vs alpha
-- [ ] Evaluate the segmentation: Precision-Recall vs alpha curve, Area Under the Curve, F1-score vs alpha curve
+- [ ] Evaluate the segmentation: Compute F1-score vs alpha curve
+- [ ] Evaluate the segmentation: Precision-Recall vs alpha curve, Area Under the Curve
 2. Adaptive Modelling
 - [ ] Segment the foreground pixels for the second 50% of the video sequence and left background adapt
 - [ ] Optimize alpha and rho with grid search to maximize F1-score
 - [ ] Compare Gaussian Modelling vs. Adaptive Modelling for all three sequences using F1-score and Area Under the Curve
-3. Compare with state of the art implementations
-- [ ]  TODO: FILL IN WHEN THE WEEK2 ISSUE IS RAISED
+3. Compare with state-of-the-art implementations
+- [ ] Run different state-of-the-art Background Subtraction methods: e.g.: OpenCV BackgroundSubstractorMOG, BackgroundSubstractorMOG2, BackgroundSubstractorLSBP
+- [ ] Evaluate precision vs recall to comment which method (single Gaussian programmed by you or state-of-the-art) performs better
 4. Color Sequences
 - [ ] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
 
