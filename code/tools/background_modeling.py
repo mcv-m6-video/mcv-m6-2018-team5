@@ -41,6 +41,22 @@ def foreground_estimation(imageList, mean, variance, alpha):
 
     return foregrounds
 
+# def evaluate_foreground_estimation(imageList, mean, variance, alpha):
+#
+#     foregrounds = []
+#     threshold = alpha * (np.sqrt(variance) + 2)
+#     for image in imageList:
+#         img = np.abs(cv.imread(image, cv.IMREAD_GRAYSCALE) - mean)
+#         fore = (img >= threshold)
+#         foregrounds.append(fore)
+#
+#     return foregrounds
+
+def foreground_estimation(img, mean, variance, alpha):
+    threshold = alpha * (np.sqrt(variance) + 2)
+    img = np.abs(cv.imread(img, cv.IMREAD_GRAYSCALE) - mean)
+    foreground = (img >= threshold)
+    return foreground
 
 
 

@@ -5,6 +5,7 @@ import matplotlib.ticker as mticker
 import numpy as np
 import os
 from skimage.measure import block_reduce
+from metrics.optical_flow import read_flow_field
 
 def plot_true_positives(TP, T, output_folder=""):
     plt.plot(TP, label='True Positives')
@@ -136,14 +137,3 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
     plt.show(block=False)
     plt.savefig(output_path)
     plt.close()
-
-def read_flow_field(img):
-    # BGR -> RGB
-    img = img[:, :, ::-1]
-
-    optical_flow = img[:, :, :2].astype(float)
-    optical_flow -= 2**15
-    optical_flow /= 64.0
-    valid_pixels = img[:, :, 2] == 1.0
-
-    return optical_flow, valid_pixels

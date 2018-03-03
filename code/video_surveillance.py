@@ -97,12 +97,12 @@ def background_estimation(cf):
     alpha = 1
 
     mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
-    foregrounds = background_modeling.foreground_estimation(imageList[(len(imageList) / 2 + 1):], mean, variance, alpha)
 
-    if cf.save_results:
-        image = int(cf.first_image)
-        for fore in foregrounds:
-            fore = np.array(fore, dtype='uint8')
+    for image in imageList[(len(imageList) / 2 + 1):]:
+        foreground = background_modeling.foreground_estimation(image, mean, variance, alpha)
+        if cf.save_results:
+            image = int(cf.first_image)
+            fore = np.array(foreground, dtype='uint8')
             cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, str(image) + '.png'), fore)
             image += 1
 
