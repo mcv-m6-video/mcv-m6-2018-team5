@@ -9,7 +9,6 @@ import cv2 as cv
 import numpy as np
 
 from tools.background_modeling import foreground_estimation, adaptive_foreground_estimation
-import matplotlib.pyplot as plt
 
 EPSILON = 1e-8
 
@@ -24,7 +23,7 @@ def evaluate_single_image(test_img, gt_img):
     TN += np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
     FN += np.count_nonzero((test_img == 0) & (gt_img == 255))
 
-    precision = (TP / TP + FP) if (TP + FP) > 0 else 0.0
+    precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
     F1_score = 2 * precision * recall / (precision + recall + EPSILON)
     return TP, FP, TN, FN, F1_score
@@ -38,11 +37,6 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
     FN = []
     F1_score = []
     for al in alpha:
-        # TP = 0
-        # TN = 0
-        # FP = 0
-        # FN = 0
-        # F1_score = 0
         metrics = np.zeros(5)
         for test_image, gt_image in zip(imageList, gtList):
             if modelling_method == 'gaussian':
@@ -58,13 +52,6 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
         TN.append(metrics[2])
         FN.append(metrics[3])
         F1_score.append(metrics[4])
-
-    for i in range(0, len(alpha)):
-        plt.plot(F1_score[i], label=str(alpha[i]) + ' alpha')
-
-    plt.xlabel('Threshold')
-    plt.legend(loc='upper right', fontsize='medium')
-    plt.show(block=False)
 
     return TP, TN, FP, FN, F1_score
 

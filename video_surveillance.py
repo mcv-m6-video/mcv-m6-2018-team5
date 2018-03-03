@@ -113,8 +113,10 @@ def background_estimation(cf):
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
         alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
-        segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method, foreground_img_list, foreground_gt_list,
+        TP, TN, FP, FN, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
+                                                            foreground_img_list, foreground_gt_list,
                                                             mean, variance, alpha_range, cf.rho)
+
     else:
         if cf.modelling_method == 'gaussian':
             logger.info('Running single Gaussian background estimation')
