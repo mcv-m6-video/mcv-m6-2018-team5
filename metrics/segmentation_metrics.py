@@ -13,7 +13,7 @@ from tools.background_modeling import foreground_estimation,adaptive_foreground_
 
 EPSILON = 1e-8
 
-
+import matplotlib.pyplot as plt
 def evaluate_single_image(test_img, gt_img):
     TP = 0
     TN = 0
@@ -33,17 +33,40 @@ def evaluate_single_image(test_img, gt_img):
 def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, variance, alpha = 1,
                                    rho = 0.5):
     TP = []
-    TN = []
     FP = []
+    TN = []
     FN = []
     F1_score = []
+    for al in alpha:
+        # TP = 0
+        # TN = 0
+        # FP = 0
+        # FN = 0
+        # F1_score = 0
+        metrics = np.zeros(5)
+        for test_image, gt_image in zip(imageList, gtList):
+            if modelling_method == 'gaussian':
+                foreground = foreground_estimation(test_image, mean, variance, al)
+            elif modelling_method == 'adaptive':
+                foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+            foreground = np.array(foreground, dtype='uint8')
+            gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
+            metrics += evaluate_single_image(foreground, gt_img)
 
-    for test_image, gt_image in zip(imageList, gtList):
-        if modelling_method == 'gaussian':
-            foreground = foreground_estimation(test_image, mean, variance, alpha)
-        elif modelling_method == 'adaptive':
-            foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
-        # TP, FP, TN, FN, F1_score = evaluate_single_image(background, gt)
+        TP.append(metrics[0])
+        FP.append(metrics[1])
+        TN.append(metrics[2])
+        FN.append(metrics[3])
+        F1_score.append(metrics[4])
+
+    for i in range(0, len(alpha)):
+        plt.plot(F1_score[i], label=str(alpha[i]) + ' alpha')
+
+    plt.xlabel('Threshold')
+    plt.legend(loc='upper right', fontsize='medium')
+    plt.show(block=False)
+
+    return TP, TN, FP, FN, F1_score
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)

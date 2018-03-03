@@ -101,7 +101,7 @@ def background_estimation(cf):
     # Get a list with groung truth images filenames
     gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
-    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
+    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList)//2])
 
     if cf.evaluate_foreground:
         alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
@@ -110,7 +110,7 @@ def background_estimation(cf):
     else:
         if cf.modelling_method == 'gaussian':
             ## GAUSSIAN MODELLING:
-            for image in imageList[(len(imageList) / 2 + 1):]:
+            for image in imageList[(len(imageList)//2 + 1):]:
                 foreground = background_modeling.foreground_estimation(image, mean, variance, cf.save_alpha)
                 if cf.save_results:
                     image_name = os.path.basename(image)
