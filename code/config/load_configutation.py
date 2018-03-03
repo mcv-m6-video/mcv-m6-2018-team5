@@ -26,7 +26,10 @@ class Configuration(object):
 
         cf.dataset_path = os.path.abspath(cf.dataset_path)
         cf.gt_path = os.path.abspath(cf.gt_path)
+
         cf.results_path = os.path.abspath(cf.results_path)
+        if not os.path.exists(cf.results_path):
+            os.makedirs(cf.results_path)
 
         if cf.save_results:
 
