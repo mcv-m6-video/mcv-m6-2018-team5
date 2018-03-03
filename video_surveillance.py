@@ -101,7 +101,7 @@ def background_estimation(cf):
     # Get a list with groung truth images filenames
     gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
-    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
+    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) // 2])
 
     if cf.evaluate_foreground:
         alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
@@ -110,16 +110,16 @@ def background_estimation(cf):
     else:
         if cf.modelling_method == 'gaussian':
             ## GAUSSIAN MODELLING:
-            for image in imageList[(len(imageList) / 2 + 1):]:
-                foreground = background_modeling.foreground_estimation(image, mean, variance, cf.save_alpha)
+            for image in imageList[(len(imageList) // 2 + 1):]:
+                foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
-                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+                    cv.imwrite(os.path.join(cf.results_path, 'STILL_' + image_name + '.' + cf.result_image_type), fore * 255)
         elif cf.modelling_method == 'adaptive':
             ## ADAPTIVE MODELLING:
-            for image in imageList[(len(imageList) / 2 + 1):]:
+            for image in imageList[(len(imageList) // 2 + 1):]:
                 foreground = background_modeling.adaptive_foreground_estimation(image, mean, variance, cf.alpha, cf.rho)
                 if cf.save_results:
                     image_name = os.path.basename(image)
@@ -127,7 +127,52 @@ def background_estimation(cf):
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
-
+        elif cf.modelling_method == 'mog':
+            ## Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection' by P. KadewTraKuPong and R. Bowden in 2001
+            fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+            for image in imageList[(len(imageList) // 2 + 1):]:
+                foreground, fgbg = background_modeling.mog_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'MOG_' + image_name + '.' + cf.result_image_type),
+                               fore)
+        elif cf.modelling_method == 'mog2':
+            ## Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
+            ## 'Efficient Adaptive Density Estimation per Image Pixel for the Task of Background Subtraction' by Z.Zivkovic in 2006
+            fgbg = cv.createBackgroundSubtractorMOG2()
+            for image in imageList[(len(imageList) // 2):]:
+                foreground, fgbg = background_modeling.mog2_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'MOG2_' + image_name + '.' + cf.result_image_type),
+                               fore)
+        elif cf.modelling_method == 'gmg':
+            ## Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
+            ## by Andrew B. Godbehere, Akihiro Matsukawa, Ken Goldberg in 2012
+            fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
+            for image in imageList[(len(imageList) // 2 + 1):]:
+                foreground, fgbg = background_modeling.gmg_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type),
+                               fore * 255)
+        elif cf.modelling_method == 'lsbp':
+            ## Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
+            fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
+            for image in imageList[(len(imageList) // 2 + 1):]:
+                foreground, fgbg = background_modeling.lsbp_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'LSBP_' + image_name + '.' + cf.result_image_type),
+                               fore * 255)
 # Main function
 def main():
     # Task choices

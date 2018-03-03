@@ -9,7 +9,7 @@ import cv2 as cv
 import numpy as np
 
 
-from tools.background_modeling import foreground_estimation,adaptive_foreground_estimation
+from tools.background_modeling import *
 
 EPSILON = 1e-8
 
@@ -38,11 +38,29 @@ def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, var
     FN = []
     F1_score = []
 
+    if modelling_method == 'mog':
+        fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+    elif modelling_method == 'mog2':
+        fgbg = cv.createBackgroundSubtractorMOG2()
+    elif modelling_method == 'gmg':
+        fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
+    elif modelling_method == 'lsbp':
+        fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
+
     for test_image, gt_image in zip(imageList, gtList):
         if modelling_method == 'gaussian':
             foreground = foreground_estimation(test_image, mean, variance, alpha)
         elif modelling_method == 'adaptive':
             foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+        elif modelling_method == 'mog':
+            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+        elif modelling_method == 'mog2':
+            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+        elif modelling_method == 'gmg':
+            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+        elif modelling_method == 'lsbp':
+            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+
         # TP, FP, TN, FN, F1_score = evaluate_single_image(background, gt)
 
 def evaluate(testList, gtList):
