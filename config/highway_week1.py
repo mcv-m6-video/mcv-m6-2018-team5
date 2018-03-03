@@ -5,7 +5,7 @@ gt_path                      = 'datasets/highway/groundtruth'   # Ground truth p
 results_path                 = 'datasets/highway/results_testAB_changedetection'
 
 # Input Images
-nr_images                    = 20
+nr_images                    = 200
 first_image                  = '001201'   # Fist image filename
 image_type                   = 'jpg'        # Input image type
 gt_image_type                = 'png'        # Ground truth image type
