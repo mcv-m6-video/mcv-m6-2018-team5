@@ -18,11 +18,14 @@ desynchronization             = True        # Apply desynchronization
 desynchronization_frames      = [0, 5, 10]  # Nr frames to desynchronize
 
 # Background Modelling
-alpha                         = 1.1
+alpha                         = 1
 rho                           = 0.5
 modelling_method              = 'gaussian'  # adaptive instead
-evaluate_foreground           = False
-evaluate_alpha_range          = [0.01, 5]
+evaluate_foreground           = True
+evaluate_alpha_range          = [0.01, 5]   # range of alpha values
+evaluate_alpha_values         = 100         # number of alpha values to evaluate
+evaluate_rho_range            = [0.01, 5]   # range of rho values
+evaluate_rho_values           = 100         # number of rho values to evaluate
 
 # Save results
 save_results                 = True        # Save Log file
