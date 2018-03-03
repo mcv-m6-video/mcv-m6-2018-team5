@@ -166,7 +166,7 @@ def background_estimation(cf):
             # by P. KadewTraKuPong and R. Bowden in 2001
             fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
             for image in imageList:
-                foreground, fgbg = background_modeling.mog_foreground_estimation(image, fgbg)
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
@@ -179,7 +179,7 @@ def background_estimation(cf):
             # 'Efficient Adaptive Density Estimation per Image Pixel for the Task of Background Subtraction' by Z.Zivkovic in 2006
             fgbg = cv.createBackgroundSubtractorMOG2()
             for image in imageList:
-                foreground, fgbg = background_modeling.mog2_foreground_estimation(image, fgbg)
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
@@ -192,7 +192,7 @@ def background_estimation(cf):
             # by Andrew B. Godbehere, Akihiro Matsukawa, Ken Goldberg in 2012
             fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
             for image in imageList:
-                foreground, fgbg = background_modeling.gmg_foreground_estimation(image, fgbg)
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
@@ -204,7 +204,7 @@ def background_estimation(cf):
             # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
             fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
             for image in imageList:
-                foreground, fgbg = background_modeling.lsbp_foreground_estimation(image, fgbg)
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
