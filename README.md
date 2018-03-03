@@ -39,12 +39,12 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 ### Week 2 - Background estimation
 1. Gaussian Modelling
-- [ ] Create a Gaussian function to model each background pixel using the first 50% of the video sequence
-- [ ] Segment the foreground pixels for the second 50% of the video sequence
+- [x] Create a Gaussian function to model each background pixel using the first 50% of the video sequence
+- [x] Segment the foreground pixels for the second 50% of the video sequence
 - [ ] Evaluate the segmentation: Compute F1-score vs alpha curve
 - [ ] Evaluate the segmentation: Precision-Recall vs alpha curve, Area Under the Curve
 2. Adaptive Modelling
-- [ ] Segment the foreground pixels for the second 50% of the video sequence and left background adapt
+- [x] Segment the foreground pixels for the second 50% of the video sequence and left background adapt
 - [ ] Optimize alpha and rho with grid search to maximize F1-score
 - [ ] Compare Gaussian Modelling vs. Adaptive Modelling for all three sequences using F1-score and Area Under the Curve
 3. Compare with state-of-the-art implementations
