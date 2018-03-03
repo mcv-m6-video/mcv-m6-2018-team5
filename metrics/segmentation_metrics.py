@@ -26,14 +26,24 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
     recall = []
     F1_score = []
 
-    if modelling_method == 'mog':
-        fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
-    elif modelling_method == 'mog2':
-        fgbg = cv.createBackgroundSubtractorMOG2()
-    elif modelling_method == 'gmg':
-        fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
-    elif modelling_method == 'lsbp':
-        fgbg = cv.createBackgroundSubtractorLSBP()
+    if cv.__version__ == '3.1.0':
+        if modelling_method == 'mog':
+            fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+        elif modelling_method == 'mog2':
+            fgbg = cv.createBackgroundSubtractorMOG2()
+        elif modelling_method == 'gmg':
+            fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
+        elif modelling_method == 'lsbp':
+            fgbg = cv.createBackgroundSubtractorLSBP()
+    elif cv.__version__ == '2.4':
+        if modelling_method == 'mog':
+            fgbg = cv.BackgroundSubtractorMOG()
+        elif modelling_method == 'mog2':
+            fgbg = cv.BackgroundSubtractorMOG2()
+        elif modelling_method == 'gmg':
+            fgbg = cv.BackgroundSubtractorGMG()
+        elif modelling_method == 'lsbp':
+            fgbg = cv.BackgroundSubtractorLSBP()
 
     for al in alpha:
         metrics = np.zeros(4)
@@ -42,7 +52,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
                 foreground = foreground_estimation(test_image, mean, variance, al)
             elif modelling_method == 'adaptive':
                 foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
-            elif modelling_method == 'mog' | 'mog2' | 'gmg' | 'lsbp':
+            elif modelling_method == 'mog' or 'mog2' or 'gmg' or 'lsbp':
                 foreground, fgbg = model_foreground_estimation(test_image, fgbg)
             foreground = np.array(foreground, dtype='uint8')
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
