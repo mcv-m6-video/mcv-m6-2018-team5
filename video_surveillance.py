@@ -15,6 +15,7 @@ from tools import background_modeling
 from tools import visualization
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
+from tools.mkdirs import mkdirs
 
 
 def evaluation_metrics(cf):
@@ -96,31 +97,52 @@ def background_estimation(cf):
     logger = logging.getLogger(__name__)
 
     # Get a list with input images filenames
-    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
+    imageList = get_image_list_changedetection_dataset(
+        cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+    )
 
     # Get a list with groung truth images filenames
-    gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
-
-    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) // 2])
+    gtList = get_image_list_changedetection_dataset(
+        cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+    )
+    background_img_list = imageList[:len(imageList) // 2]
+    foreground_img_list = imageList[(len(imageList) // 2):]
+    foreground_gt_list = gtList[(len(imageList) // 2):]
 
     if cf.evaluate_foreground:
+        logger.info('Running foreground evaluation')
+        mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
         alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
-        segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method, imageList, gtList, mean, variance,
-                                                            alpha_range, cf.rho)
+        TP, TN, FP, FN, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
+                                                            foreground_img_list, foreground_gt_list,
+                                                            mean, variance, alpha_range, cf.rho)
+
     else:
         if cf.modelling_method == 'gaussian':
-            ## GAUSSIAN MODELLING:
-            for image in imageList[(len(imageList) // 2 + 1):]:
+            logger.info('Running single Gaussian background estimation')
+            # Model with a single Gaussian
+            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+            for image in foreground_img_list:
                 foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
-                    cv.imwrite(os.path.join(cf.results_path, 'STILL_' + image_name + '.' + cf.result_image_type), fore * 255)
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore * 255)
         elif cf.modelling_method == 'adaptive':
-            ## ADAPTIVE MODELLING:
-            for image in imageList[(len(imageList) // 2 + 1):]:
-                foreground = background_modeling.adaptive_foreground_estimation(image, mean, variance, cf.alpha, cf.rho)
+            logger.info('Running adaptive single Gaussian background estimation')
+            # Model with a single Gaussian, adaptive during foreground estimation
+            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+            for image in foreground_img_list:
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation(
+                    image, mean, variance, cf.alpha, cf.rho
+                )
                 if cf.save_results:
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
@@ -128,9 +150,11 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
         elif cf.modelling_method == 'mog':
-            ## Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection' by P. KadewTraKuPong and R. Bowden in 2001
+            logger.info('Running adaptive K Gaussian background estimation')
+            # Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection'
+            # by P. KadewTraKuPong and R. Bowden in 2001
             fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
-            for image in imageList[(len(imageList) // 2 + 1):]:
+            for image in imageList:
                 foreground, fgbg = background_modeling.mog_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
@@ -139,10 +163,11 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'MOG_' + image_name + '.' + cf.result_image_type),
                                fore)
         elif cf.modelling_method == 'mog2':
-            ## Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
-            ## 'Efficient Adaptive Density Estimation per Image Pixel for the Task of Background Subtraction' by Z.Zivkovic in 2006
+            logger.info('Running adaptive multiple Gaussian background estimation')
+            # Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
+            # 'Efficient Adaptive Density Estimation per Image Pixel for the Task of Background Subtraction' by Z.Zivkovic in 2006
             fgbg = cv.createBackgroundSubtractorMOG2()
-            for image in imageList[(len(imageList) // 2):]:
+            for image in imageList:
                 foreground, fgbg = background_modeling.mog2_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
@@ -151,10 +176,11 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'MOG2_' + image_name + '.' + cf.result_image_type),
                                fore)
         elif cf.modelling_method == 'gmg':
-            ## Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
-            ## by Andrew B. Godbehere, Akihiro Matsukawa, Ken Goldberg in 2012
+            logger.info('Running probabilistic background estimation')
+            # Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
+            # by Andrew B. Godbehere, Akihiro Matsukawa, Ken Goldberg in 2012
             fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
-            for image in imageList[(len(imageList) // 2 + 1):]:
+            for image in imageList:
                 foreground, fgbg = background_modeling.gmg_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
@@ -163,9 +189,10 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
         elif cf.modelling_method == 'lsbp':
-            ## Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
+            logger.info('Running local svd binary pattern background estimation')
+            # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
             fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
-            for image in imageList[(len(imageList) // 2 + 1):]:
+            for image in imageList:
                 foreground, fgbg = background_modeling.lsbp_foreground_estimation(image, fgbg)
                 if cf.save_results:
                     image_name = os.path.basename(image)
@@ -173,6 +200,7 @@ def background_estimation(cf):
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'LSBP_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
+
 # Main function
 def main():
     # Task choices

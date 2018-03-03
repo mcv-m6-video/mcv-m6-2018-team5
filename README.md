@@ -90,23 +90,23 @@ optional arguments:
 
 For tasks 1, 2, and 4:
 
-- `python video_surveillance.py evaluate_metrics --config-path config/highway.py --test-name test_A`
+- `python video_surveillance.py evaluate_metrics --config-path config/highway_evaluate.py --test-name test_A`
 
-- `python video_surveillance.py evaluate_metrics --config-path config/highway.py --test-name test_B`
+- `python video_surveillance.py evaluate_metrics --config-path config/highway_evaluate.py --test-name test_B`
 
 For tasks 3 and 5:
 
-- `python video_surveillance.py evaluate_metrics --config-path config/kitti.py --test-name test_flow`
+- `python video_surveillance.py evaluate_metrics --config-path config/kitti_evaluate.py --test-name test_flow`
 
-In order to run the code, the datasets must be on the path *code/datasets/*.
+In order to run the code, the datasets must be on the path *datasets/*.
 
 The datasets needed to run the code and their folder organization are the following:
 
 | ChangeDetection Dataset | Description | 
 | :---: | :---: | 
-| *highway/input/* |  ChangeDetection dataset input images | 
-| *highway/groundtruth/*  |  ChangeDetection dataset ground truth | 
-| *highway/results_testAB_changedetection/* |  ChangeDetection results using parameters A and B |
+| *highway/input/* |  Highway sequence (baseline) input images | 
+| *highway/groundtruth/*  |  Highway sequence (baseline) ground truth | 
+| *highway/results_testAB_changedetection/* |  Highway sequence (baseline) results using parameters A and B |
 
 | Kitti Dataset | Description | 
 | :---: | :---: | 
@@ -118,8 +118,20 @@ The datasets needed to run the code and their folder organization are the follow
 
 For tasks 1 and 2, for each of the sequences:
 
-- `python video_surveillance.py background_estimation --config-path config/highway.py --test-name highway`
-- `python video_surveillance.py background_estimation --config-path config/traffic.py --test-name traffic`
-- `python video_surveillance.py background_estimation --config-path config/fall.py --test-name fall`
+- `python video_surveillance.py background_estimation --config-path config/highway_background.py --test-name highway`
+- `python video_surveillance.py background_estimation --config-path config/traffic_background.py --test-name traffic`
+- `python video_surveillance.py background_estimation --config-path config/fall_background.py --test-name fall`
 
-**TODO**: UPDATED & COMPLETE THIS SECTION
+The datasets needed to run the code and their folder organization are the following:
+
+| ChangeDetection Dataset | Description | 
+| :---: | :---: | 
+| *highway/input/* |  Highway sequence (baseline) input images | 
+| *highway/groundtruth/*  |  Highway sequence (baseline) ground truth | 
+| *traffic/input/* |  Traffic sequence (camera jitter) input images | 
+| *traffic/groundtruth/*  |  Traffic sequence (camera jitter) ground truth | 
+| *fall/input/* |  Fall sequence (adaptive background) input images | 
+| *fall/groundtruth/*  |  Fall sequence (adaptive background) ground truth | 
+
+
+**TODO**: UPDATE & COMPLETE THIS SECTION

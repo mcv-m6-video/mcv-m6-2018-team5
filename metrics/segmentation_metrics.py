@@ -8,11 +8,9 @@ import time
 import cv2 as cv
 import numpy as np
 
-
 from tools.background_modeling import *
 
 EPSILON = 1e-8
-
 
 def evaluate_single_image(test_img, gt_img):
     TP = 0
@@ -25,16 +23,17 @@ def evaluate_single_image(test_img, gt_img):
     TN += np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
     FN += np.count_nonzero((test_img == 0) & (gt_img == 255))
 
-    precision = (TP / TP + FP) if (TP + FP) > 0 else 0.0
+    precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
     F1_score = 2 * precision * recall / (precision + recall + EPSILON)
     return TP, FP, TN, FN, F1_score
 
-def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, variance, alpha = 1,
-                                   rho = 0.5):
+
+def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=1,
+                                   rho=0.5):
     TP = []
-    TN = []
     FP = []
+    TN = []
     FN = []
     F1_score = []
 
@@ -47,21 +46,32 @@ def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, var
     elif modelling_method == 'lsbp':
         fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
 
-    for test_image, gt_image in zip(imageList, gtList):
-        if modelling_method == 'gaussian':
-            foreground = foreground_estimation(test_image, mean, variance, alpha)
-        elif modelling_method == 'adaptive':
-            foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
-        elif modelling_method == 'mog':
-            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
-        elif modelling_method == 'mog2':
-            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
-        elif modelling_method == 'gmg':
-            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
-        elif modelling_method == 'lsbp':
-            foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+    for al in alpha:
+        metrics = np.zeros(5)
+        for test_image, gt_image in zip(imageList, gtList):
+            if modelling_method == 'gaussian':
+                foreground = foreground_estimation(test_image, mean, variance, al)
+            elif modelling_method == 'adaptive':
+                foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+            elif modelling_method == 'mog':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            elif modelling_method == 'mog2':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            elif modelling_method == 'gmg':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            elif modelling_method == 'lsbp':
+                foreground, fgbg = mog_foreground_estimation(test_image, fgbg)
+            foreground = np.array(foreground, dtype='uint8')
+            gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
+            metrics += evaluate_single_image(foreground, gt_img)
 
-        # TP, FP, TN, FN, F1_score = evaluate_single_image(background, gt)
+        TP.append(metrics[0])
+        FP.append(metrics[1])
+        TN.append(metrics[2])
+        FN.append(metrics[3])
+        F1_score.append(metrics[4])
+
+    return TP, TN, FP, FN, F1_score
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)
