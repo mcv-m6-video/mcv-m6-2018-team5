@@ -147,16 +147,18 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
     plt.close()
 
 
-def plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range, best_parameters, best_score, metric):
+def plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range, best_parameters, best_score, sequence_name,
+                                       metric):
     x, y = np.meshgrid(rho_range, alpha_range)
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.set_title('Grid search over {!r}'.format(metric))
+    ax.set_title(sequence_name + ' sequence')
     surf = ax.plot_surface(x, y, score_grid, cmap='viridis', vmin=0, vmax=1)
     # Best param
     ax.text(best_parameters['rho'], best_parameters['alpha'], best_score,
             'alpha={alpha:.2f},rho={rho:.2f}\n{metric}={f1:2f}'.format(metric=metric, f1=best_score, **best_parameters),
             None)
+    ax.scatter(best_parameters['rho'], best_parameters['alpha'], best_score, marker='x', color='black')
     fig.colorbar(surf, ax=ax, fraction=0.1)
     ax.set_xlabel('rho')
     ax.set_ylabel('alpha')

@@ -14,12 +14,12 @@ result_image_type            = 'png'
 # Background Modelling
 alpha                         = 1
 rho                           = 0.5
-modelling_method              = 'gaussian'  # adaptive instead
+modelling_method              = 'adaptive'  # adaptive instead
 evaluate_foreground           = False
-evaluate_alpha_range          = [0.01, 5]   # range of alpha values
-evaluate_alpha_values         = 100         # number of alpha values to evaluate
-evaluate_rho_range            = [0.01, 1]   # range of rho values
-evaluate_rho_values           = 100         # number of rho values to evaluate
+evaluate_alpha_range          = [0, 6]      # range of alpha values
+evaluate_alpha_values         = 60          # number of alpha values to evaluate
+evaluate_rho_range            = [0, 1]      # range of rho values
+evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = True
 
 # Save results

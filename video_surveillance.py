@@ -203,7 +203,7 @@ def background_estimation(cf):
 
                 visualization.plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range,
                                                                  best_parameters, best_score=max_score,
-                                                                 metric='F1-score')
+                                                                 metric='F1-score', sequence_name=cf.dataset_name)
 
 
 # Main function
