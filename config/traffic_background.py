@@ -12,8 +12,9 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Background Modelling
-alpha                         = 1
+alpha                         = 1.1
 rho                           = 0.5
+
 modelling_method              = 'adaptive'  # adaptive instead
 evaluate_foreground           = False
 evaluate_alpha_range          = [0, 6]      # range of alpha values

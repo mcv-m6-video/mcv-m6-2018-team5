@@ -18,7 +18,6 @@ from tools.image_parser import get_image_list_changedetection_dataset, get_image
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
 
-
 def evaluation_metrics(cf):
     logger = logging.getLogger(__name__)
 
@@ -113,14 +112,20 @@ def background_estimation(cf):
     if cf.evaluate_foreground:
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], cf.evaluate_alpha_values)
-        TP, TN, FP, FN, precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(
-            cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha_range, cf.rho
-        )
-        for alpha_value, tp, tn, fp, fn, prec, rec, f1 in zip(alpha_range, TP, TN, FP, FN, precision, recall, F1_score):
+
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
+        precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
+                                                            foreground_img_list, foreground_gt_list,
+                                                            mean, variance, alpha_range, cf.rho)
+        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
+                                                cf.output_folder)
+
+        visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
+
+        for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, F1_score):
             logger.info(
-                '[alpha={:.2f}]   TP={}    FP={}    TN={}    FN={}    precision={}    recall={}    f1={}'.format(
-                    alpha_value, tp, fp, tn, fn, prec, rec, f1
+                '[alpha={:.2f}]   precision={}    recall={}    f1={}'.format(
+                    alpha_value, prec, rec, f1
                 )
             )
 
@@ -204,7 +209,69 @@ def background_estimation(cf):
                 visualization.plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range,
                                                                  best_parameters, best_score=max_score,
                                                                  metric='F1-score', sequence_name=cf.dataset_name)
-
+        elif cf.modelling_method == 'mog':
+            logger.info('Running adaptive K Gaussian background estimation')
+            # Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection'
+            # by P. KadewTraKuPong and R. Bowden in 2001
+            if cv.__version__ == '3.1.0':
+                fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+            elif cv.__version__ == '2.4':
+                fgbg = cv.BackgroundSubtractorMOG()
+            for image in imageList:
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'MOG_' + image_name + '.' + cf.result_image_type),
+                               fore)
+        elif cf.modelling_method == 'mog2':
+            logger.info('Running adaptive multiple Gaussian background estimation')
+            # Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
+            # 'Efficient Adaptive Density Estimation per Image Pixel for the Task of Background Subtraction' by Z.Zivkovic in 2006
+            if cv.__version__ == '3.1.0':
+                fgbg = cv.createBackgroundSubtractorMOG2()
+            elif cv.__version__ == '2.4':
+                fgbg = cv.BackgroundSubtractorMOG2()
+            for image in imageList:
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'MOG2_' + image_name + '.' + cf.result_image_type),
+                               fore)
+        elif cf.modelling_method == 'gmg':
+            logger.info('Running probabilistic background estimation')
+            # Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
+            # by Andrew B. Godbehere, Akihiro Matsukawa, Ken Goldberg in 2012
+            if cv.__version__ == '3.1.0':
+                fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
+            elif cv.__version__ == '2.4':
+                fgbg = cv.BackgroundSubtractorGMG()
+            for image in imageList:
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type),
+                               fore * 255)
+        elif cf.modelling_method == 'lsbp':
+            logger.info('Running local svd binary pattern background estimation')
+            # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
+            if cv.__version__ == '3.1.0':
+                fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
+            elif cv.__version__ == '2.4':
+                fgbg = cv.BackgroundSubtractorLSBP()
+            for image in imageList:
+                foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'LSBP_' + image_name + '.' + cf.result_image_type),
+                               fore * 255)
 
 # Main function
 def main():
