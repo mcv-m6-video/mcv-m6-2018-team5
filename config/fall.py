@@ -17,6 +17,13 @@ temporal_metrics              = True        # TP vs time, F1-score vs time
 desynchronization             = True        # Apply desynchronization
 desynchronization_frames      = [0, 5, 10]  # Nr frames to desynchronize
 
+#Background Modelling
+alpha                         = 1.1
+rho                           = 0.5
+modelling_method              = 'gaussian'  # adaptive instead
+evaluate_foreground           = True
+evaluate_alpha_range          = [0.01, 5]
+
 # Save results
 save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test

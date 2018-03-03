@@ -96,37 +96,37 @@ def background_estimation(cf):
     logger = logging.getLogger(__name__)
 
     # Get a list with input images filenames
-    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type,
-                                                       cf.nr_images)
+    imageList = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images)
 
-    """ GAUSSIAN MODELLING """
-    alpha = 1
-    logger.info('Single gaussian modeling with parameter: alpha={}'.format(alpha))
-    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) // 2])
+    # Get a list with groung truth images filenames
+    gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images)
 
-    for image in imageList[(len(imageList) // 2):]:
-        foreground = background_modeling.foreground_estimation(image, mean, variance, alpha)
-        if cf.save_results:
-            image = int(cf.first_image)
-            fore = np.array(foreground, dtype='uint8')
-            cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, str(image) + '.png'), fore)
-            image += 1
+    mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
 
-    """ ADAPTIVE MODELLING """
-    rho = 0.5
-    alpha = 1.1
-    logger.info('Single Gaussian adaptive modeling with parameters: alpha={}, rho={}'.format(alpha, rho))
-    foregrounds = background_modeling.adaptive_foreground_estimation(
-        imageList[(len(imageList) // 2):], mean, variance, alpha, rho
-    )
-
-    if cf.save_results:
-        image = int(cf.first_image)
-        for fore in foregrounds:
-            fore = np.array(fore, dtype='uint8')
-            cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, 'ADAPTIVE_'+str(image) + '.png'), fore*255)
-            image += 1
-
+    if cf.evaluate_foreground:
+        alpha_range = np.r_[cf.evaluate_alpha_range[0], 1:10, cf.evaluate_alpha_range[1]]
+        segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method, imageList, gtList, mean, variance,
+                                                            alpha_range, cf.rho)
+    else:
+        if cf.modelling_method == 'gaussian':
+            ## GAUSSIAN MODELLING:
+            for image in imageList[(len(imageList) / 2 + 1):]:
+                foreground = background_modeling.foreground_estimation(image, mean, variance, cf.save_alpha)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+        elif cf.modelling_method == 'adaptive':
+            ## ADAPTIVE MODELLING:
+            for image in imageList[(len(imageList) / 2 + 1):]:
+                foreground = background_modeling.adaptive_foreground_estimation(image, mean, variance, cf.alpha, cf.rho)
+                if cf.save_results:
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8')
+                    cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
+                               fore * 255)
 
 # Main function
 def main():
