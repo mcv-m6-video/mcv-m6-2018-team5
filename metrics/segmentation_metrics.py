@@ -8,8 +8,7 @@ import time
 import cv2 as cv
 import numpy as np
 
-
-from tools.background_modeling import foreground_estimation,adaptive_foreground_estimation
+from tools.background_modeling import foreground_estimation, adaptive_foreground_estimation
 
 EPSILON = 1e-8
 
@@ -30,8 +29,9 @@ def evaluate_single_image(test_img, gt_img):
     F1_score = 2 * precision * recall / (precision + recall + EPSILON)
     return TP, FP, TN, FN, F1_score
 
-def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, variance, alpha = 1,
-                                   rho = 0.5):
+
+def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=1,
+                                   rho=0.5):
     TP = []
     FP = []
     TN = []
@@ -67,6 +67,7 @@ def evaluate_foreground_estimation(modelling_method,imageList, gtList, mean, var
     plt.show(block=False)
 
     return TP, TN, FP, FN, F1_score
+
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)
