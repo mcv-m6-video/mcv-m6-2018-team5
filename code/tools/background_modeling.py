@@ -41,7 +41,7 @@ def foreground_estimation(imageList, mean, variance, alpha):
 
     return foregrounds
 
-# def evaluate_foreground_estimation(imageList, mean, variance, alpha):
+# def foreground_estimation(imageList, mean, variance, alpha):
 #
 #     foregrounds = []
 #     threshold = alpha * (np.sqrt(variance) + 2)
@@ -58,6 +58,21 @@ def foreground_estimation(img, mean, variance, alpha):
     foreground = (img >= threshold)
     return foreground
 
+def adaptive_foreground_estimation(imageList, mean, variance, alpha, rho):
+    foregrounds = []
+    threshold = alpha * (np.sqrt(variance) + 2)
+    for image in imageList:
+        img = cv.imread(image, cv.IMREAD_GRAYSCALE)
+        img_norm = np.abs(img - mean)
+        fore = (img_norm >= threshold)
+        back = (1-fore)
+        img_background = img*back
+        # The mean for the Background pixels (back) is adapted, the mean for the foreground pixels remains the same
+        mean = (rho * img_background + (1-rho)*mean)*back + mean*(1-back)
+        # The variance for the Background pixels (back) is adapted, the variance for the foreground pixels remains the same
+        variance = (rho * np.square(img_background - mean) + (1-rho)*(variance))*back + (variance)*(1-back)
+        foregrounds.append(fore)
+    return foregrounds
 
 
 

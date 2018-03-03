@@ -96,6 +96,7 @@ def background_estimation(cf):
 
     alpha = 1
 
+    ## GAUSSIAN MODELLING:
     mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
 
     for image in imageList[(len(imageList) / 2 + 1):]:
@@ -106,6 +107,18 @@ def background_estimation(cf):
             cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, str(image) + '.png'), fore)
             image += 1
 
+    ## ADAPTIVE MODELLING:
+    rho = 0.5
+    alpha = 1.1
+    #mean, variance = background_modeling.single_gaussian_modelling(imageList[:len(imageList) / 2])
+    foregrounds = background_modeling.adaptive_foreground_estimation(imageList[(len(imageList) / 2 + 1):], mean, variance, alpha, rho)
+
+    if cf.save_results:
+        image = int(cf.first_image)
+        for fore in foregrounds:
+            fore = np.array(fore, dtype='uint8')
+            cv.imwrite(os.path.join(cf.output_folder, cf.dataset_name, 'ADAPTIVE_'+str(image) + '.png'), fore*255)
+            image += 1
 # Main function
 def main():
     # Get parameters from arguments
