@@ -23,6 +23,9 @@ rho                           = 0.5
 modelling_method              = 'lsbp'  # {gaussian, adaptive, mog, mog2, gmg, lsbp}
 evaluate_foreground           = False
 evaluate_alpha_range          = [0.01, 5]
+evaluate_alpha_values         = 100         # number of alpha values to evaluate
+evaluate_rho_range            = [0.01, 5]   # range of rho values
+evaluate_rho_values           = 100         # number of rho values to evaluate
 
 # Save results
 save_results                 = True        # Save Log file

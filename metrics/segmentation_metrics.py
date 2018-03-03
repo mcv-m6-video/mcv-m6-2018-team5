@@ -12,30 +12,25 @@ from tools.background_modeling import *
 
 EPSILON = 1e-8
 
+
 def evaluate_single_image(test_img, gt_img):
-    TP = 0
-    TN = 0
-    FP = 0
-    FN = 0
-
-    TP += np.count_nonzero((test_img == 1) & (gt_img == 255))
-    FP += np.count_nonzero((test_img == 1) & ((gt_img == 0) | (gt_img == 50)))
-    TN += np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
-    FN += np.count_nonzero((test_img == 0) & (gt_img == 255))
-
-    precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
-    recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
-    F1_score = 2 * precision * recall / (precision + recall + EPSILON)
-    return TP, FP, TN, FN, F1_score
+    TP = np.count_nonzero((test_img == 1) & (gt_img == 255))
+    FP = np.count_nonzero((test_img == 1) & ((gt_img == 0) | (gt_img == 50)))
+    TN = np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
+    FN = np.count_nonzero((test_img == 0) & (gt_img == 255))
+    return TP, FP, TN, FN
 
 
-def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=1,
+def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
                                    rho=0.5):
-    TP = []
-    FP = []
-    TN = []
-    FN = []
-    F1_score = []
+
+    TP_list = []
+    FP_list = []
+    TN_list = []
+    FN_list = []
+    precision_list = []
+    recall_list = []
+    F1_score_list = []
 
     if modelling_method == 'mog':
         fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
@@ -47,7 +42,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
         fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
 
     for al in alpha:
-        metrics = np.zeros(5)
+        metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):
             if modelling_method == 'gaussian':
                 foreground = foreground_estimation(test_image, mean, variance, al)
@@ -65,13 +60,22 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             metrics += evaluate_single_image(foreground, gt_img)
 
-        TP.append(metrics[0])
-        FP.append(metrics[1])
-        TN.append(metrics[2])
-        FN.append(metrics[3])
-        F1_score.append(metrics[4])
+        TP, FP, TN, FN = metrics
 
-    return TP, TN, FP, FN, F1_score
+        precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
+        recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
+        F1_score = 2 * precision * recall / (precision + recall + EPSILON)
+
+        TP_list.append(TP)
+        FP_list.append(FP)
+        TN_list.append(TN)
+        FN_list.append(FN)
+
+        precision_list.append(precision)
+        recall_list.append(recall)
+        F1_score_list.append(F1_score)
+
+    return TP_list, TN_list, FP_list, FN_list, precision_list, recall_list, F1_score_list
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)
