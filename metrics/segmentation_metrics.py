@@ -26,7 +26,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
     recall = []
     F1_score = []
 
-    if cv.__version__ == '3.1.0':
+    if '3.1' in cv.__version__:
         if modelling_method == 'mog':
             fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
         elif modelling_method == 'mog2':
@@ -35,7 +35,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
         elif modelling_method == 'lsbp':
             fgbg = cv.createBackgroundSubtractorLSBP()
-    elif cv.__version__ == '2.4':
+    elif '2.4' in cv.__version__:
         if modelling_method == 'mog':
             fgbg = cv.BackgroundSubtractorMOG()
         elif modelling_method == 'mog2':
@@ -44,7 +44,9 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             fgbg = cv.BackgroundSubtractorGMG()
         elif modelling_method == 'lsbp':
             fgbg = cv.BackgroundSubtractorLSBP()
-
+    else:
+        logger.error('OpenCV version not supported')
+        sys.exit()
     for al in alpha:
         metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):

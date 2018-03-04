@@ -5,6 +5,7 @@ from __future__ import division
 import argparse
 import logging
 import os
+import sys
 
 import cv2 as cv
 import numpy as np
@@ -164,10 +165,13 @@ def background_estimation(cf):
             logger.info('Running adaptive K Gaussian background estimation')
             # Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection'
             # by P. KadewTraKuPong and R. Bowden in 2001
-            if cv.__version__ == '3.1.0':
+            if '3.1' in cv.__version__:
                 fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
-            elif cv.__version__ == '2.4':
+            elif '2.4' in cv.__version__:
                 fgbg = cv.BackgroundSubtractorMOG()
+            else:
+                logger.error('OpenCV version not supported')
+                sys.exit()
             for image in imageList:
                 foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
@@ -180,10 +184,13 @@ def background_estimation(cf):
             logger.info('Running adaptive multiple Gaussian background estimation')
             # Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
             # 'Efficient Adaptive Density Estimation per Image Pixel for the Task of Background Subtraction' by Z.Zivkovic in 2006
-            if cv.__version__ == '3.1.0':
+            if '3.1' in cv.__version__:
                 fgbg = cv.createBackgroundSubtractorMOG2()
-            elif cv.__version__ == '2.4':
+            elif '2.4' in cv.__version__:
                 fgbg = cv.BackgroundSubtractorMOG2()
+            else:
+                logger.error('OpenCV version not supported')
+                sys.exit()
             for image in imageList:
                 foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
@@ -196,10 +203,13 @@ def background_estimation(cf):
             logger.info('Running probabilistic background estimation')
             # Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
             # by Andrew B. Godbehere, Akihiro Matsukawa, Ken Goldberg in 2012
-            if cv.__version__ == '3.1.0':
+            if '3.1' in cv.__version__:
                 fgbg = cv.bgsegm.createBackgroundSubtractorGMG()
-            elif cv.__version__ == '2.4':
+            elif '2.4' in cv.__version__:
                 fgbg = cv.BackgroundSubtractorGMG()
+            else:
+                logger.error('OpenCV version not supported')
+                sys.exit()
             for image in imageList:
                 foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
@@ -211,10 +221,13 @@ def background_estimation(cf):
         elif cf.modelling_method == 'lsbp':
             logger.info('Running local svd binary pattern background estimation')
             # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
-            if cv.__version__ == '3.1.0':
+            if '3.1' in cv.__version__:
                 fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
-            elif cv.__version__ == '2.4':
+            elif '2.4' in cv.__version__:
                 fgbg = cv.BackgroundSubtractorLSBP()
+            else:
+                logger.error('OpenCV version not supported')
+                sys.exit()
             for image in imageList:
                 foreground, fgbg = background_modeling.model_foreground_estimation(image, fgbg)
                 if cf.save_results:
