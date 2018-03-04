@@ -1,9 +1,12 @@
 import os
+import time
 
 import cv2 as cv
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import matplotlib.patches as patches
+import matplotlib.mlab as mlab
 import numpy as np
 from matplotlib import cm
 # noinspection PyUnresolvedReferences
@@ -12,6 +15,7 @@ from skimage.measure import block_reduce
 
 from metrics.optical_flow import read_flow_field
 from sklearn.metrics import auc
+
 
 def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
                               output_folder=""):
@@ -51,6 +55,7 @@ def plot_precision_recall_curve(precision, recall, output_folder=""):
         plt.savefig(os.path.join(output_folder, "task_1_2_precision_recall.png"))
     plt.show(block=False)
     plt.close()
+
 
 def plot_true_positives(TP, T, output_folder=""):
     plt.plot(TP, label='True Positives')
@@ -207,3 +212,91 @@ def plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range, best_
     fig.tight_layout()
     plt.show()
     plt.close()
+
+
+def plot_back_evolution(backList, first_image, output_path):
+
+    pixel_pos = [130, 130]
+    mean1, var1 = plot_pixel_evolution(backList, first_image, pixel_pos, 'r', output_path)
+
+    pixel_pos = [50, 50]
+    mean2, var2 = plot_pixel_evolution(backList, first_image, pixel_pos, 'm', output_path)
+
+    pixel_pos = [220, 300]
+    mean3, var3 = plot_pixel_evolution(backList, first_image, pixel_pos, 'b', output_path)
+
+    plt.figure()
+    x = np.linspace(0, 255, 256)
+    sigma1 = np.sqrt(var1)
+    plt.plot(x, mlab.normpdf(x, mean1, sigma1), 'r-')
+    sigma2 = np.sqrt(var2)
+    plt.plot(x, mlab.normpdf(x, mean2, sigma2), 'm-')
+    sigma3 = np.sqrt(var3)
+    plt.plot(x, mlab.normpdf(x, mean3, sigma3), 'b-')
+    plt.show()
+    plt.savefig(os.path.join(output_path, 'gaussian.png'))
+
+def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
+
+    fig = plt.figure()
+    ax_im = fig.add_subplot(211)
+
+    back_img = cv.imread(backList[0], cv.IMREAD_GRAYSCALE)
+    im = ax_im.imshow(back_img, cmap='gray')
+    ax_im.set_axis_off()
+
+    pixel = patches.Circle((pixel_pos[1],pixel_pos[0]), 5, linewidth=1, edgecolor=color, facecolor='none')
+    ax_im.add_patch(pixel)
+
+    ax = fig.add_subplot(212)
+    ax.set_xlim(int(first_image), int(first_image) + len(backList))
+    ax.set_ylim(0, 260)
+
+    frames = []
+    gray = []
+    mean_val = 0
+    mean = []
+    var_val = 0
+    std = []
+
+    gray_line, = ax.plot(frames, gray, label='Gray level')
+    mean_line, = ax.plot(frames, mean, label='Mean')
+    std_line, = ax.plot(frames, std, label='Standard deviation')
+    ax.legend()
+    if color == 'r':
+        ax.set_title('Red pixel')
+    elif color == 'g':
+        ax.set_title('Green pixel')
+    elif color == 'b':
+        ax.set_title('Blue pixel')
+    ax.set_xlabel('Frame')
+
+    plt.show(block=False)
+
+    for count in range(0, len(backList)):
+        fig.set_size_inches(8, 6, forward=True)
+
+        back_img = cv.imread(backList[count], cv.IMREAD_GRAYSCALE)
+        im.set_data(back_img)
+
+        frames.append(int(first_image) + count)
+
+        gray.append(back_img[pixel_pos[0], pixel_pos[1]])
+        mean_val = (mean_val * (count + 1) + back_img[pixel_pos[0], pixel_pos[1]]) / (count + 2)
+        mean.append(mean_val)
+        var_val = (var_val * (count + 1) + np.square(back_img[pixel_pos[0], pixel_pos[1]] - mean_val)) / (count + 2)
+        std.append(np.sqrt(var_val))
+        gray_line.set_xdata(frames)
+        gray_line.set_ydata(gray)
+        mean_line.set_xdata(frames)
+        mean_line.set_ydata(mean)
+        std_line.set_xdata(frames)
+        std_line.set_ydata(std)
+
+        plt.draw()
+        plt.pause(1e-17)
+        time.sleep(0.1)
+        filename = 'pixel' + str(pixel_pos[0]) + '_' + str(pixel_pos[1]) + '_frame' + str(int(first_image) + count) + '.png'
+        plt.savefig(os.path.join(output_path, filename))
+
+    return mean_val, var_val
