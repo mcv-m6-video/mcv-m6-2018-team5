@@ -52,6 +52,31 @@ def plot_precision_recall_curve(precision, recall, output_folder=""):
     plt.show(block=False)
     plt.close()
 
+def plot_AUC_curve(tpr, fpr, output_folder=""):
+    # precision.insert(0, precision[0])
+    # precision.insert(len(precision), precision[-1])
+    # recall.insert(0, 1)
+    # recall.insert(len(recall), 0)
+    area = auc(fpr, tpr)
+    plt.step(fpr, tpr, color='b', alpha=0.2,
+             where='post')
+
+    plt.fill_between(fpr, 0, tpr, step='post', alpha=0.2,
+                     color='b')
+    #average_precision = reduce(lambda x, y: x + y, precision) / len(precision)
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    # plt.ylim([0, 1])
+    # plt.xlim([0, 1])
+    plt.ylim([min(tpr), max(tpr)])
+    plt.xlim([min(fpr), max(fpr)])
+    plt.title('ROC curve: AUC={}'.format(area))
+    if output_folder != "":
+        plt.savefig(os.path.join(output_folder, "task_1_2_ROC.png"))
+    plt.show(block=False)
+    plt.close()
+    return area
+
 def plot_true_positives(TP, T, output_folder=""):
     plt.plot(TP, label='True Positives')
     plt.plot(T, label='Foreground pixels')

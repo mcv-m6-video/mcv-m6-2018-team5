@@ -116,7 +116,7 @@ def background_estimation(cf):
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
-        precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
+        precision, recall, F1_score, FPR = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
                                                                                           foreground_img_list,
                                                                                           foreground_gt_list,
                                                                                           mean, variance, alpha_range,
@@ -126,6 +126,8 @@ def background_estimation(cf):
 
         visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
 
+        area = visualization.plot_AUC_curve(recall, FPR, cf.output_folder)
+        logger.info("AUC: {}".format(area))
         for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, F1_score):
             logger.info(
                 '[alpha={:.2f}]   precision={}    recall={}    f1={}'.format(

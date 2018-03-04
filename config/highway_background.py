@@ -15,8 +15,8 @@ result_image_type            = 'png'
 alpha                         = 2.85
 rho                           = 0.21
 
-modelling_method              = 'adaptive'  # adaptive instead
-evaluate_foreground           = False
+modelling_method              = 'gaussian'  # adaptive instead
+evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values

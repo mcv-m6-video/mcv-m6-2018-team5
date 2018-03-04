@@ -36,8 +36,9 @@ def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mea
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     f1_score = 2 * precision * recall / (precision + recall + EPSILON)
+    fpr = fp / (tn + fn) if (tn + fn) > 0 else 0.0
 
-    return tp, tn, fp, fn, precision, recall, f1_score
+    return tp, tn, fp, fn, precision, recall, f1_score, fpr
 
 
 def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
@@ -45,7 +46,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
     precision = []
     recall = []
     F1_score = []
-
+    FPR = []
     if '3.1' in cv.__version__:
         if modelling_method == 'mog':
             fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
@@ -83,15 +84,17 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
         TP = metrics[0]
         FP = metrics[1]
         FN = metrics[3]
+        TN = metrics[2]
         tmp_precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
         tmp_recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
         tmp_F1 = (2 * tmp_precision * tmp_recall) / (tmp_precision + tmp_recall + EPSILON)
-
+        tmp_FPR = FP / (FP + TN) if (FP + TN) > 0 else 0.0
         precision.append(tmp_precision)
         recall.append(tmp_recall)
         F1_score.append(tmp_F1)
+        FPR.append(tmp_FPR)
 
-    return precision, recall, F1_score
+    return precision, recall, F1_score, FPR
 
 
 def evaluate(testList, gtList):

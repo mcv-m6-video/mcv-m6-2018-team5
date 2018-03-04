@@ -15,15 +15,15 @@ result_image_type            = 'png'
 alpha                         = 1.1
 rho                           = 0.5
 
-modelling_method              = 'adaptive'  # adaptive instead
-evaluate_foreground           = False
+modelling_method              = 'gaussian'  # adaptive instead
+evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]      # range of alpha values
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
-find_best_parameters          = True
+find_best_parameters          = False
 
 # Save results
-save_results                 = False        # Save Log file
+save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test
 save_plots                   = True        # Save the plots to disk
