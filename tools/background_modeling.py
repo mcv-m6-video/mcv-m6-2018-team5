@@ -5,24 +5,24 @@ import numpy as np
 import time
 
 
-def single_gaussian_modelling(backList):
+def single_gaussian_modelling(back_list):
     logger = logging.getLogger(__name__)
 
     start = time.time()
 
-    back_img = cv.imread(backList[0], cv.IMREAD_GRAYSCALE)
+    back_img = cv.imread(back_list[0], cv.IMREAD_GRAYSCALE)
     mean = np.zeros((back_img.shape[0], back_img.shape[1]))
     variance = np.zeros((back_img.shape[0], back_img.shape[1]))
 
-    for back_image in backList:
+    for back_image in back_list:
         back_img = cv.imread(back_image, cv.IMREAD_GRAYSCALE)
         mean = mean + back_img
-    mean = mean / len(backList)
+    mean = mean / len(back_list)
 
-    for back_image in backList:
+    for back_image in back_list:
         back_img = cv.imread(back_image, cv.IMREAD_GRAYSCALE)
         variance = variance + np.square(back_img - mean)
-    variance = variance / len(backList)
+    variance = variance / len(back_list)
 
     end = time.time()
 
@@ -37,6 +37,7 @@ def foreground_estimation(img, mean, variance, alpha):
     foreground = (img >= threshold)
     return foreground
 
+
 def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
     threshold = alpha * (np.sqrt(variance) + 2)
     img = cv.imread(img, cv.IMREAD_GRAYSCALE)
@@ -48,11 +49,11 @@ def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
     mean = (rho * img_background + (1 - rho) * mean) * back + mean * (1 - back)
     # The variance for the Background pixels (back) is adapted, the variance for the foreground pixels remains the same
 
-    variance = (rho * np.square(img_background - mean) + (1-rho)*(variance))*back + (variance)*(1-back)
+    variance = (rho * np.square(img_background - mean) + (1 - rho) * (variance)) * back + (variance) * (1 - back)
     return foreground, mean, variance
+
 
 def model_foreground_estimation(img, fgbg):
     img = cv.imread(img, cv.IMREAD_GRAYSCALE)
     foreground = fgbg.apply(img)
     return foreground, fgbg
-

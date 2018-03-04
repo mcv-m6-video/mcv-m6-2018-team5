@@ -19,6 +19,7 @@ from tools.image_parser import get_image_list_changedetection_dataset, get_image
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
 
+
 def evaluation_metrics(cf):
     logger = logging.getLogger(__name__)
 
@@ -116,8 +117,10 @@ def background_estimation(cf):
 
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
         precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
-                                                            foreground_img_list, foreground_gt_list,
-                                                            mean, variance, alpha_range, cf.rho)
+                                                                                          foreground_img_list,
+                                                                                          foreground_gt_list,
+                                                                                          mean, variance, alpha_range,
+                                                                                          cf.rho)
         visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                                 cf.output_folder)
 
@@ -161,7 +164,7 @@ def background_estimation(cf):
                     )
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
-                    fore = np.array(foreground, dtype='uint8')  * 255
+                    fore = np.array(foreground, dtype='uint8') * 255
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore)
 
@@ -183,7 +186,7 @@ def background_estimation(cf):
                 best_parameters = dict(alpha=-1, rho=-1)
                 max_score = 0
                 for i, (alpha, rho) in enumerate(itertools.product(alpha_range, rho_range)):
-                    logger.info('[{} of {}]\talpha={:.2f}\trho={:.2f}'.format(i+1, num_iterations, alpha, rho))
+                    logger.info('[{} of {}]\talpha={:.2f}\trho={:.2f}'.format(i + 1, num_iterations, alpha, rho))
 
                     # Indices in parameter grid
                     i_idx = np.argwhere(alpha_range == alpha)
@@ -285,6 +288,7 @@ def background_estimation(cf):
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'LSBP_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
+
 
 # Main function
 def main():
