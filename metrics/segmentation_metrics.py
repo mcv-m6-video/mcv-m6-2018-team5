@@ -73,7 +73,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             if modelling_method == 'gaussian':
                 foreground = foreground_estimation(test_image, mean, variance, al)
             elif modelling_method == 'adaptive':
-                foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+                foreground, mean, variance = adaptive_foreground_estimation(test_image, mean, variance, al, rho)
             elif modelling_method == 'mog' or 'mog2' or 'gmg' or 'lsbp':
                 foreground, fgbg = model_foreground_estimation(test_image, fgbg)
             foreground = np.array(foreground, dtype='uint8')
