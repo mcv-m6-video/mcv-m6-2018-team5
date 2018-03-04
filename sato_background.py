@@ -113,8 +113,8 @@ def mog2_background_estimator(imageList, gtList, cf):
 
     # Grid search over varThreshold and hist parameter space
     logger.info('Finding best history and varThreshold parameters for adaptive Gaussian model.')
-    hist_range = np.linspace(0, 50, 50, dtype='uint8')
-    varThreshold_range = np.linspace(0, 1, 50, dtype='uint8')
+    hist_range = np.linspace(0, 50, 25, dtype='uint8')
+    varThreshold_range = np.linspace(0, 1, 25)
 
     num_iterations = len(varThreshold_range) * len(hist_range)
     logger.info('Running {} iterations'.format(num_iterations))
@@ -179,8 +179,8 @@ def gmg_background_estimator(imageList, gtList, cf):
 
     # Grid search over th and initFr parameter space
     logger.info('Finding best initializationFrames and decisionThreshold parameters for adaptive Gaussian model.')
-    initFr_range = np.linspace(20, 26, 7, dtype='uint8')
-    th_range = np.linspace(3, 5, 3, dtype='uint8')
+    initFr_range = np.linspace(0, 50, 50, dtype='uint8')
+    th_range = np.linspace(0, 1, 20)
 
     num_iterations = len(th_range) * len(initFr_range)
     logger.info('Running {} iterations'.format(num_iterations))
