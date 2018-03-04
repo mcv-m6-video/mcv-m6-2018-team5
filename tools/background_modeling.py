@@ -56,4 +56,5 @@ def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
 def model_foreground_estimation(img, fgbg):
     img = cv.imread(img, cv.IMREAD_GRAYSCALE)
     foreground = fgbg.apply(img)
+    ret, foreground = cv.threshold(foreground, 50, 1, cv.THRESH_BINARY)  # Convert to [0, 1]
     return foreground, fgbg

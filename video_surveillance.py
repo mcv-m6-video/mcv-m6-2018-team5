@@ -249,7 +249,7 @@ def background_estimation(cf):
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'MOG_' + image_name + '.' + cf.result_image_type),
-                               fore)
+                               fore * 255)
         elif cf.modelling_method == 'mog2':
             logger.info('Running adaptive multiple Gaussian background estimation')
             # Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
@@ -268,7 +268,7 @@ def background_estimation(cf):
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'MOG2_' + image_name + '.' + cf.result_image_type),
-                               fore)
+                               fore * 255)
         elif cf.modelling_method == 'gmg':
             logger.info('Running probabilistic background estimation')
             # Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
@@ -276,7 +276,7 @@ def background_estimation(cf):
             if '3.1' in cv.__version__:
                 fgbg = cv.bgsegm.createBackgroundSubtractorGMG(len(imageList) // 2)
             elif '2.4' in cv.__version__:
-                fgbg = cv.BackgroundSubtractorGMG()
+                fgbg = cv.BackgroundSubtractorGMG(len(imageList) // 2)
             else:
                 logger.error('OpenCV version not supported')
                 sys.exit()
@@ -286,7 +286,7 @@ def background_estimation(cf):
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8')
-                    cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type), fore)
+                    cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type), fore * 255)
         elif cf.modelling_method == 'lsbp':
             logger.info('Running local svd binary pattern background estimation')
             # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
