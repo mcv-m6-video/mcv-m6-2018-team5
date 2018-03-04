@@ -115,12 +115,26 @@ def background_estimation(cf):
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
         precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
                                                                                           foreground_img_list,
                                                                                           foreground_gt_list,
                                                                                           mean, variance, alpha_range,
                                                                                           cf.rho)
+
+        if cf.find_best_parameters:
+            index_alpha = F1_score.index(max(F1_score))
+            best_alpha = alpha_range[index_alpha]
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+                for image in foreground_img_list:
+                    foreground = background_modeling.foreground_estimation(image, mean, variance, best_alpha)
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(os.path.join(cf.output_folder, image_name + '.' + cf.result_image_type), fore)
+
         visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                                 cf.output_folder)
 
