@@ -1,6 +1,5 @@
 from __future__ import division
-
-import logging
+import sys
 import time
 
 import cv2 as cv

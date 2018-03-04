@@ -22,6 +22,7 @@ evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = False
+plot_back_model               = False
 
 # Save results
 save_results                 = True        # Save Log file
