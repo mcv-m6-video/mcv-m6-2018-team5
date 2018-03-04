@@ -2,7 +2,7 @@
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results'
+results_path                 = 'datasets/highway/results/alpha_2.85_rho_0.21'
 
 # Input Images
 nr_images                    = 300
@@ -12,8 +12,8 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Background Modelling
-alpha                         = 1.1
-rho                           = 0.5
+alpha                         = 2.85
+rho                           = 0.21
 
 modelling_method              = 'gaussian'  # adaptive instead
 evaluate_foreground           = False

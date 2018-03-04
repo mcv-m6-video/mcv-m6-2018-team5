@@ -1,6 +1,5 @@
 from __future__ import division
-
-import logging
+import sys
 import time
 
 import cv2 as cv
@@ -10,12 +9,13 @@ from tools.background_modeling import foreground_estimation, adaptive_foreground
 
 EPSILON = 1e-8
 
+
 def evaluate_single_image(test_img, gt_img):
-    TP = np.count_nonzero((test_img == 1) & (gt_img == 255))
-    FP = np.count_nonzero((test_img == 1) & ((gt_img == 0) | (gt_img == 50)))
-    TN = np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
-    FN = np.count_nonzero((test_img == 0) & (gt_img == 255))
-    return TP, FP, TN, FN
+    tp = np.count_nonzero((test_img == 1) & (gt_img == 255))
+    fp = np.count_nonzero((test_img == 1) & ((gt_img == 0) | (gt_img == 50)))
+    tn = np.count_nonzero((test_img == 0) & ((gt_img == 0) | (gt_img == 50)))
+    fn = np.count_nonzero((test_img == 0) & (gt_img == 255))
+    return tp, fp, tn, fn
 
 
 def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha, rho):
@@ -25,22 +25,22 @@ def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mea
             foreground = foreground_estimation(test_image, mean, variance, alpha)
         elif modelling_method == 'adaptive':
             foreground, mean, variance = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+        # noinspection PyUnboundLocalVariable
         foreground = np.array(foreground, dtype='uint8')
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
         metrics += evaluate_single_image(foreground, gt_img)
 
-    TP, FP, TN, FN = metrics
+    tp, fp, tn, fn = metrics
 
-    precision = TP / (TP + FP) if (TP + FP) > 0 else 0.0
-    recall = TP / (TP + FN) if (TP + FN) > 0 else 0.0
-    F1_score = 2 * precision * recall / (precision + recall + EPSILON)
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1_score = 2 * precision * recall / (precision + recall + EPSILON)
 
-    return TP, TN, FP, FN, precision, recall, F1_score
+    return tp, tn, fp, fn, precision, recall, f1_score
 
-  
+
 def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
                                    rho=0.5):
-
     precision = []
     recall = []
     F1_score = []
@@ -91,6 +91,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
         F1_score.append(tmp_F1)
 
     return precision, recall, F1_score
+
 
 def evaluate(testList, gtList):
     logger = logging.getLogger(__name__)

@@ -19,6 +19,7 @@ from tools.image_parser import get_image_list_changedetection_dataset, get_image
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
 
+
 def evaluation_metrics(cf):
     logger = logging.getLogger(__name__)
 
@@ -120,10 +121,26 @@ def background_estimation(cf):
         logger.info('Running foreground evaluation')
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
         precision, recall, F1_score = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
-                                                            foreground_img_list, foreground_gt_list,
-                                                            mean, variance, alpha_range, cf.rho)
+                                                                                          foreground_img_list,
+                                                                                          foreground_gt_list,
+                                                                                          mean, variance, alpha_range,
+                                                                                          cf.rho)
+
+        if cf.find_best_parameters:
+            index_alpha = F1_score.index(max(F1_score))
+            best_alpha = alpha_range[index_alpha]
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+                for image in foreground_img_list:
+                    foreground = background_modeling.foreground_estimation(image, mean, variance, best_alpha)
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(os.path.join(cf.output_folder, image_name + '.' + cf.result_image_type), fore)
+
         visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                                 cf.output_folder)
 
@@ -165,7 +182,7 @@ def background_estimation(cf):
                     )
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
-                    fore = np.array(foreground, dtype='uint8')  * 255
+                    fore = np.array(foreground, dtype='uint8') * 255
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore)
 
@@ -187,7 +204,7 @@ def background_estimation(cf):
                 best_parameters = dict(alpha=-1, rho=-1)
                 max_score = 0
                 for i, (alpha, rho) in enumerate(itertools.product(alpha_range, rho_range)):
-                    logger.info('[{} of {}]\talpha={:.2f}\trho={:.2f}'.format(i+1, num_iterations, alpha, rho))
+                    logger.info('[{} of {}]\talpha={:.2f}\trho={:.2f}'.format(i + 1, num_iterations, alpha, rho))
 
                     # Indices in parameter grid
                     i_idx = np.argwhere(alpha_range == alpha)
@@ -288,6 +305,7 @@ def background_estimation(cf):
                     fore = np.array(foreground, dtype='uint8')
                     cv.imwrite(os.path.join(cf.results_path, 'LSBP_' + image_name + '.' + cf.result_image_type),
                                fore * 255)
+
 
 # Main function
 def main():
