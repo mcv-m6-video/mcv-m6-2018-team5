@@ -50,6 +50,7 @@ The goal of this project is to learn the basic concepts and techniques related t
 3. Compare with state-of-the-art implementations
 - [ ] Run different state-of-the-art Background Subtraction methods: e.g.: OpenCV BackgroundSubtractorMOG, BackgroundSubtractorMOG2, BackgroundSubtractorLSBP
 - [ ] Evaluate precision vs recall to comment which method (single Gaussian programmed by you or state-of-the-art) performs better
+- [ ] Evaluate the sequences than benefit more one algorithm and try to explain why
 4. Color Sequences
 - [ ] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
 
