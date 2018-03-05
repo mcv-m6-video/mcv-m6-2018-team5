@@ -2,7 +2,7 @@
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results/alpha_2.85_rho_0.21'
+results_path                 = 'datasets/highway/results/sota'
 
 # Input Images
 nr_images                    = 300
@@ -15,14 +15,14 @@ result_image_type            = 'png'
 alpha                         = 2.85
 rho                           = 0.21
 
-modelling_method              = 'gaussian'  # adaptive instead
+modelling_method              = 'mog'  # adaptive instead
 evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = False
-plot_back_model               = True
+plot_back_model               = False
 
 # Save results
 save_results                 = True       # Save Log file

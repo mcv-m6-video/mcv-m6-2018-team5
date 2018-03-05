@@ -6,14 +6,16 @@ import os
 import sys
 import itertools
 
-
+from sklearn.metrics import auc
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
 
 from config.load_configutation import Configuration
 from tools.image_parser import get_image_list_changedetection_dataset
 from tools.log import setup_logging
 from metrics.segmentation_metrics import evaluate_single_image
+from tools.visualization import plot_AUC_curve
 
 EPSILON = 1e-8
 
@@ -34,10 +36,11 @@ def evaluate_model(imageList, gtList, model):
         fn += fn_im
 
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1_score = 2 * precision * recall / (precision + recall + EPSILON)
+    tpr = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1_score = 2 * precision * tpr / (precision + tpr + EPSILON)
+    fpr = fp / (fp + tn) if (fp + tn) > 0 else 0.0
 
-    return precision, recall, f1_score
+    return tpr, fpr, f1_score
 
 def mog_background_estimator(imageList, gtList, cf):
     # Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection'
@@ -45,55 +48,52 @@ def mog_background_estimator(imageList, gtList, cf):
     logger = logging.getLogger(__name__)
     logger.info('Running adaptive K Gaussian background estimation')
 
-    # Grid search over numGaus and history parameter space
-    logger.info('Finding best history and numGaus parameters for adaptive Gaussian model.')
-    hist_range = np.linspace(20, 26, 7, dtype='uint8')
-    numGaus_range = np.linspace(3, 5, 3, dtype='uint8')
+    # Grid search over varThreshold and hist parameter space
+    logger.info('Finding best decisionThreshold parameter.')
+    th_range = np.linspace(0.9, 0.1, 25)
 
-    num_iterations = len(numGaus_range) * len(hist_range)
+    num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
 
-    score_grid = np.zeros((len(hist_range), len(numGaus_range)))  # score = F1-score
-    precision_grid = np.zeros_like(score_grid)  # for representacion purposes
-    recall_grid = np.zeros_like(score_grid)  # for representation purposes
-    best_parameters = dict(hist=-1, numGaus=-1)
-    max_score = 0
-    for i, (hist, numGaus) in enumerate(itertools.product(hist_range, numGaus_range)):
-        logger.info('[{} of {}]\thist={:.2f}\tnumGaus={:.2f}'.format(i + 1, num_iterations, hist, numGaus))
+    tpr = []
+    fpr = []
 
-        # Indices in parameter grid
-        i_idx = np.argwhere(hist_range == hist)
-        j_idx = np.argwhere(numGaus_range == numGaus)
+    best_th = -1
+    max_score = 0
+    for i, (th) in enumerate(th_range):
+        logger.info('[{} of {}]\tvarThreshold={:.2f}'.format(i + 1, num_iterations, th))
 
         if '3.1' in cv.__version__:
-            fgbg = cv.bgsegm.createBackgroundSubtractorMOG(history=hist, nmixtures=numGaus)
+            fgbg = cv.bgsegm.createBackgroundSubtractorMOG(history=25, backgroundRatio=th)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG(history=hist, nmixtures=numGaus)
+            fgbg = cv.BackgroundSubtractorMOG(history=25, backgroundRatio=th)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
 
-        precision, recall, f1_score = evaluate_model(imageList, gtList, fgbg)
+        tpr_temp, fpr_temp, f1_score = evaluate_model(imageList, gtList, fgbg)
 
         # Store them in the array
-        score_grid[i_idx, j_idx] = f1_score
-        precision_grid[i_idx, j_idx] = precision
-        recall_grid[i_idx, j_idx] = recall
+        tpr.append(tpr_temp)
+        fpr.append(fpr_temp)
 
         # Compare and select best parameters according to best score
         if f1_score > max_score:
             max_score = f1_score
-            best_parameters = dict(hist=hist, numGaus=numGaus)
+            best_th = th
 
-    logger.info('Finished grid search')
-    logger.info('Best parameters: hist={hist}\tnumGaus={numGaus}'.format(**best_parameters))
+    area = plot_AUC_curve(tpr, fpr)
+
+    logger.info('Finished search')
+    logger.info('Best threshold: {:-3f}'.format(best_th))
     logger.info('Best F1-score: {:.3f}'.format(max_score))
+    logger.info('AUC: {:.3f}'.format(area))
 
     if cf.save_results:
         if '3.1' in cv.__version__:
-            fgbg = cv.bgsegm.createBackgroundSubtractorMOG(history=best_parameters.get('hist'), nmixtures=best_parameters.get('numGaus'))
+            fgbg = cv.bgsegm.createBackgroundSubtractorMOG(history=25, backgroundRatio=best_th)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG(history=best_parameters.get('hist'), nmixtures=best_parameters.get('numGaus'))
+            fgbg = cv.BackgroundSubtractorMOG(history=25, backgroundRatio=best_th)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
@@ -112,54 +112,51 @@ def mog2_background_estimator(imageList, gtList, cf):
     logger.info('Running adaptive multiple Gaussian background estimation')
 
     # Grid search over varThreshold and hist parameter space
-    logger.info('Finding best history and varThreshold parameters for adaptive Gaussian model.')
-    hist_range = np.linspace(0, 50, 25, dtype='uint8')
-    varThreshold_range = np.linspace(0, 1, 25)
+    logger.info('Finding best decisionThreshold parameter.')
+    th_range = np.linspace(1, 0.1, 25)
 
-    num_iterations = len(varThreshold_range) * len(hist_range)
+    num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
 
-    score_grid = np.zeros((len(hist_range), len(varThreshold_range)))  # score = F1-score
-    precision_grid = np.zeros_like(score_grid)  # for representacion purposes
-    recall_grid = np.zeros_like(score_grid)  # for representation purposes
-    best_parameters = dict(hist=-1, varThreshold=-1)
-    max_score = 0
-    for i, (hist, varThreshold) in enumerate(itertools.product(hist_range, varThreshold_range)):
-        logger.info('[{} of {}]\thist={:.2f}\tvarThreshold={:.2f}'.format(i + 1, num_iterations, hist, varThreshold))
+    tpr = []
+    fpr = []
 
-        # Indices in parameter grid
-        i_idx = np.argwhere(hist_range == hist)
-        j_idx = np.argwhere(varThreshold_range == varThreshold)
+    best_th = -1
+    max_score = 0
+    for i, (th) in enumerate(th_range):
+        logger.info('[{} of {}]\tvarThreshold={:.2f}'.format(i + 1, num_iterations, th))
 
         if '3.1' in cv.__version__:
-            fgbg = cv.createBackgroundSubtractorMOG2(history=best_parameters.get('hist'), varThreshold=best_parameters.get('varThreshold'))
+            fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=th)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG2(history=best_parameters.get('hist'), varThreshold=best_parameters.get('varThreshold'))
+            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=th)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
 
-        precision, recall, f1_score = evaluate_model(imageList, gtList, fgbg)
+        tpr_temp, fpr_temp, f1_score = evaluate_model(imageList, gtList, fgbg)
 
         # Store them in the array
-        score_grid[i_idx, j_idx] = f1_score
-        precision_grid[i_idx, j_idx] = precision
-        recall_grid[i_idx, j_idx] = recall
+        tpr.append(tpr_temp)
+        fpr.append(fpr_temp)
 
         # Compare and select best parameters according to best score
         if f1_score > max_score:
             max_score = f1_score
-            best_parameters = dict(hist=hist, varThreshold=varThreshold)
+            best_th = th
 
-    logger.info('Finished grid search')
-    logger.info('Best parameters: hist={hist}\tvarThreshold={varThreshold}'.format(**best_parameters))
+    area = plot_AUC_curve(tpr, fpr)
+
+    logger.info('Finished search')
+    logger.info('Best threshold: {:-3f}'.format(best_th))
     logger.info('Best F1-score: {:.3f}'.format(max_score))
+    logger.info('AUC: {:.3f}'.format(area))
 
     if cf.save_results:
         if '3.1' in cv.__version__:
-            fgbg = cv.createBackgroundSubtractorMOG2(history=best_parameters.get('hist'), varThreshold=best_parameters.get('varThreshold'))
+            fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=best_th)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG2(history=best_parameters.get('hist'), varThreshold=best_parameters.get('varThreshold'))
+            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=best_th)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
@@ -177,59 +174,52 @@ def gmg_background_estimator(imageList, gtList, cf):
     logger = logging.getLogger(__name__)
     logger.info('Running probabilistic background estimation')
 
-    # Grid search over th and initFr parameter space
-    logger.info('Finding best initializationFrames and decisionThreshold parameters for adaptive Gaussian model.')
-    initFr_range = np.linspace(0, 50, 50, dtype='uint8')
-    th_range = np.linspace(0, 1, 20)
+    # Grid search over varThreshold and hist parameter space
+    logger.info('Finding best decisionThreshold parameter.')
+    th_range = np.linspace(0, 1, 25)
 
-    num_iterations = len(th_range) * len(initFr_range)
+    num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
 
-    score_grid = np.zeros((len(initFr_range), len(th_range)))  # score = F1-score
-    precision_grid = np.zeros_like(score_grid)  # for representacion purposes
-    recall_grid = np.zeros_like(score_grid)  # for representation purposes
-    best_parameters = dict(initFr=-1, th=-1)
-    max_score = 0
-    for i, (initFr, th) in enumerate(itertools.product(initFr_range, th_range)):
-        logger.info('[{} of {}]\tinitFr={:.2f}\tth={:.2f}'.format(i + 1, num_iterations, initFr, th))
+    tpr = []
+    fpr = []
 
-        # Indices in parameter grid
-        i_idx = np.argwhere(initFr_range == initFr)
-        j_idx = np.argwhere(th_range == th)
+    best_th = -1
+    max_score = 0
+    for i, (th) in enumerate(th_range):
+        logger.info('[{} of {}]\tvarThreshold={:.2f}'.format(i + 1, num_iterations, th))
 
         if '3.1' in cv.__version__:
-            fgbg = cv.bgsegm.createBackgroundSubtractorGMG(initializationFrames=best_parameters.get('initFr'),
-                                                           decisionThreshold=best_parameters.get('th'))
+            fgbg = cv.bgsegm.createBackgroundSubtractorGMG(initializationFrames=50, decisionThreshold=th)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorGMG(initializationFrames=best_parameters.get('initFr'),
-                                              decisionThreshold=best_parameters.get('th'))
+            fgbg = cv.BackgroundSubtractorGMG(initializationFrames=50, decisionThreshold=th)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
 
-        precision, recall, f1_score = evaluate_model(imageList, gtList, fgbg)
+        tpr_temp, fpr_temp, f1_score = evaluate_model(imageList, gtList, fgbg)
 
         # Store them in the array
-        score_grid[i_idx, j_idx] = f1_score
-        precision_grid[i_idx, j_idx] = precision
-        recall_grid[i_idx, j_idx] = recall
+        tpr.append(tpr_temp)
+        fpr.append(fpr_temp)
 
         # Compare and select best parameters according to best score
         if f1_score > max_score:
             max_score = f1_score
-            best_parameters = dict(initFr=initFr, th=th)
+            best_th = th
 
-    logger.info('Finished grid search')
-    logger.info('Best parameters: initFr={initFr}\tth={th}'.format(**best_parameters))
+    area = plot_AUC_curve(tpr, fpr)
+
+    logger.info('Finished search')
+    logger.info('Best threshold: {:-3f}'.format(best_th))
     logger.info('Best F1-score: {:.3f}'.format(max_score))
+    logger.info('AUC: {:.3f}'.format(area))
 
     if cf.save_results:
         if '3.1' in cv.__version__:
-            fgbg = cv.bgsegm.createBackgroundSubtractorGMG(initializationFrames=best_parameters.get('initFr'),
-                                                           decisionThreshold=best_parameters.get('th'))
+            fgbg = cv.bgsegm.createBackgroundSubtractorGMG(initializationFrames=50, decisionThreshold=best_th)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorGMG(initializationFrames=best_parameters.get('initFr'),
-                                              decisionThreshold=best_parameters.get('th'))
+            fgbg = cv.BackgroundSubtractorGMG(initializationFrames=50, decisionThreshold=best_th)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
@@ -239,7 +229,7 @@ def gmg_background_estimator(imageList, gtList, cf):
             foreground = fgbg.apply(img)
             image_name = os.path.basename(image)
             image_name = os.path.splitext(image_name)[0]
-            cv.imwrite(os.path.join(cf.results_path, 'MOG2_' + image_name + '.' + cf.result_image_type), foreground)
+            cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type), foreground)
 
 def lsbp_background_estimator(imageList, gtList, cf):
     # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
