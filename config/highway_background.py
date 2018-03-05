@@ -16,6 +16,8 @@ alpha                         = 2.85
 rho                           = 0.21
 
 modelling_method              = 'gaussian'  # adaptive instead
+color_images                  = True        # Use RGB, YUV color channels
+color_space                   = "RGB"       # RGB, YUV
 evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
