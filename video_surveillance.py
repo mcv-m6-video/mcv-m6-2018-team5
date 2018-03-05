@@ -148,6 +148,7 @@ def background_estimation(cf):
 
         area = visualization.plot_AUC_curve(recall, FPR, cf.output_folder)
         logger.info("AUC: {}".format(area))
+
         for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, F1_score):
             logger.info(
                 '[alpha={:.2f}]   precision={}    recall={}    f1={}'.format(

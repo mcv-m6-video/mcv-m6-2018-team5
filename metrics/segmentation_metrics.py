@@ -53,7 +53,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
             if modelling_method == 'gaussian':
                 foreground = foreground_estimation(test_image, mean, variance, al)
             elif modelling_method == 'adaptive':
-                foreground = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+                foreground, mean, variance = adaptive_foreground_estimation(test_image, mean, variance, al, rho)
             foreground = np.array(foreground, dtype='uint8')
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             metrics += evaluate_single_image(foreground, gt_img)
