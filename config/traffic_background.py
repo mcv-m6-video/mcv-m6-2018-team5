@@ -13,9 +13,9 @@ result_image_type            = 'png'
 
 # Background Modelling
 alpha                         = 1.1
-rho                           = 0.5
+rho                           = 0.16
 
-modelling_method              = 'gaussian'  # adaptive instead
+modelling_method              = 'adaptive'  # adaptive instead
 color_images                  = False        # Use RGB, YUV color channels
 color_space                   = "RGB"       # RGB, YUV
 evaluate_foreground           = True

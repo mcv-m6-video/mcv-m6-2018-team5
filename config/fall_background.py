@@ -13,17 +13,17 @@ result_image_type            = 'png'
 
 # Background Modelling
 alpha                         = 1.1
-rho                           = 0.5
+rho                           = 0.05
 
-modelling_method              = 'gaussian'  # adaptive instead
-color_images                  = True        # Use RGB, YUV color channels
+modelling_method              = 'adaptive'  # adaptive instead
+color_images                  = False        # Use RGB, YUV color channels
 color_space                   = "RGB"       # RGB, YUV
 evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]      # range of alpha values
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
-find_best_parameters          = True
+find_best_parameters          = False
 plot_back_model               = False
 
 # Save results

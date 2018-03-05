@@ -2,7 +2,7 @@
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results/sota'
+results_path                 = 'datasets/highway/results'
 
 # Input Images
 nr_images                    = 300
@@ -15,8 +15,8 @@ result_image_type            = 'png'
 alpha                         = 2.85
 rho                           = 0.21
 
-modelling_method              = 'gaussian'  # adaptive instead
-color_images                  = True        # Use RGB, YUV color channels
+modelling_method              = 'adaptive'  # adaptive instead
+color_images                  = False        # Use RGB, YUV color channels
 color_space                   = "RGB"       # RGB, YUV
 evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]

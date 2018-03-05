@@ -122,11 +122,9 @@ def background_estimation(cf):
         mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
-        precision, recall, F1_score, FPR = segmentation_metrics.evaluate_foreground_estimation(cf.modelling_method,
-                                                                                          foreground_img_list,
-                                                                                          foreground_gt_list,
-                                                                                          mean, variance, alpha_range,
-                                                                                          cf.rho)
+        precision, recall, F1_score, FPR = segmentation_metrics.evaluate_foreground_estimation(
+            cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha_range, cf.rho
+        )
 
         if cf.find_best_parameters:
             index_alpha = F1_score.index(max(F1_score))
@@ -234,6 +232,7 @@ def background_estimation(cf):
                 visualization.plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range,
                                                                  best_parameters, best_score=max_score,
                                                                  metric='F1-score', sequence_name=cf.dataset_name)
+
 
 # Main function
 def main():

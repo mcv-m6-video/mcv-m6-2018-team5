@@ -3,18 +3,17 @@ import time
 
 import cv2 as cv
 import matplotlib as mpl
+import matplotlib.mlab as mlab
+import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import matplotlib.patches as patches
-import matplotlib.mlab as mlab
 import numpy as np
-from matplotlib import cm
 # noinspection PyUnresolvedReferences
 from mpl_toolkits.mplot3d import Axes3D
 from skimage.measure import block_reduce
+from sklearn.metrics import auc
 
 from metrics.optical_flow import read_flow_field
-from sklearn.metrics import auc
 
 
 def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
@@ -38,7 +37,7 @@ def plot_precision_recall_curve(precision, recall, output_folder=""):
     # precision.insert(len(precision), precision[-1])
     # recall.insert(0, 1)
     # recall.insert(len(recall), 0)
-    area = auc(recall, precision)
+    area = auc(recall, precision, reorder=True)
     plt.step(recall, precision, color='b', alpha=0.2,
              where='post')
     plt.fill_between(recall, precision, step='post', alpha=0.2,
@@ -56,18 +55,19 @@ def plot_precision_recall_curve(precision, recall, output_folder=""):
     plt.show(block=False)
     plt.close()
 
+
 def plot_AUC_curve(tpr, fpr, output_folder=""):
     # precision.insert(0, precision[0])
     # precision.insert(len(precision), precision[-1])
     # recall.insert(0, 1)
     # recall.insert(len(recall), 0)
-    area = auc(fpr, tpr)
+    area = auc(fpr, tpr, reorder=True)
     plt.step(fpr, tpr, color='b', alpha=0.2,
              where='post')
 
     plt.fill_between(fpr, 0, tpr, step='post', alpha=0.2,
                      color='b')
-    #average_precision = reduce(lambda x, y: x + y, precision) / len(precision)
+    # average_precision = reduce(lambda x, y: x + y, precision) / len(precision)
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     # plt.ylim([0, 1])
@@ -80,6 +80,7 @@ def plot_AUC_curve(tpr, fpr, output_folder=""):
     plt.show(block=False)
     plt.close()
     return area
+
 
 def plot_true_positives(TP, T, output_folder=""):
     plt.plot(TP, label='True Positives')
@@ -239,7 +240,6 @@ def plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range, best_
 
 
 def plot_back_evolution(backList, first_image, output_path):
-
     pixel_pos = [130, 130]
     mean1, var1 = plot_pixel_evolution(backList, first_image, pixel_pos, 'r', output_path)
 
@@ -260,8 +260,8 @@ def plot_back_evolution(backList, first_image, output_path):
     plt.show()
     plt.savefig(os.path.join(output_path, 'gaussian.png'))
 
-def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
 
+def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
     fig = plt.figure()
     ax_im = fig.add_subplot(211)
 
@@ -269,7 +269,7 @@ def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
     im = ax_im.imshow(back_img, cmap='gray')
     ax_im.set_axis_off()
 
-    pixel = patches.Circle((pixel_pos[1],pixel_pos[0]), 5, linewidth=1, edgecolor=color, facecolor='none')
+    pixel = patches.Circle((pixel_pos[1], pixel_pos[0]), 5, linewidth=1, edgecolor=color, facecolor='none')
     ax_im.add_patch(pixel)
 
     ax = fig.add_subplot(212)
@@ -320,7 +320,8 @@ def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
         plt.draw()
         plt.pause(1e-17)
         time.sleep(0.1)
-        filename = 'pixel' + str(pixel_pos[0]) + '_' + str(pixel_pos[1]) + '_frame' + str(int(first_image) + count) + '.png'
+        filename = 'pixel' + str(pixel_pos[0]) + '_' + str(pixel_pos[1]) + '_frame' + str(
+            int(first_image) + count) + '.png'
         plt.savefig(os.path.join(output_path, filename))
 
     return mean_val, var_val
