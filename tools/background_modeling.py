@@ -115,11 +115,14 @@ def adaptive_foreground_estimation_color(img, mean, variance, alpha, rho, color_
     foreground = (img_norm[:, :, 0] >= threshold[:, :, 0]) | \
                  (img_norm[:, :, 1] >= threshold[:, :, 1]) | \
                  (img_norm[:, :, 2] >= threshold[:, :, 2])
+    foreground = np.expand_dims(foreground, axis=-1)
     back = (1 - foreground)
     img_background = img * back
     # The mean for the Background pixels (back) is adapted, the mean for the foreground pixels remains the same
     mean = (rho * img_background + (1 - rho) * mean) * back + mean * (1 - back)
     # The variance for the Background pixels (back) is adapted, the variance for the foreground pixels remains the same
 
-    variance = (rho * np.square(img_background - mean) + (1 - rho) * (variance)) * back + (variance) * (1 - back)
+    variance = (rho * np.square(img_background - mean) + (1 - rho) * variance) * back + variance * (1 - back)
+
+    foreground = np.take(foreground, indices=0, axis=-1)
     return foreground, mean, variance
