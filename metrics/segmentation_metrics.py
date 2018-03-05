@@ -1,11 +1,13 @@
 from __future__ import division
-import sys
+
+import logging
 import time
 
 import cv2 as cv
 import numpy as np
 
-from tools.background_modeling import foreground_estimation, adaptive_foreground_estimation
+from tools.background_modeling import (foreground_estimation, adaptive_foreground_estimation,
+                                       foreground_estimation_color, adaptive_foreground_estimation_color)
 
 EPSILON = 1e-8
 
@@ -41,7 +43,7 @@ def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mea
 
 
 def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
-                                   rho=0.5):
+                                   rho=0.5, color_images=False, color_space='RGB'):
     precision = []
     recall = []
     F1_score = []
@@ -51,9 +53,16 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
         metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):
             if modelling_method == 'gaussian':
-                foreground = foreground_estimation(test_image, mean, variance, al)
+                if color_images:
+                    foreground = foreground_estimation_color(test_image, mean, variance, al, color_space)
+                else:
+                    foreground = foreground_estimation(test_image, mean, variance, al)
             elif modelling_method == 'adaptive':
-                foreground, mean, variance = adaptive_foreground_estimation(test_image, mean, variance, al, rho)
+                if color_images:
+                    foreground, mean, variance = adaptive_foreground_estimation_color(test_image, mean,
+                                                                                      variance, al, rho, color_space)
+                else:
+                    foreground, mean, variance = adaptive_foreground_estimation(test_image, mean, variance, al, rho)
             foreground = np.array(foreground, dtype='uint8')
             gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
             metrics += evaluate_single_image(foreground, gt_img)

@@ -6,7 +6,6 @@ import argparse
 import itertools
 import logging
 import os
-import sys
 
 import cv2 as cv
 import numpy as np
@@ -119,11 +118,17 @@ def background_estimation(cf):
 
     if cf.evaluate_foreground:
         logger.info('Running foreground evaluation')
-        mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+        if cf.color_images:
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                                   cf.color_space)
+        else:
+            # Model with a single Gaussian
+            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=50)
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
         precision, recall, F1_score, FPR = segmentation_metrics.evaluate_foreground_estimation(
-            cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha_range, cf.rho
+            cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha_range, cf.rho,
+            cf.color_images
         )
 
         if cf.find_best_parameters:
@@ -157,14 +162,22 @@ def background_estimation(cf):
     else:
         if cf.modelling_method == 'gaussian':
             logger.info('Running single Gaussian background estimation')
-            # Model with a single Gaussian
-            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+            if cf.color_images:
+                mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                                       cf.color_space)
+            else:
+                # Model with a single Gaussian
+                mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
             if cf.save_results:
                 logger.info('Saving results in {}'.format(cf.results_path))
                 mkdirs(cf.results_path)
                 for image in foreground_img_list:
-                    foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
+                    if cf.color_images:
+                        foreground = background_modeling.foreground_estimation_color(image, mean, variance, cf.alpha,
+                                                                                     cf.color_space)
+                    else:
+                        foreground = background_modeling.foreground_estimation(image, mean, variance, cf.alpha)
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
                     fore = np.array(foreground, dtype='uint8') * 255

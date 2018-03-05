@@ -1,3 +1,5 @@
+from __future__ import division
+
 import logging
 
 import cv2 as cv
@@ -37,16 +39,16 @@ def multivariative_gaussian_modelling(back_list, color_space="RGB"):
     start = time.time()
 
     back_img = cv.imread(back_list[0])
-    if color_space == "YUV":
-        back_img = cv.cvtColor(back_img, cv.CV_BGR2YCrCb)
+    if color_space == "HSV":
+        back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
 
     mean = np.zeros((back_img.shape[0], back_img.shape[1], back_img.shape[2]))
     variance = np.zeros((back_img.shape[0], back_img.shape[1], back_img.shape[2]))
 
     for back_image in back_list:
-        back_img = cv.imread(back_image, cv.IMREAD_COLOR)
-        if color_space == "YUV":
-            back_img = cv.cvtColor(back_img, cv.CV_BGR2YCrCb)
+        back_img = cv.imread(back_image)
+        if color_space == "HSV":
+            back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
         mean[:, :, 0] = mean[:, :, 0] + back_img[:, :, 0]
         mean[:, :, 1] = mean[:, :, 1] + back_img[:, :, 1]
         mean[:, :, 2] = mean[:, :, 2] + back_img[:, :, 2]
@@ -54,9 +56,9 @@ def multivariative_gaussian_modelling(back_list, color_space="RGB"):
     mean = mean / len(back_list)
 
     for back_image in back_list:
-        back_img = cv.imread(back_image, cv.IMREAD_COLOR)
-        if color_space == "YUV":
-            back_img = cv.cvtColor(back_img, cv.CV_BGR2YCrCb)
+        back_img = cv.imread(back_image)
+        if color_space == "HSV":
+            back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
         variance[:, :, 0] = variance[:, :, 0] + np.square(back_img[:, :, 0] - mean[:, :, 0])
         variance[:, :, 1] = variance[:, :, 1] + np.square(back_img[:, :, 1] - mean[:, :, 1])
         variance[:, :, 2] = variance[:, :, 2] + np.square(back_img[:, :, 2] - mean[:, :, 2])
@@ -77,14 +79,15 @@ def foreground_estimation(img, mean, variance, alpha):
     return foreground
 
 
-def foreground_estimation_color(img, mean, variance, alpha):
-    img = cv.imread(img) - mean
-    threshold = np.zeros((img.shape[0], img.shape[1], img.shape[2]))
-    threshold[:, :, 0] = alpha[0] * (np.sqrt(variance[:, :, 0]) + 2)
-    threshold[:, :, 1] = alpha[1] * (np.sqrt(variance[:, :, 1]) + 2)
-    threshold[:, :, 2] = alpha[2] * (np.sqrt(variance[:, :, 2]) + 2)
-    foreground = (img[:, :, 0] >= threshold[:, :, 0]) & (img[:, :, 1] >= threshold[:, :, 1]) & (
-                img[:, :, 2] >= threshold[:, :, 2])
+def foreground_estimation_color(img, mean, variance, alpha, color_space):
+    img = cv.imread(img)
+    if color_space == "HSV":
+        img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    img = np.abs(img - mean)
+    threshold = alpha * (np.sqrt(variance) + 2)
+    foreground = (img[:, :, 0] >= threshold[:, :, 0]) | \
+                 (img[:, :, 1] >= threshold[:, :, 1]) | \
+                 (img[:, :, 2] >= threshold[:, :, 2])
     return foreground
 
 
@@ -93,6 +96,25 @@ def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
     img = cv.imread(img, cv.IMREAD_GRAYSCALE)
     img_norm = np.abs(img - mean)
     foreground = (img_norm >= threshold)
+    back = (1 - foreground)
+    img_background = img * back
+    # The mean for the Background pixels (back) is adapted, the mean for the foreground pixels remains the same
+    mean = (rho * img_background + (1 - rho) * mean) * back + mean * (1 - back)
+    # The variance for the Background pixels (back) is adapted, the variance for the foreground pixels remains the same
+
+    variance = (rho * np.square(img_background - mean) + (1 - rho) * variance) * back + variance * (1 - back)
+    return foreground, mean, variance
+
+
+def adaptive_foreground_estimation_color(img, mean, variance, alpha, rho, color_space):
+    img = cv.imread(img)
+    if color_space == "HSV":
+        img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    img_norm = np.abs(img - mean)
+    threshold = alpha * (np.sqrt(variance) + 2)
+    foreground = (img_norm[:, :, 0] >= threshold[:, :, 0]) | \
+                 (img_norm[:, :, 1] >= threshold[:, :, 1]) | \
+                 (img_norm[:, :, 2] >= threshold[:, :, 2])
     back = (1 - foreground)
     img_background = img * back
     # The mean for the Background pixels (back) is adapted, the mean for the foreground pixels remains the same
