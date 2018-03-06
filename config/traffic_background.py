@@ -12,13 +12,13 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Background Modelling
-alpha                         = 1.1
-rho                           = 0.16
+alpha                         = 3.7627
+rho                           = 0.1578
 
 modelling_method              = 'adaptive'  # adaptive instead
 color_images                  = True        # Use RGB, HSV color channels
 color_space                   = "HSV"       # RGB, HSV
-evaluate_foreground           = False
+evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]      # range of alpha values
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
