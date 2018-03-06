@@ -128,7 +128,7 @@ def background_estimation(cf):
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
         precision, recall, F1_score, FPR = segmentation_metrics.evaluate_foreground_estimation(
             cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha_range, cf.rho,
-            cf.color_images
+            cf.color_images, cf.color_space
         )
 
         best_f1_score = max(F1_score)
@@ -160,7 +160,7 @@ def background_estimation(cf):
             # Model with a single Gaussian
             mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
-        if cf.modelling_method == 'gaussian':
+        if cf.modelling_method == 'non-adaptive':
             logger.info('Running single Gaussian background estimation')
             if cf.save_results:
                 logger.info('Saving results in {}'.format(cf.results_path))

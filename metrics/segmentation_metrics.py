@@ -24,7 +24,7 @@ def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mea
                                         color_images=False, color_space='RGB'):
     metrics = np.zeros(4)
     for test_image, gt_image in zip(imageList, gtList):
-        if modelling_method == 'gaussian':
+        if modelling_method == 'non-adaptive':
             if color_images:
                 foreground = foreground_estimation_color(test_image, mean, variance, alpha,
                                                                              color_space)
@@ -62,7 +62,7 @@ def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, va
     for al in alpha:
         metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):
-            if modelling_method == 'gaussian':
+            if modelling_method == 'non-adaptive':
                 if color_images:
                     foreground = foreground_estimation_color(test_image, mean, variance, al, color_space)
                 else:
