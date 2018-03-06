@@ -20,13 +20,23 @@ def evaluate_single_image(test_img, gt_img):
     return tp, fp, tn, fn
 
 
-def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha, rho):
+def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha, rho,
+                                        color_images=False, color_space='RGB'):
     metrics = np.zeros(4)
     for test_image, gt_image in zip(imageList, gtList):
         if modelling_method == 'gaussian':
-            foreground = foreground_estimation(test_image, mean, variance, alpha)
+            if color_images:
+                foreground = foreground_estimation_color(test_image, mean, variance, alpha,
+                                                                             color_space)
+            else:
+                foreground = foreground_estimation(test_image, mean, variance, alpha)
         elif modelling_method == 'adaptive':
-            foreground, mean, variance = adaptive_foreground_estimation(test_image, mean, variance, alpha, rho)
+            if color_images:
+                foreground, mean, variance = adaptive_foreground_estimation_color(test_image, mean,
+                                                                            variance, alpha, rho, color_space)
+            else:
+                foreground, mean, variance = adaptive_foreground_estimation(test_image, mean,
+                                                                            variance, alpha, rho)
         # noinspection PyUnboundLocalVariable
         foreground = np.array(foreground, dtype='uint8')
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
