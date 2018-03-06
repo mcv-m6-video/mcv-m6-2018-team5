@@ -131,18 +131,11 @@ def background_estimation(cf):
             cf.color_images
         )
 
-        if cf.find_best_parameters:
-            index_alpha = F1_score.index(max(F1_score))
-            best_alpha = alpha_range[index_alpha]
-            if cf.save_results:
-                logger.info('Saving results in {}'.format(cf.results_path))
-                mkdirs(cf.results_path)
-                for image in foreground_img_list:
-                    foreground = background_modeling.foreground_estimation(image, mean, variance, best_alpha)
-                    image_name = os.path.basename(image)
-                    image_name = os.path.splitext(image_name)[0]
-                    fore = np.array(foreground, dtype='uint8') * 255
-                    cv.imwrite(os.path.join(cf.output_folder, image_name + '.' + cf.result_image_type), fore)
+        best_f1_score = max(F1_score)
+        index_alpha = F1_score.index(best_f1_score)
+        best_alpha = alpha_range[index_alpha]
+        logger.info('Best alpha: {:.3f}'.format(best_alpha))
+        logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
 
         visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                                 cf.output_folder)
