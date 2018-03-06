@@ -54,7 +54,7 @@ def mog_background_estimator(imageList, gtList, cf):
 
     # Grid search over varThreshold and hist parameter space
     logger.info('Finding best decisionThreshold parameter.')
-    th_range = np.linspace(0, 50, 100)
+    th_range = np.linspace(0, 1, 50)
 
     num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
@@ -180,7 +180,7 @@ def gmg_background_estimator(imageList, gtList, cf):
 
     # Grid search over varThreshold and hist parameter space
     logger.info('Finding best decisionThreshold parameter.')
-    th_range = np.linspace(0, 50, 100)
+    th_range = np.linspace(0, 1, 50)
 
     num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
