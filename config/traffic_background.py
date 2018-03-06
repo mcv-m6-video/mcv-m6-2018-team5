@@ -12,21 +12,22 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Background Modelling
-alpha                         = 1.1
-rho                           = 0.5
+alpha                         = 3.7627
+rho                           = 0.1578
 
-modelling_method              = 'gaussian'  # adaptive instead
-color_images                  = False        # Use RGB, YUV color channels
-color_space                   = "RGB"       # RGB, YUV
+modelling_method              = 'adaptive'  # adaptive instead
+color_images                  = True        # Use RGB, HSV color channels
+color_space                   = "HSV"       # RGB, HSV
 evaluate_foreground           = True
-evaluate_alpha_range          = [1, 6]      # range of alpha values
+evaluate_alpha_range          = [0, 6]      # range of alpha values
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
-find_best_parameters          = False
+find_best_parameters          = True
 plot_back_model               = False
 
 # Save results
 save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test
 save_plots                   = True        # Save the plots to disk
+
