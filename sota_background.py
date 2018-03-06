@@ -28,7 +28,7 @@ def evaluate_model(imageList, gtList, model):
 
     for image, gt in zip(imageList, gtList):
         img = cv.imread(image, cv.IMREAD_GRAYSCALE)
-        gtImg = cv.imread(image, cv.IMREAD_GRAYSCALE)
+        gtImg = cv.imread(gt, cv.IMREAD_GRAYSCALE)
         foreground = model.apply(img)
         rect, foreground = cv.threshold(foreground, 50, 1, cv.THRESH_BINARY)
         if np.min(foreground) != np.max(foreground):
@@ -133,7 +133,7 @@ def mog2_background_estimator(imageList, gtList, cf):
         if '3.1' in cv.__version__:
             fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=th, detectShadows=False)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=th, detectShadows=False)
+            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=th, bShadowDetection=False)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
@@ -160,7 +160,7 @@ def mog2_background_estimator(imageList, gtList, cf):
         if '3.1' in cv.__version__:
             fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=best_th, detectShadows=False)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=best_th, detectShadows=False)
+            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=best_th, bShadowDetection=False)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
