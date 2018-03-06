@@ -15,9 +15,9 @@ result_image_type            = 'png'
 alpha                         = 1.1
 rho                           = 0.0526
 
-modelling_method              = 'adaptive'  # adaptive instead
-color_images                  = True            # Use RGB, HSV color channels
-color_space                   = "HSV"           # RGB, HSV
+modelling_method              = 'adaptive'  # gaussian, adaptive
+color_images                  = True        # Use RGB, HSV color channels
+color_space                   = "HSV"       # RGB, HSV
 evaluate_foreground           = False
 evaluate_alpha_range          = [0, 6]      # range of alpha values
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
