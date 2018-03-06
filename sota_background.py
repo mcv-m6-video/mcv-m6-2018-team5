@@ -16,6 +16,7 @@ from tools.image_parser import get_image_list_changedetection_dataset
 from tools.log import setup_logging
 from metrics.segmentation_metrics import evaluate_single_image
 from tools.visualization import plot_AUC_curve
+from tools import Subsense
 
 EPSILON = 1e-8
 
@@ -24,16 +25,19 @@ def evaluate_model(imageList, gtList, model):
     fp = 0
     tn = 0
     fn = 0
+
     for image, gt in zip(imageList, gtList):
         img = cv.imread(image, cv.IMREAD_GRAYSCALE)
         gtImg = cv.imread(image, cv.IMREAD_GRAYSCALE)
         foreground = model.apply(img)
         rect, foreground = cv.threshold(foreground, 50, 1, cv.THRESH_BINARY)
-        tp_im, fp_im, tn_im, fn_im = evaluate_single_image(foreground, gtImg)
-        tp += tp_im
-        fp += fp_im
-        tn += tn_im
-        fn += fn_im
+        if np.min(foreground) != np.max(foreground):
+            tp_im, fp_im, tn_im, fn_im = evaluate_single_image(foreground, gtImg)
+            tp += tp_im
+            fp += fp_im
+            tn += tn_im
+            fn += fn_im
+
 
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     tpr = tp / (tp + fn) if (tp + fn) > 0 else 0.0
@@ -50,7 +54,7 @@ def mog_background_estimator(imageList, gtList, cf):
 
     # Grid search over varThreshold and hist parameter space
     logger.info('Finding best decisionThreshold parameter.')
-    th_range = np.linspace(0.9, 0.1, 25)
+    th_range = np.linspace(0, 50, 100)
 
     num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
@@ -82,7 +86,7 @@ def mog_background_estimator(imageList, gtList, cf):
             max_score = f1_score
             best_th = th
 
-    area = plot_AUC_curve(tpr, fpr)
+    area = plot_AUC_curve(tpr, fpr, cf.output_folder)
 
     logger.info('Finished search')
     logger.info('Best threshold: {:-3f}'.format(best_th))
@@ -113,7 +117,7 @@ def mog2_background_estimator(imageList, gtList, cf):
 
     # Grid search over varThreshold and hist parameter space
     logger.info('Finding best decisionThreshold parameter.')
-    th_range = np.linspace(1, 0.1, 25)
+    th_range = np.linspace(0, 50, 100)
 
     num_iterations = len(th_range)
     logger.info('Running {} iterations'.format(num_iterations))
@@ -127,9 +131,9 @@ def mog2_background_estimator(imageList, gtList, cf):
         logger.info('[{} of {}]\tvarThreshold={:.2f}'.format(i + 1, num_iterations, th))
 
         if '3.1' in cv.__version__:
-            fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=th)
+            fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=th, detectShadows=False)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=th)
+            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=th, detectShadows=False)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
@@ -145,7 +149,7 @@ def mog2_background_estimator(imageList, gtList, cf):
             max_score = f1_score
             best_th = th
 
-    area = plot_AUC_curve(tpr, fpr)
+    area = plot_AUC_curve(tpr, fpr, cf.output_folder)
 
     logger.info('Finished search')
     logger.info('Best threshold: {:-3f}'.format(best_th))
@@ -154,9 +158,9 @@ def mog2_background_estimator(imageList, gtList, cf):
 
     if cf.save_results:
         if '3.1' in cv.__version__:
-            fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=best_th)
+            fgbg = cv.createBackgroundSubtractorMOG2(history=25, varThreshold=best_th, detectShadows=False)
         elif '2.4' in cv.__version__:
-            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=best_th)
+            fgbg = cv.BackgroundSubtractorMOG2(history=25, varThreshold=best_th, detectShadows=False)
         else:
             logger.error('OpenCV version not supported')
             sys.exit()
@@ -208,7 +212,7 @@ def gmg_background_estimator(imageList, gtList, cf):
             max_score = f1_score
             best_th = th
 
-    area = plot_AUC_curve(tpr, fpr)
+    area = plot_AUC_curve(tpr, fpr, cf.output_folder)
 
     logger.info('Finished search')
     logger.info('Best threshold: {:-3f}'.format(best_th))
@@ -231,25 +235,19 @@ def gmg_background_estimator(imageList, gtList, cf):
             image_name = os.path.splitext(image_name)[0]
             cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type), foreground)
 
-def lsbp_background_estimator(imageList, gtList, cf):
+def lbsp_background_estimator(imageList, gtList, cf):
     # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
     logger = logging.getLogger(__name__)
     logger.info('Running local svd binary pattern background estimation')
 
-    if '3.1' in cv.__version__:
-        fgbg = cv.bgsegm.createBackgroundSubtractorLSBP()
-    elif '2.4' in cv.__version__:
-        fgbg = cv.BackgroundSubtractorLSBP()
-    else:
-        logger.error('OpenCV version not supported')
-        sys.exit()
+    lbsp = Subsense.LBSP()
 
     for image, gt in imageList:
-        foreground = fgbg.apply(image)
+        foreground = lbsp.apply(image)
         if cf.save_results:
             image_name = os.path.basename(image)
             image_name = os.path.splitext(image_name)[0]
-            cv.imwrite(os.path.join(cf.results_path, 'LSBP_' + image_name + '.' + cf.result_image_type), foreground)
+            cv.imwrite(os.path.join(cf.results_path, 'LBSP_' + image_name + '.' + cf.result_image_type), foreground)
 
 def main():
     logger = logging.getLogger(__name__)
@@ -296,8 +294,8 @@ def main():
         mog2_background_estimator(imageList, gtList, cf)
     elif cf.modelling_method == 'gmg':
         gmg_background_estimator(imageList, gtList, cf)
-    elif cf.modelling_method == 'lsbp':
-        lsbp_background_estimator(imageList, gtList, cf)
+    elif cf.modelling_method == 'lbsp':
+        lbsp_background_estimator(imageList, gtList, cf)
     else:
         logger.error('Modeling method not implemented')
 
