@@ -41,17 +41,21 @@ def multivariative_gaussian_modelling(back_list, color_space="RGB"):
     back_img = cv.imread(back_list[0])
     if color_space == "HSV":
         back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
-
-    mean = np.zeros((back_img.shape[0], back_img.shape[1], back_img.shape[2]))
-    variance = np.zeros((back_img.shape[0], back_img.shape[1], back_img.shape[2]))
+        mean = np.zeros((back_img.shape[0], back_img.shape[1], 2))
+        variance = np.zeros((back_img.shape[0], back_img.shape[1], 2))
+    else:
+        mean = np.zeros((back_img.shape[0], back_img.shape[1], back_img.shape[2]))
+        variance = np.zeros((back_img.shape[0], back_img.shape[1], back_img.shape[2]))
 
     for back_image in back_list:
         back_img = cv.imread(back_image)
         if color_space == "HSV":
             back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
+
         mean[:, :, 0] = mean[:, :, 0] + back_img[:, :, 0]
         mean[:, :, 1] = mean[:, :, 1] + back_img[:, :, 1]
-        mean[:, :, 2] = mean[:, :, 2] + back_img[:, :, 2]
+        if color_space == "RGB":
+            mean[:, :, 2] = mean[:, :, 2] + back_img[:, :, 2]
 
     mean = mean / len(back_list)
 
@@ -61,7 +65,8 @@ def multivariative_gaussian_modelling(back_list, color_space="RGB"):
             back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
         variance[:, :, 0] = variance[:, :, 0] + np.square(back_img[:, :, 0] - mean[:, :, 0])
         variance[:, :, 1] = variance[:, :, 1] + np.square(back_img[:, :, 1] - mean[:, :, 1])
-        variance[:, :, 2] = variance[:, :, 2] + np.square(back_img[:, :, 2] - mean[:, :, 2])
+        if color_space == "RGB":
+            variance[:, :, 2] = variance[:, :, 2] + np.square(back_img[:, :, 2] - mean[:, :, 2])
 
     variance = variance / len(back_list)
 
@@ -83,11 +88,17 @@ def foreground_estimation_color(img, mean, variance, alpha, color_space):
     img = cv.imread(img)
     if color_space == "HSV":
         img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-    img = np.abs(img - mean)
+        img = np.abs(img[:,:,:-1] - mean)
+    else:
+        img = np.abs(img - mean)
     threshold = alpha * (np.sqrt(variance) + 2)
-    foreground = (img[:, :, 0] >= threshold[:, :, 0]) | \
-                 (img[:, :, 1] >= threshold[:, :, 1]) | \
-                 (img[:, :, 2] >= threshold[:, :, 2])
+    if color_space == "RGB":
+        foreground = (img[:, :, 0] >= threshold[:, :, 0]) | \
+                     (img[:, :, 1] >= threshold[:, :, 1]) | \
+                     (img[:, :, 2] >= threshold[:, :, 2])
+    else:
+        foreground = (img[:, :, 0] >= threshold[:, :, 0]) | \
+                     (img[:, :, 1] >= threshold[:, :, 1])
     return foreground
 
 
@@ -110,11 +121,15 @@ def adaptive_foreground_estimation_color(img, mean, variance, alpha, rho, color_
     img = cv.imread(img)
     if color_space == "HSV":
         img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-    img_norm = np.abs(img - mean)
+    img_norm = np.abs(img[:,:,-1] - mean)
     threshold = alpha * (np.sqrt(variance) + 2)
-    foreground = (img_norm[:, :, 0] >= threshold[:, :, 0]) | \
-                 (img_norm[:, :, 1] >= threshold[:, :, 1]) | \
-                 (img_norm[:, :, 2] >= threshold[:, :, 2])
+    if color_space == "RGB":
+        foreground = (img_norm[:, :, 0] >= threshold[:, :, 0]) | \
+                     (img_norm[:, :, 1] >= threshold[:, :, 1]) | \
+                     (img_norm[:, :, 2] >= threshold[:, :, 2])
+    else:
+        foreground = (img_norm[:, :, 0] >= threshold[:, :, 0]) | \
+                     (img_norm[:, :, 1] >= threshold[:, :, 1])
     foreground = np.expand_dims(foreground, axis=-1)
     back = (1 - foreground)
     img_background = img * back
