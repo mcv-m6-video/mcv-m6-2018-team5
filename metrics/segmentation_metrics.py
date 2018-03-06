@@ -26,17 +26,20 @@ def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mea
     for test_image, gt_image in zip(imageList, gtList):
         if modelling_method == 'non-adaptive':
             if color_images:
-                foreground = foreground_estimation_color(test_image, mean, variance, alpha,
-                                                                             color_space)
+                foreground = foreground_estimation_color(
+                    test_image, mean, variance, alpha, color_space
+                )
             else:
                 foreground = foreground_estimation(test_image, mean, variance, alpha)
         elif modelling_method == 'adaptive':
             if color_images:
-                foreground, mean, variance = adaptive_foreground_estimation_color(test_image, mean,
-                                                                            variance, alpha, rho, color_space)
+                foreground, mean, variance = adaptive_foreground_estimation_color(
+                    test_image, mean, variance, alpha, rho, color_space
+                )
             else:
-                foreground, mean, variance = adaptive_foreground_estimation(test_image, mean,
-                                                                            variance, alpha, rho)
+                foreground, mean, variance = adaptive_foreground_estimation(
+                    test_image, mean, variance, alpha, rho
+                )
         # noinspection PyUnboundLocalVariable
         foreground = np.array(foreground, dtype='uint8')
         gt_img = cv.imread(gt_image, cv.IMREAD_GRAYSCALE)
@@ -54,12 +57,15 @@ def evaluate_list_foreground_estimation(modelling_method, imageList, gtList, mea
 
 def evaluate_foreground_estimation(modelling_method, imageList, gtList, mean, variance, alpha=(1,),
                                    rho=0.5, color_images=False, color_space='RGB'):
+    logger = logging.getLogger(__name__)
+
     precision = []
     recall = []
     F1_score = []
     FPR = []
 
     for al in alpha:
+        logger.info('alpha={:.2f}'.format(al))
         metrics = np.zeros(4)
         for test_image, gt_image in zip(imageList, gtList):
             if modelling_method == 'non-adaptive':
