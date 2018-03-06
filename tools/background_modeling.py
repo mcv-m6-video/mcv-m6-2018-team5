@@ -121,7 +121,9 @@ def adaptive_foreground_estimation_color(img, mean, variance, alpha, rho, color_
     img = cv.imread(img)
     if color_space == "HSV":
         img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-    img_norm = np.abs(img[:,:,-1] - mean)
+        img = img[:, :, 0:1]
+
+    img_norm = np.abs(img - mean)
     threshold = alpha * (np.sqrt(variance) + 2)
     if color_space == "RGB":
         foreground = (img_norm[:, :, 0] >= threshold[:, :, 0]) | \
