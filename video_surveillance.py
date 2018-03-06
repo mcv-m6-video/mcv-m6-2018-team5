@@ -160,15 +160,15 @@ def background_estimation(cf):
             )
 
     else:
+        if cf.color_images:
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                                   cf.color_space)
+        else:
+            # Model with a single Gaussian
+            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
+
         if cf.modelling_method == 'gaussian':
             logger.info('Running single Gaussian background estimation')
-            if cf.color_images:
-                mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
-                                                                                       cf.color_space)
-            else:
-                # Model with a single Gaussian
-                mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
-
             if cf.save_results:
                 logger.info('Saving results in {}'.format(cf.results_path))
                 mkdirs(cf.results_path)
@@ -185,20 +185,6 @@ def background_estimation(cf):
 
         elif cf.modelling_method == 'adaptive':
             logger.info('Running adaptive single Gaussian background estimation')
-            # Model with a single Gaussian, adaptive during foreground estimation
-            mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
-            if cf.save_results:
-                logger.info('Saving results in {}'.format(cf.results_path))
-                mkdirs(cf.results_path)
-                for image in foreground_img_list:
-                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation(
-                        image, mean, variance, cf.alpha, cf.rho
-                    )
-                    image_name = os.path.basename(image)
-                    image_name = os.path.splitext(image_name)[0]
-                    fore = np.array(foreground, dtype='uint8') * 255
-                    cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
-                               fore)
 
             if cf.find_best_parameters:
                 # Grid search over rho and alpha parameter space
@@ -225,8 +211,9 @@ def background_estimation(cf):
                     j_idx = np.argwhere(rho_range == rho)
 
                     # Compute evaluation metrics for this combination of parameters
-                    _, _, _, _, precision, recall, F1_score = segmentation_metrics.evaluate_list_foreground_estimation(
-                        cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha, rho
+                    _, _, _, _, precision, recall, F1_score, fpr = segmentation_metrics.evaluate_list_foreground_estimation(
+                        cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha, rho,
+                        cf.color_images, cf.color_space
                     )
                     # Store them in the array
                     score_grid[i_idx, j_idx] = F1_score
@@ -245,6 +232,24 @@ def background_estimation(cf):
                 visualization.plot_adaptive_gaussian_grid_search(score_grid, alpha_range, rho_range,
                                                                  best_parameters, best_score=max_score,
                                                                  metric='F1-score', sequence_name=cf.dataset_name)
+
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+                for image in foreground_img_list:
+                    if cf.color_images:
+                        foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                            image, mean, variance, cf.alpha, cf.rho, cf.color_space
+                        )
+                    else:
+                        foreground, mean, variance = background_modeling.adaptive_foreground_estimation(
+                            image, mean, variance, cf.alpha, cf.rho
+                        )
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
+                               fore)
 
 
 # Main function
