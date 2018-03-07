@@ -48,11 +48,11 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Optimize alpha and rho with grid search to maximize F1-score
 - [x] Compare Gaussian Modelling vs. Adaptive Modelling for all three sequences using F1-score and Area Under the Curve
 3. Compare with state-of-the-art implementations
-- [ ] Run different state-of-the-art Background Subtraction methods: e.g.: OpenCV BackgroundSubtractorMOG, BackgroundSubtractorMOG2, BackgroundSubtractorLSBP
-- [ ] Evaluate precision vs recall to comment which method (single Gaussian programmed by you or state-of-the-art) performs better
-- [ ] Evaluate the sequences than benefit more one algorithm and try to explain why
+- [x] Run different state-of-the-art Background Subtraction methods: e.g.: OpenCV BackgroundSubtractorMOG, BackgroundSubtractorMOG2, BackgroundSubtractorLSBP
+- [x] Evaluate precision vs recall to comment which method (single Gaussian programmed by you or state-of-the-art) performs better
+- [x] Evaluate the sequences than benefit more one algorithm and try to explain why
 4. Color Sequences
-- [ ] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
+- [x] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
 
 
 ## How to run the code
