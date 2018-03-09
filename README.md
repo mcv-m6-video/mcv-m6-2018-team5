@@ -54,6 +54,23 @@ The goal of this project is to learn the basic concepts and techniques related t
 4. Color Sequences
 - [x] Update the implementation to support color sequences: Decide which colorspace to use, number of Gaussians per pixel, etc.
 
+### Week 3 - Foreground segmentation
+1. Hole filling
+- [] Choose the best configuration from week 2
+- [] Post-process wit hol filling (indicate used library and link to code)
+- [] Experiment with 4 and 8 connectivity
+- [] Compute AUC and gain for each video sequence
+- [] Provide qualitative interpretation
+2. Area filtering
+- [] AUC vs number of pixels
+- [] arg max P (AUC) (indicate used library and link to code)
+3. Additional morphological operations
+- [] Explore with other morphological filters to improve AUC for foreground pixels (indicate used library and link to code)
+4. Shadow removal
+- [] Implement some shadow removal existing techniques
+5. Improvements of this week
+- [] Compare the precision / recall curves
+- [] Update the AUC and compute the gain
 
 ## How to run the code
 
@@ -134,5 +151,24 @@ The datasets needed to run the code and their folder organization are the follow
 | *fall/input/* |  Fall sequence (adaptive background) input images | 
 | *fall/groundtruth/*  |  Fall sequence (adaptive background) ground truth | 
 
+
+### Week 3
+
+For all the tasks, for each of the sequences:
+
+- `python video_surveillance.py foreground_estimation --config-path config/highway_background.py --test-name highway`
+- `python video_surveillance.py foreground_estimation --config-path config/traffic_background.py --test-name traffic`
+- `python video_surveillance.py foreground_estimation --config-path config/fall_background.py --test-name fall`
+
+The datasets needed to run the code and their folder organization are the following:
+
+| ChangeDetection Dataset | Description |
+| :---: | :---: |
+| *highway/input/* |  Highway sequence (baseline) input images |
+| *highway/groundtruth/*  |  Highway sequence (baseline) ground truth |
+| *traffic/input/* |  Traffic sequence (camera jitter) input images |
+| *traffic/groundtruth/*  |  Traffic sequence (camera jitter) ground truth |
+| *fall/input/* |  Fall sequence (adaptive background) input images |
+| *fall/groundtruth/*  |  Fall sequence (adaptive background) ground truth |
 
 **TODO**: UPDATE & COMPLETE THIS SECTION

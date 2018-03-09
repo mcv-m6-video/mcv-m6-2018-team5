@@ -244,6 +244,29 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore)
 
+def foreground_estimation(cf):
+    logger = logging.getLogger(__name__)
+
+    # Get a list with input images filenames
+    imageList = get_image_list_changedetection_dataset(
+        cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+    )
+
+    # Get a list with groung truth images filenames
+    gtList = get_image_list_changedetection_dataset(
+        cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+    )
+    background_img_list = imageList[:len(imageList) // 2]
+    foreground_img_list = imageList[(len(imageList) // 2):]
+    foreground_gt_list = gtList[(len(imageList) // 2):]
+
+    mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+
+    for image in foreground_img_list:
+        foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+            image, mean, variance, cf.alpha, cf.rho, cf.color_space
+        )
+
 
 # Main function
 def main():
@@ -251,6 +274,7 @@ def main():
     tasks = {
         'evaluate_metrics': evaluation_metrics,
         'background_estimation': background_estimation,
+        'foreground_estimation': foreground_estimation,
     }
 
     # Get parameters from arguments
