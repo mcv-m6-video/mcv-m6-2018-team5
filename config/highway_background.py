@@ -2,7 +2,7 @@
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results/color_adaptive'
+results_path                 = 'datasets/highway/results/fill'
 
 # Input Images
 nr_images                    = 300
@@ -18,13 +18,17 @@ rho                           = 0.211
 modelling_method              = 'adaptive'  # adaptive instead
 color_images                  = True        # Use RGB, HSV color channels
 color_space                   = "RGB"       # RGB, HSV
-evaluate_foreground           = False
+evaluate_foreground           = True
 evaluate_alpha_range          = [0, 6]      # range of alpha values
 evaluate_alpha_values         = 60          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = True
 plot_back_model               = False
+
+# Foreground Modelling
+connectivity                  = 4
+hole_size_range               = [0, 1000]    # range of hole size values
 
 # Save results
 save_results                 = True        # Save Log file

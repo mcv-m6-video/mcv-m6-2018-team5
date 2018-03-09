@@ -17,7 +17,9 @@ from tools import visualization
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
+from skimage import morphology
 
+EPSILON = 1e-8
 
 def evaluation_metrics(cf):
     logger = logging.getLogger(__name__)
@@ -260,12 +262,66 @@ def foreground_estimation(cf):
     foreground_img_list = imageList[(len(imageList) // 2):]
     foreground_gt_list = gtList[(len(imageList) // 2):]
 
+    if cf.save_results:
+        logger.info('Saving results in {}'.format(cf.results_path))
+        mkdirs(cf.results_path)
+
     mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
-    for image in foreground_img_list:
-        foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-            image, mean, variance, cf.alpha, cf.rho, cf.color_space
-        )
+    hole_sizes = np.linspace(cf.hole_size_range[0], cf.hole_size_range[1], 100, dtype='uint8')
+
+    precision = []
+    recall = []
+    best_f1 = 0
+    best_size = 0
+    i = 1
+    for size in hole_sizes:
+
+        logger.info('[{} of {}]\tsize={:.2f}'.format(i, len(hole_sizes), size))
+
+        tp = 0
+        fp = 0
+        tn = 0
+        fn = 0
+
+        for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+
+            gt_img = cv.imread(image,  cv.IMREAD_GRAYSCALE)
+            foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                image, mean, variance, cf.alpha, cf.rho, cf.color_space
+            )
+            foreground_fill = morphology.remove_small_holes(foreground, size, connectivity=cf.connectivity)
+
+            tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground_fill, gt_img)
+
+            tp += tp_temp
+            fp += fp_temp
+            tn += tn_temp
+            fn += fn_temp
+
+            if cf.save_results:
+                image_name = os.path.basename(image)
+                image_name = os.path.splitext(image_name)[0]
+                fore = np.array(foreground_fill, dtype='uint8') * 255
+                cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+
+        pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * pre * rec / (pre + rec + EPSILON)
+
+        precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
+        recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
+        if f1 > best_f1:
+            best_f1 = f1
+            best_size = size
+
+        i += 1
+
+    area = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
+
+    logger.info('Best hole size: {:.3f}'.format(best_size))
+    logger.info('Best F1-score: {:.3f}'.format(best_f1))
+    logger.info('AUC: {:.3f}'.format(area))
 
 
 # Main function

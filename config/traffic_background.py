@@ -26,6 +26,10 @@ evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = True
 plot_back_model               = False
 
+# Foreground Modelling
+connectivity                  = 4
+hole_size_range               = [0, 100]    # range of hole size values
+
 # Save results
 save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test
