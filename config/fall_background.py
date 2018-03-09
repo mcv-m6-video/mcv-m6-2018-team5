@@ -12,7 +12,7 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Background Modelling
-alpha                         = 3.1525
+alpha                         = 3.533
 rho                           = 0.0526
 
 modelling_method              = 'adaptive'  # gaussian, adaptive

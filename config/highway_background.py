@@ -12,8 +12,8 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Background Modelling
-alpha                         = 6
-rho                           = 0.21
+alpha                         = 3.051
+rho                           = 0.211
 
 modelling_method              = 'adaptive'  # adaptive instead
 color_images                  = True        # Use RGB, HSV color channels
