@@ -13,7 +13,7 @@ import numpy as np
 from config.load_configutation import Configuration
 from metrics import segmentation_metrics, optical_flow
 from tools import background_modeling
-from tools import visualization
+from tools import visualization, foreground_improving
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
@@ -251,7 +251,6 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore)
 
-
 def foreground_estimation(cf):
     logger = logging.getLogger(__name__)
 
@@ -272,18 +271,19 @@ def foreground_estimation(cf):
         logger.info('Saving results in {}'.format(cf.results_path))
         mkdirs(cf.results_path)
 
-    mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+    mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                           cf.color_space)
 
-    hole_sizes = np.linspace(cf.hole_size_range[0], cf.hole_size_range[1], 100, dtype='uint8')
+    alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
+                              num=cf.evaluate_alpha_values)
 
     precision = []
     recall = []
-    best_f1 = 0
-    best_size = 0
+    F1_score = []
     i = 1
-    for size in hole_sizes:
+    for alpha in alpha_range:
 
-        logger.info('[{} of {}]\tsize={:.2f}'.format(i, len(hole_sizes), size))
+        logger.info('[{} of {}]\talpha={:.2f}'.format(i, len(alpha_range), alpha))
 
         tp = 0
         fp = 0
@@ -291,25 +291,19 @@ def foreground_estimation(cf):
         fn = 0
 
         for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-
-            gt_img = cv.imread(image, cv.IMREAD_GRAYSCALE)
+            gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                image, mean, variance, cf.alpha, cf.rho, cf.color_space
+                image, mean, variance, alpha, cf.rho, cf.color_space
             )
-            foreground_fill = morphology.remove_small_holes(foreground, size, connectivity=cf.connectivity)
+            foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
 
-            tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground_fill, gt_img)
+            tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground,
+                                                                                            gt_img)
 
             tp += tp_temp
             fp += fp_temp
             tn += tn_temp
             fn += fn_temp
-
-            if cf.save_results:
-                image_name = os.path.basename(image)
-                image_name = os.path.splitext(image_name)[0]
-                fore = np.array(foreground_fill, dtype='uint8') * 255
-                cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
 
         pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
@@ -317,17 +311,42 @@ def foreground_estimation(cf):
 
         precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
         recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
-        if f1 > best_f1:
-            best_f1 = f1
-            best_size = size
+        F1_score.append(f1)
 
         i += 1
 
-    area = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
+    best_f1_score = max(F1_score)
+    index_alpha = F1_score.index(best_f1_score)
+    best_alpha = alpha_range[index_alpha]
+    logger.info('Best alpha: {:.3f}'.format(best_alpha))
+    logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
+    '''
+    visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
+                                            cf.output_folder)
 
-    logger.info('Best hole size: {:.3f}'.format(best_size))
-    logger.info('Best F1-score: {:.3f}'.format(best_f1))
-    logger.info('AUC: {:.3f}'.format(area))
+    colors = {
+        'highway': 'blue',
+        'fall': 'green',
+        'traffic': 'orange',
+    }
+    color = colors.get(cf.dataset_name, 'blue')
+    auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
+
+    logger.info('Best alpha: {:.3f}'.format(best_alpha))
+    logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
+    logger.info('AUC: {:.3f}'.format(auc_pr))
+'''
+    if cf.save_results:
+        for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+            gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
+            foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                image, mean, variance, alpha, cf.rho, cf.color_space
+            )
+            foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+            fore = np.array(foreground, dtype='uint8') * 255
+            cv.imwrite(
+                os.path.join(cf.results_path, image + '.' + cf.result_image_type),
+                fore)
 
 
 # Main function

@@ -27,7 +27,7 @@ find_best_parameters          = False
 plot_back_model               = False
 
 # Foreground Modelling
-connectivity                  = 4
+four_connectivity             = True
 hole_size_range               = [0, 100]    # range of hole size values
 
 # Save results
