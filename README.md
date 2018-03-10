@@ -56,21 +56,21 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 ### Week 3 - Foreground segmentation
 1. Hole filling
-- [] Choose the best configuration from week 2
-- [] Post-process wit hol filling (indicate used library and link to code)
-- [] Experiment with 4 and 8 connectivity
-- [] Compute AUC and gain for each video sequence
-- [] Provide qualitative interpretation
+- [ ] Choose the best configuration from week 2
+- [ ] Post-process wit hol filling (indicate used library and link to code)
+- [ ] Experiment with 4 and 8 connectivity
+- [ ] Compute AUC and gain for each video sequence
+- [ ] Provide qualitative interpretation
 2. Area filtering
-- [] AUC vs number of pixels
-- [] arg max P (AUC) (indicate used library and link to code)
+- [ ] AUC vs number of pixels
+- [ ] arg max P (AUC) (indicate used library and link to code)
 3. Additional morphological operations
-- [] Explore with other morphological filters to improve AUC for foreground pixels (indicate used library and link to code)
+- [ ] Explore with other morphological filters to improve AUC for foreground pixels (indicate used library and link to code)
 4. Shadow removal
-- [] Implement some shadow removal existing techniques
+- [ ] Implement some shadow removal existing techniques
 5. Improvements of this week
-- [] Compare the precision / recall curves
-- [] Update the AUC and compute the gain
+- [ ] Compare the precision / recall curves
+- [ ] Update the AUC and compute the gain
 
 ## How to run the code
 
