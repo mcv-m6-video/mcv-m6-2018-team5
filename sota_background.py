@@ -15,10 +15,11 @@ from config.load_configutation import Configuration
 from tools.image_parser import get_image_list_changedetection_dataset
 from tools.log import setup_logging
 from metrics.segmentation_metrics import evaluate_single_image
-from tools.visualization import plot_AUC_curve
+from tools.visualization import plot_roc_curve
 from tools import Subsense
 
 EPSILON = 1e-8
+
 
 def evaluate_model(imageList, gtList, model):
     tp = 0
@@ -38,13 +39,13 @@ def evaluate_model(imageList, gtList, model):
             tn += tn_im
             fn += fn_im
 
-
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     tpr = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     f1_score = 2 * precision * tpr / (precision + tpr + EPSILON)
     fpr = fp / (fp + tn) if (fp + tn) > 0 else 0.0
 
     return tpr, fpr, f1_score
+
 
 def mog_background_estimator(imageList, gtList, cf):
     # Paper 'An improved adaptive background mixture model for real-time tracking with shadow detection'
@@ -86,7 +87,7 @@ def mog_background_estimator(imageList, gtList, cf):
             max_score = f1_score
             best_th = th
 
-    area = plot_AUC_curve(tpr, fpr, cf.output_folder)
+    area = plot_roc_curve(tpr, fpr, cf.output_folder)
 
     logger.info('Finished search')
     logger.info('Best threshold: {:-3f}'.format(best_th))
@@ -108,6 +109,7 @@ def mog_background_estimator(imageList, gtList, cf):
             image_name = os.path.basename(image)
             image_name = os.path.splitext(image_name)[0]
             cv.imwrite(os.path.join(cf.results_path, 'MOG_' + image_name + '.' + cf.result_image_type), foreground)
+
 
 def mog2_background_estimator(imageList, gtList, cf):
     # Papers 'Improved adaptive Gausian mixture model for background subtraction' by Z.Zivkovic in 2004 and
@@ -149,7 +151,7 @@ def mog2_background_estimator(imageList, gtList, cf):
             max_score = f1_score
             best_th = th
 
-    area = plot_AUC_curve(tpr, fpr, cf.output_folder)
+    area = plot_roc_curve(tpr, fpr, cf.output_folder)
 
     logger.info('Finished search')
     logger.info('Best threshold: {:-3f}'.format(best_th))
@@ -171,6 +173,7 @@ def mog2_background_estimator(imageList, gtList, cf):
             image_name = os.path.basename(image)
             image_name = os.path.splitext(image_name)[0]
             cv.imwrite(os.path.join(cf.results_path, 'MOG2_' + image_name + '.' + cf.result_image_type), foreground)
+
 
 def gmg_background_estimator(imageList, gtList, cf):
     # Paper 'Visual Tracking of Human Visitors under Variable-Lighting Conditions for a Responsive Audio Art Installation'
@@ -212,7 +215,7 @@ def gmg_background_estimator(imageList, gtList, cf):
             max_score = f1_score
             best_th = th
 
-    area = plot_AUC_curve(tpr, fpr, cf.output_folder)
+    area = plot_roc_curve(tpr, fpr, cf.output_folder)
 
     logger.info('Finished search')
     logger.info('Best threshold: {:-3f}'.format(best_th))
@@ -235,6 +238,7 @@ def gmg_background_estimator(imageList, gtList, cf):
             image_name = os.path.splitext(image_name)[0]
             cv.imwrite(os.path.join(cf.results_path, 'GMG_' + image_name + '.' + cf.result_image_type), foreground)
 
+
 def lbsp_background_estimator(imageList, gtList, cf):
     # Paper 'Background subtraction using local svd binary pattern' by L. Guo in 2016
     logger = logging.getLogger(__name__)
@@ -248,6 +252,7 @@ def lbsp_background_estimator(imageList, gtList, cf):
             image_name = os.path.basename(image)
             image_name = os.path.splitext(image_name)[0]
             cv.imwrite(os.path.join(cf.results_path, 'LBSP_' + image_name + '.' + cf.result_image_type), foreground)
+
 
 def main():
     logger = logging.getLogger(__name__)

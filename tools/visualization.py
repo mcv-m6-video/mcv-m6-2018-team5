@@ -33,24 +33,23 @@ def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
 
 
 def plot_precision_recall_curve(precision, recall, output_folder=""):
-    plt.plot(recall, precision, color='b')
-    average_precision = reduce(lambda x, y: x + y, precision) / len(precision)
+    plt.plot(recall, precision, color='g')
+    auc_pr = auc(recall, precision, reorder=False)
+    plt.fill_between(recall, 0, precision, color='g', alpha=0.2)
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.ylim([0, 1])
     plt.xlim([0, 1])
-    plt.title('Precision-Recall curve: Avg Prec ={0:0.2f}'.format(average_precision))
+    plt.title('Precision-Recall curve: AUC ={:.2f}'.format(auc_pr))
     if output_folder != "":
         plt.savefig(os.path.join(output_folder, "task_1_2_precision_recall.png"))
     plt.show(block=False)
     plt.close()
 
-    area = auc(recall, precision, reorder=True)
-
-    return area
+    return auc_pr
 
 
-def plot_AUC_curve(tpr, fpr, output_folder=""):
+def plot_roc_curve(tpr, fpr, output_folder=""):
     area = auc(fpr, tpr, reorder=True)
     plt.step(fpr, tpr, color='b', alpha=0.2,
              where='post')

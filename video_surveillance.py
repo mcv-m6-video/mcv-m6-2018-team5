@@ -21,6 +21,7 @@ from skimage import morphology
 
 EPSILON = 1e-8
 
+
 def evaluation_metrics(cf):
     logger = logging.getLogger(__name__)
 
@@ -142,10 +143,9 @@ def background_estimation(cf):
         visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                                 cf.output_folder)
 
-        visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
+        auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
 
-        area = visualization.plot_AUC_curve(recall, FPR, cf.output_folder)
-        logger.info("AUC: {}".format(area))
+        logger.info("AUC: {}".format(auc_pr))
 
         for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, F1_score):
             logger.info(
@@ -246,6 +246,7 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore)
 
+
 def foreground_estimation(cf):
     logger = logging.getLogger(__name__)
 
@@ -286,7 +287,7 @@ def foreground_estimation(cf):
 
         for (image, gt) in zip(foreground_img_list, foreground_gt_list):
 
-            gt_img = cv.imread(image,  cv.IMREAD_GRAYSCALE)
+            gt_img = cv.imread(image, cv.IMREAD_GRAYSCALE)
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                 image, mean, variance, cf.alpha, cf.rho, cf.color_space
             )
