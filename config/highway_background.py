@@ -2,7 +2,7 @@
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results/fill'
+results_path                 = 'datasets/highway/results/'
 
 # Input Images
 nr_images                    = 300

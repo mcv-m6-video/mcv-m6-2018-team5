@@ -32,10 +32,10 @@ def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
     plt.close()
 
 
-def plot_precision_recall_curve(precision, recall, output_folder=""):
-    plt.plot(recall, precision, color='g')
+def plot_precision_recall_curve(precision, recall, output_folder="", color='blue'):
+    plt.plot(recall, precision, color=color)
     auc_pr = auc(recall, precision, reorder=False)
-    plt.fill_between(recall, 0, precision, color='g', alpha=0.2)
+    plt.fill_between(recall, 0, precision, color=color, alpha=0.2)
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.ylim([0, 1])

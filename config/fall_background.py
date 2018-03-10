@@ -2,7 +2,7 @@
 dataset_name                 = 'fall'                        # Dataset name
 dataset_path                 = 'datasets/fall/input'         # Dataset path
 gt_path                      = 'datasets/fall/groundtruth'   # Ground truth path
-results_path                 = 'datasets/fall/results/color_HSV_adaptive_alpha_3.15_rho_0.05'
+results_path                 = 'datasets/fall/results/'
 
 # Input Images
 nr_images                    = 100
@@ -15,11 +15,11 @@ result_image_type            = 'png'
 alpha                         = 3.533
 rho                           = 0.0526
 
-modelling_method              = 'adaptive'  # gaussian, adaptive
-color_images                  = True        # Use RGB, HSV color channels
+modelling_method              = 'non-adaptive'  # gaussian, adaptive
+color_images                  = False        # Use RGB, HSV color channels
 color_space                   = "RGB"       # RGB, HSV
 evaluate_foreground           = True
-evaluate_alpha_range          = [0, 25]      # range of alpha values
+evaluate_alpha_range          = [0, 65]      # range of alpha values
 evaluate_alpha_values         = 150          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate

@@ -15,15 +15,15 @@ result_image_type            = 'png'
 alpha                         = 3.7627
 rho                           = 0.1578
 
-modelling_method              = 'adaptive'  # adaptive instead
-color_images                  = True        # Use RGB, HSV color channels
-color_space                   = "RGB"       # RGB, HSV
+modelling_method              = 'non-adaptive'  # adaptive instead
+color_images                  = False           # Use RGB, HSV color channels
+color_space                   = "RGB"           # RGB, HSV
 evaluate_foreground           = True
-evaluate_alpha_range          = [0, 20]      # range of alpha values
-evaluate_alpha_values         = 150          # number of alpha values to evaluate
-evaluate_rho_range            = [0, 1]      # range of rho values
-evaluate_rho_values           = 20          # number of rho values to evaluate
-find_best_parameters          = True
+evaluate_alpha_range          = [0, 15]         # range of alpha values
+evaluate_alpha_values         = 150             # number of alpha values to evaluate
+evaluate_rho_range            = [0, 1]          # range of rho values
+evaluate_rho_values           = 20              # number of rho values to evaluate
+find_best_parameters          = False
 plot_back_model               = False
 
 # Foreground Modelling

@@ -143,7 +143,13 @@ def background_estimation(cf):
         visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                                 cf.output_folder)
 
-        auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder)
+        colors = {
+            'highway': 'blue',
+            'fall': 'green',
+            'traffic': 'orange',
+        }
+        color = colors.get(cf.dataset_name, 'blue')
+        auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
 
         logger.info("AUC: {}".format(auc_pr))
 
