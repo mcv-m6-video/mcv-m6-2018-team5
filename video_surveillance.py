@@ -140,8 +140,7 @@ def background_estimation(cf):
         logger.info('Best alpha: {:.3f}'.format(best_alpha))
         logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
 
-        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
-                                                cf.output_folder)
+        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range, cf.output_folder)
 
         colors = {
             'highway': 'blue',

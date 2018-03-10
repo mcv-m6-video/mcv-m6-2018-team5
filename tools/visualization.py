@@ -34,7 +34,11 @@ def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
 
 def plot_precision_recall_curve(precision, recall, output_folder="", color='blue'):
     plt.plot(recall, precision, color=color)
-    auc_pr = auc(recall, precision, reorder=False)
+    try:
+        auc_pr = auc(recall, precision, reorder=False)
+    except ValueError:
+        # Use reorder=True, even if it is not the correct way to compute the AUC for the PR curve
+        auc_pr = auc(recall, precision, reorder=True)
     plt.fill_between(recall, 0, precision, color=color, alpha=0.2)
     plt.xlabel('Recall')
     plt.ylabel('Precision')
