@@ -320,7 +320,6 @@ def foreground_estimation(cf):
     best_alpha = alpha_range[index_alpha]
     logger.info('Best alpha: {:.3f}'.format(best_alpha))
     logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
-    '''
     visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
                                             cf.output_folder)
 
@@ -335,7 +334,6 @@ def foreground_estimation(cf):
     logger.info('Best alpha: {:.3f}'.format(best_alpha))
     logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
     logger.info('AUC: {:.3f}'.format(auc_pr))
-'''
     if cf.save_results:
         for (image, gt) in zip(foreground_img_list, foreground_gt_list):
             gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
