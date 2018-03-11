@@ -1,12 +1,10 @@
 import numpy as np
-from skimage.morphology import closing
-
+from skimage import morphology
 
 def hole_filling(image, fourConnectivity = True):
     if fourConnectivity:
-        kernel = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+        outputImage = morphology.remove_small_holes(image, connectivity=1)
     else:
-        kernel = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+        outputImage = morphology.remove_small_holes(image, connectivity=2)
 
-    outputImage = closing(image, kernel)
     return outputImage

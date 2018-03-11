@@ -28,7 +28,6 @@ plot_back_model               = False
 
 # Foreground Modelling
 four_connectivity             = False
-hole_size_range               = [0, 1000]    # range of hole size values
 
 # Save results
 save_results                 = True        # Save Log file
