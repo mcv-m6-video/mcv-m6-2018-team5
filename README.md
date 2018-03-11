@@ -56,11 +56,11 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 ### Week 3 - Foreground segmentation
 1. Hole filling
-- [ ] Choose the best configuration from week 2
-- [ ] Post-process wit hol filling (indicate used library and link to code)
-- [ ] Experiment with 4 and 8 connectivity
-- [ ] Compute AUC and gain for each video sequence
-- [ ] Provide qualitative interpretation
+- [x] Choose the best configuration from week 2
+- [x] Post-process with hole filling (indicate used library and link to code)
+- [x] Experiment with 4 and 8 connectivity
+- [x] Compute AUC and gain for each video sequence
+- [x] Provide qualitative interpretation
 2. Area filtering
 - [ ] AUC vs number of pixels
 - [ ] arg max P (AUC) (indicate used library and link to code)
