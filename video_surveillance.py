@@ -373,13 +373,13 @@ def foreground_estimation(cf):
             for (image, gt) in zip(foreground_img_list, foreground_gt_list):
                 gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
                 foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                    image, mean, variance, alpha, cf.rho, cf.color_space
+                    image, mean, variance, best_alpha, cf.rho, cf.color_space
                 )
                 foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
                 fore = np.array(foreground, dtype='uint8') * 255
-                cv.imwrite(
-                    os.path.join(cf.results_path, image + '.' + cf.result_image_type),
-                    fore)
+                image_name = os.path.basename(image)
+                image_name = os.path.splitext(image_name)[0]
+                cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
 
 
 # Main function
