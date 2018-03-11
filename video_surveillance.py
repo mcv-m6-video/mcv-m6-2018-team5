@@ -11,11 +11,11 @@ import cv2 as cv
 import numpy as np
 
 from config.load_configutation import Configuration
-from metrics import segmentation_metrics, optical_flow
+from metrics import segmentation_metrics as seg_metrics, optical_flow
 from tools import background_modeling
 from tools import visualization, foreground_improving
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
-from tools.log import setup_logging
+from tools.log import setup_logging, log_context
 from tools.mkdirs import mkdirs
 
 EPSILON = 1e-8
@@ -29,62 +29,62 @@ def evaluation_metrics(cf):
     if cf.dataset_name == 'highway':
 
         # Get a list with groung truth images filenames
-        gtList = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type,
-                                                        cf.nr_images)
+        gt_list = get_image_list_changedetection_dataset(cf.gt_path, 'gt', cf.first_image, cf.gt_image_type,
+                                                         cf.nr_images)
 
         # Get a list with test results filenames
-        testList = get_image_list_changedetection_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image,
+        test_lit = get_image_list_changedetection_dataset(cf.results_path, str(cf.test_name + '_'), cf.first_image,
                                                           cf.result_image_type, cf.nr_images)
         if cf.segmentation_metrics:
-            prec, rec, f1 = segmentation_metrics.evaluate(testList, gtList)
+            prec, rec, f1 = seg_metrics.evaluate(test_lit, gt_list)
             logger.info("PRECISION: " + str(prec))
             logger.info("RECALL: " + str(rec))
             logger.info("F1-SCORE: " + str(f1))
 
         if cf.temporal_metrics:
-            TP, T, F1_score = segmentation_metrics.temporal_evaluation(testList, gtList)
+            tp, t, f1_score = seg_metrics.temporal_evaluation(test_lit, gt_list)
 
             if cf.save_results and cf.save_plots:
-                visualization.plot_true_positives(TP, T, cf.output_folder)
-                visualization.plot_F1_score(F1_score, cf.output_folder)
+                visualization.plot_true_positives(tp, t, cf.output_folder)
+                visualization.plot_F1_score(f1_score, cf.output_folder)
             else:
-                visualization.plot_true_positives(TP, T)
-                visualization.plot_F1_score(F1_score)
+                visualization.plot_true_positives(tp, t)
+                visualization.plot_F1_score(f1_score)
 
         if cf.desynchronization:
-            F1_score = segmentation_metrics.desynchronization(testList, gtList, cf.desynchronization_frames)
+            f1_score = seg_metrics.desynchronization(test_lit, gt_list, cf.desynchronization_frames)
 
             if cf.save_results and cf.save_plots:
-                visualization.plot_desynch_vs_time(F1_score, cf.desynchronization_frames, cf.output_folder)
+                visualization.plot_desynch_vs_time(f1_score, cf.desynchronization_frames, cf.output_folder)
             else:
-                visualization.plot_desynch_vs_time(F1_score, cf.desynchronization_frames)
+                visualization.plot_desynch_vs_time(f1_score, cf.desynchronization_frames)
 
     if cf.dataset_name == 'kitti':
 
         # Get a list with input images filenames
-        imageList = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
+        image_list = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
 
         # Get a list with groung truth images filenames
-        gtList = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
+        gt_list = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
 
         # Get a list with test results filenames
-        testList = get_image_list_kitti_dataset(cf.results_path, cf.image_sequences, cf.image_type, 'LKflow_')
+        test_lit = get_image_list_kitti_dataset(cf.results_path, cf.image_sequences, cf.image_type, 'LKflow_')
 
         if cf.evaluate:
             # Call the method to evaluate the optical flow
-            msen, pepn, squared_errors, pixel_errors, valid_pixels = optical_flow.evaluate(testList, gtList)
+            msen, pepn, squared_errors, pixel_errors, valid_pixels = optical_flow.evaluate(test_lit, gt_list)
             logger.info('Mean Squared Error: {}'.format(msen))
             logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
             for mse, se, pe, vp, seq_name, original_image in zip(msen, squared_errors, pixel_errors, valid_pixels,
-                                                                 cf.image_sequences, imageList):
+                                                                 cf.image_sequences, image_list):
                 # Histogram
                 visualization.plot_histogram_msen(mse, np.ravel(se[vp]), seq_name, cf.output_folder)
                 # Image
                 visualization.plot_msen_image(original_image, se, pe, vp, seq_name, cf.output_folder)
 
         if cf.plot_optical_flow:
-            for image, test_image, seq_name in zip(imageList, testList, cf.image_sequences):
+            for image, test_image, seq_name in zip(image_list, test_lit, cf.image_sequences):
                 # Quiver plot
                 output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(seq_name))
                 visualization.plot_optical_flow(image, test_image, cf.optical_flow_downsample, seq_name, output_path)
@@ -100,17 +100,17 @@ def background_estimation(cf):
     logger = logging.getLogger(__name__)
 
     # Get a list with input images filenames
-    imageList = get_image_list_changedetection_dataset(
+    image_list = get_image_list_changedetection_dataset(
         cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
     )
 
     # Get a list with groung truth images filenames
-    gtList = get_image_list_changedetection_dataset(
+    gt_list = get_image_list_changedetection_dataset(
         cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
     )
-    background_img_list = imageList[:len(imageList) // 2]
-    foreground_img_list = imageList[(len(imageList) // 2):]
-    foreground_gt_list = gtList[(len(imageList) // 2):]
+    background_img_list = image_list[:len(image_list) // 2]
+    foreground_img_list = image_list[(len(image_list) // 2):]
+    foreground_gt_list = gt_list[(len(image_list) // 2):]
 
     if cf.plot_back_model:
         output_path = os.path.join(cf.output_folder, 'gaussian_model')
@@ -128,18 +128,18 @@ def background_estimation(cf):
             mean, variance = background_modeling.single_gaussian_modelling(background_img_list)
 
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
-        precision, recall, F1_score, FPR = segmentation_metrics.evaluate_foreground_estimation(
+        precision, recall, f1_score, false_positive_rate = seg_metrics.evaluate_foreground_estimation(
             cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha_range, cf.rho,
             cf.color_images, cf.color_space
         )
 
-        best_f1_score = max(F1_score)
-        index_alpha = F1_score.index(best_f1_score)
+        best_f1_score = max(f1_score)
+        index_alpha = f1_score.index(best_f1_score)
         best_alpha = alpha_range[index_alpha]
         logger.info('Best alpha: {:.3f}'.format(best_alpha))
         logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
 
-        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range, cf.output_folder)
+        visualization.plot_metrics_vs_threshold(precision, recall, f1_score, alpha_range, cf.output_folder)
 
         colors = {
             'highway': 'blue',
@@ -151,7 +151,7 @@ def background_estimation(cf):
 
         logger.info("AUC: {}".format(auc_pr))
 
-        for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, F1_score):
+        for alpha_value, prec, rec, f1 in zip(alpha_range, precision, recall, f1_score):
             logger.info(
                 '[alpha={:.2f}]   precision={}    recall={}    f1={}'.format(
                     alpha_value, prec, rec, f1
@@ -210,18 +210,18 @@ def background_estimation(cf):
                     j_idx = np.argwhere(rho_range == rho)
 
                     # Compute evaluation metrics for this combination of parameters
-                    _, _, _, _, precision, recall, F1_score, fpr = segmentation_metrics.evaluate_list_foreground_estimation(
+                    _, _, _, _, precision, recall, f1_score, fpr = seg_metrics.evaluate_list_foreground_estimation(
                         cf.modelling_method, foreground_img_list, foreground_gt_list, mean, variance, alpha, rho,
                         cf.color_images, cf.color_space
                     )
                     # Store them in the array
-                    score_grid[i_idx, j_idx] = F1_score
+                    score_grid[i_idx, j_idx] = f1_score
                     precision_grid[i_idx, j_idx] = precision
                     recall_grid[i_idx, j_idx] = recall
 
                     # Compare and select best parameters according to best score
-                    if F1_score > max_score:
-                        max_score = F1_score
+                    if f1_score > max_score:
+                        max_score = f1_score
                         best_parameters = dict(alpha=alpha, rho=rho)
 
                 logger.info('Finished grid search')
@@ -250,138 +250,148 @@ def background_estimation(cf):
                     cv.imwrite(os.path.join(cf.results_path, 'ADAPTIVE_' + image_name + '.' + cf.result_image_type),
                                fore)
 
+
 def foreground_estimation(cf):
-    logger = logging.getLogger(__name__)
-
-    # Get a list with input images filenames
-    imageList = get_image_list_changedetection_dataset(
-        cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-    )
-
-    # Get a list with groung truth images filenames
-    gtList = get_image_list_changedetection_dataset(
-        cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-    )
-    background_img_list = imageList[:len(imageList) // 2]
-    foreground_img_list = imageList[(len(imageList) // 2):]
-    foreground_gt_list = gtList[(len(imageList) // 2):]
-
-    if cf.save_results:
-        logger.info('Saving results in {}'.format(cf.results_path))
-        mkdirs(cf.results_path)
-
     if cf.AUC_area_filtering:
-        # Task 2
-
-        # Load the configuration file for the Traffic Dataset
-        configuration = Configuration("config\\traffic_background.py", "traffic")
-        cf = configuration.load()
-        setup_logging(cf.log_file)
-        # Get a list with input images filenames
-        imageList = get_image_list_changedetection_dataset(
-            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-        )
-
-        # Get a list with groung truth images filenames
-        gtList = get_image_list_changedetection_dataset(
-            cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-        )
-        background_img_list = imageList[:len(imageList) // 2]
-        foreground_img_list = imageList[(len(imageList) // 2):]
-        foreground_gt_list = gtList[(len(imageList) // 2):]
-
-        AUC_traffic, pixels_range, best_pixels , best_alpha = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
-                                                          foreground_img_list, foreground_gt_list)
-
-        if cf.save_results:
-            mkdirs(cf.results_path)
-            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                    image, mean, variance, best_alpha, cf.rho, cf.color_space
-                )
-                foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
-                fore = np.array(foreground, dtype='uint8') * 255
-                cv.imwrite(
-                    os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
-                    fore)
-
+        """ TASK 2 """
 
         # Load the configuration file for the Highway Dataset
-        configuration = Configuration("config\\highway_background.py", "highway")
+        config_filepath = os.path.join("config", "highway_background.py")
+        configuration = Configuration(config_filepath, "highway")
         cf = configuration.load()
-        setup_logging(cf.log_file)
-        # Get a list with input images filenames
-        imageList = get_image_list_changedetection_dataset(
-            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-        )
 
-        # Get a list with groung truth images filenames
-        gtList = get_image_list_changedetection_dataset(
-            cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-        )
-        background_img_list = imageList[:len(imageList) // 2]
-        foreground_img_list = imageList[(len(imageList) // 2):]
-        foreground_gt_list = gtList[(len(imageList) // 2):]
+        with log_context(cf.log_file):
+            # Get a list with input images filenames
+            image_list = get_image_list_changedetection_dataset(
+                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+            )
 
-        AUC_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
-                                                                foreground_img_list, foreground_gt_list)
+            # Get a list with groung truth images filenames
+            gt_list = get_image_list_changedetection_dataset(
+                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+            )
+            background_img_list = image_list[:len(image_list) // 2]
+            foreground_img_list = image_list[(len(image_list) // 2):]
+            foreground_gt_list = gt_list[(len(image_list) // 2):]
 
-        if cf.save_results:
-            mkdirs(cf.results_path)
-            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                    image, mean, variance, best_alpha, cf.rho, cf.color_space
-                )
-                foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
-                fore = np.array(foreground, dtype='uint8') * 255
-                cv.imwrite(
-                    os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
-                    fore)
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
+            auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+                cf, background_img_list, foreground_img_list, foreground_gt_list
+            )
+
+            if cf.save_results:
+                mkdirs(cf.results_path)
+                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                        image, mean, variance, best_alpha, cf.rho, cf.color_space
+                    )
+                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(
+                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        fore)
+
+        # Load the configuration file for the Traffic Dataset
+        config_filepath = os.path.join("config", "traffic_background.py")
+        configuration = Configuration(config_filepath, "traffic")
+        cf = configuration.load()
+
+        with log_context(cf.log_file):
+            # Get a list with input images filenames
+            image_list = get_image_list_changedetection_dataset(
+                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+            )
+
+            # Get a list with groung truth images filenames
+            gt_list = get_image_list_changedetection_dataset(
+                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+            )
+            background_img_list = image_list[:len(image_list) // 2]
+            foreground_img_list = image_list[(len(image_list) // 2):]
+            foreground_gt_list = gt_list[(len(image_list) // 2):]
+
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+
+            auc_traffic, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+                cf, background_img_list, foreground_img_list, foreground_gt_list
+            )
+
+            if cf.save_results:
+                mkdirs(cf.results_path)
+                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                        image, mean, variance, best_alpha, cf.rho, cf.color_space
+                    )
+                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(
+                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        fore)
 
         # Load the configuration file for the Fall Dataset
-        configuration = Configuration("config\\fall_background.py", "fall")
+        config_filepath = os.path.join("config", "fall_background.py")
+        configuration = Configuration(config_filepath, "fall")
         cf = configuration.load()
-        setup_logging(cf.log_file)
+
+        with log_context(cf.log_file):
+            # Get a list with input images filenames
+            image_list = get_image_list_changedetection_dataset(
+                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+            )
+
+            # Get a list with groung truth images filenames
+            gt_list = get_image_list_changedetection_dataset(
+                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+            )
+            background_img_list = image_list[:len(image_list) // 2]
+            foreground_img_list = image_list[(len(image_list) // 2):]
+            foreground_gt_list = gt_list[(len(image_list) // 2):]
+
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+
+            auc_fall, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+                cf, background_img_list, foreground_img_list, foreground_gt_list
+            )
+
+            if cf.save_results:
+                mkdirs(cf.results_path)
+                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                        image, mean, variance, best_alpha, cf.rho, cf.color_space
+                    )
+                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(
+                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        fore)
+
+        # Plot AUC vs pixels range
+        visualization.plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, cf.output_folder)
+
+    else:
+        setup_logging(cf.log_path)
+
         logger = logging.getLogger(__name__)
+
         # Get a list with input images filenames
-        imageList = get_image_list_changedetection_dataset(
+        image_list = get_image_list_changedetection_dataset(
             cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
         )
 
         # Get a list with groung truth images filenames
-        gtList = get_image_list_changedetection_dataset(
+        gt_list = get_image_list_changedetection_dataset(
             cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
         )
-        background_img_list = imageList[:len(imageList) // 2]
-        foreground_img_list = imageList[(len(imageList) // 2):]
-        foreground_gt_list = gtList[(len(imageList) // 2):]
+        background_img_list = image_list[:len(image_list) // 2]
+        foreground_img_list = image_list[(len(image_list) // 2):]
+        foreground_gt_list = gt_list[(len(image_list) // 2):]
 
-        AUC_fall, pixels_range, best_pixels = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
-                                                          foreground_img_list, foreground_gt_list)
-
-        if cf.save_results:
-            mkdirs(cf.results_path)
-            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                    image, mean, variance, best_alpha, cf.rho, cf.color_space
-                )
-                foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
-                fore = np.array(foreground, dtype='uint8') * 255
-                cv.imwrite(
-                    os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
-                    fore)
-
-        # Plot AUC vs pixels range
-        visualization.plot_AUC_vs_pixels(AUC_highway, AUC_traffic, AUC_fall, pixels_range, cf.output_folder)
-
-    else:
         # Task 1
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
                                                                                cf.color_space)
 
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
-                                  num=cf.evaluate_alpha_values)
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
 
         precision = []
         recall = []
@@ -403,8 +413,8 @@ def foreground_estimation(cf):
                 )
                 foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
 
-                tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground,
-                                                                                                gt_img)
+                tp_temp, fp_temp, tn_temp, fn_temp = seg_metrics.evaluate_single_image(foreground,
+                                                                                       gt_img)
 
                 tp += tp_temp
                 fp += fp_temp
@@ -441,8 +451,9 @@ def foreground_estimation(cf):
         logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
         logger.info('AUC: {:.3f}'.format(auc_pr))
         if cf.save_results:
-            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
+            logger.info('Saving results in {}'.format(cf.results_path))
+            mkdirs(cf.results_path)
+            for image in foreground_img_list:
                 foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                     image, mean, variance, best_alpha, cf.rho, cf.color_space
                 )
@@ -480,13 +491,6 @@ def main():
     # Load the configuration file
     configuration = Configuration(arguments.config_path, arguments.test_name)
     cf = configuration.load()
-
-    # Set up logging
-    if cf.save_results:
-        log_file = cf.log_file
-    else:
-        log_file = None
-    setup_logging(log_file)
 
     # Run task
     task_fn = tasks[arguments.task]
