@@ -43,7 +43,7 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
                               num=cf.evaluate_alpha_values)
 
     auc = []  # Store AUC values to plot
-    pixels_range = np.linspace(cf.P_pixels_range[0], cf.P_pixels_range[1], num=30)
+    pixels_range = np.linspace(cf.P_pixels_range[0], cf.P_pixels_range[1], num=cf.P_pixels_values)
     best_alphas = []
     for pixels in pixels_range:
         logger.info("Pixels P: " + str(pixels))

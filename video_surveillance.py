@@ -274,6 +274,8 @@ def foreground_estimation(cf):
             foreground_img_list = image_list[(len(image_list) // 2):]
             foreground_gt_list = gt_list[(len(image_list) // 2):]
 
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+
             auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
@@ -308,6 +310,8 @@ def foreground_estimation(cf):
             background_img_list = image_list[:len(image_list) // 2]
             foreground_img_list = image_list[(len(image_list) // 2):]
             foreground_gt_list = gt_list[(len(image_list) // 2):]
+
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
             auc_traffic, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
@@ -344,7 +348,9 @@ def foreground_estimation(cf):
             foreground_img_list = image_list[(len(image_list) // 2):]
             foreground_gt_list = gt_list[(len(image_list) // 2):]
 
-            auc_fall, pixels_range, best_pixels = foreground_improving.area_filtering_auc_vs_pixels(
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+
+            auc_fall, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
 
@@ -385,8 +391,7 @@ def foreground_estimation(cf):
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
                                                                                cf.color_space)
 
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
-                                  num=cf.evaluate_alpha_values)
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
 
         precision = []
         recall = []
