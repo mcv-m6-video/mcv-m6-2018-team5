@@ -16,6 +16,35 @@ from sklearn.metrics import auc
 from metrics.optical_flow import read_flow_field
 
 
+def plot_AUC_vs_pixels(AUC_highway, AUC_traffic, AUC_fall, pixels_range, output_folder=""):
+
+    max_auc_highway = max(AUC_highway)
+    index_p = pixels_range.index(max_auc_highway)
+    best_p_highway = pixels_range[index_p]
+
+    max_auc_traffic = max(AUC_traffic)
+    index_p = pixels_range.index(max_auc_traffic)
+    best_p_traffic = pixels_range[index_p]
+
+    max_auc_fall = max(AUC_fall)
+    index_p = pixels_range.index(max_auc_fall)
+    best_p_fall = pixels_range[index_p]
+
+    plt.title('Area Filtering - AUC vs P Pixels')
+    plt.plot(pixels_range, AUC_highway, label='AUC Highway max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
+    plt.plot(pixels_range, AUC_highway, label='AUC Traffic max =%.4f (P = %d)' % (max_auc_traffic, best_p_traffic))
+    plt.plot(pixels_range, AUC_highway, label='AUC Fall max =%.4f (P = %d)' % (max_auc_fall, best_p_fall))
+
+    plt.xlabel('AUC')
+    plt.ylabel('Number of Pixels')
+    leg = plt.legend(loc='upper right', ncol=1, shadow=True, fancybox=True)
+    leg.get_frame().set_alpha(0.5)
+    if output_folder != "":
+        plt.savefig(os.path.join(output_folder, "week3_task_2_1_auc_pixels.png"))
+
+    plt.show(block=False)
+    plt.close()
+
 def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
                               output_folder=""):
     plt.title('Precision, Recall and F1-score vs Threshold')
