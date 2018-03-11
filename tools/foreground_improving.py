@@ -4,6 +4,7 @@ from skimage import morphology
 from metrics import segmentation_metrics
 from tools import background_modeling
 from sklearn.metrics import auc
+import os
 
 EPSILON = 1e-8
 
@@ -102,3 +103,35 @@ def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img
     logger.info('Best AUC: {:.4f}'.format(max_AUC))
 
     return AUC, pixels_range, best_pixels, best_alpha
+
+def shadow_detection(cf, back, image_path, foreground):
+
+    image = cv.imread(image_path)
+
+    back = back * np.stack([foreground, foreground, foreground], axis=2)
+    image = image * np.stack([foreground, foreground, foreground], axis=2)
+
+    bd = np.zeros((image.shape[0], image.shape[1]))
+
+    for i in range(0, image.shape[0]):
+        for j in range(0, image.shape[1]):
+            bd[i, j] = np.dot(image[i, j, :], back[i, j, :])
+
+    bd = bd / np.square(np.linalg.norm(back, axis=2))
+    cd = np.linalg.norm(image - (np.stack([bd, bd, bd], axis=2) * back), axis=2)
+
+    cd_filter = cd < 10
+    shadow = cd_filter * (1 > bd) * (bd > 0.5)
+    highlight = cd_filter * (1.25 > bd) * (bd > 1)
+
+    if cf.save_results:
+        image_name = os.path.basename(image_path)
+        cv.imwrite(os.path.join(cf.results_path, 'shadow_' + image_name + '.' + cf.result_image_type), shadow * 255)
+        cv.imwrite(os.path.join(cf.results_path, 'high_' + image_name + '.' + cf.result_image_type), highlight * 255)
+
+    return shadow, highlight
+
+
+
+
+
