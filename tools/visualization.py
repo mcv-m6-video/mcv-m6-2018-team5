@@ -16,24 +16,24 @@ from sklearn.metrics import auc
 from metrics.optical_flow import read_flow_field
 
 
-def plot_AUC_vs_pixels(AUC_highway, AUC_traffic, AUC_fall, pixels_range, output_folder=""):
+def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_folder=""):
 
-    max_auc_highway = max(AUC_highway)
+    max_auc_highway = max(auc_highway)
     index_p = pixels_range.index(max_auc_highway)
     best_p_highway = pixels_range[index_p]
 
-    max_auc_traffic = max(AUC_traffic)
+    max_auc_traffic = max(auc_traffic)
     index_p = pixels_range.index(max_auc_traffic)
     best_p_traffic = pixels_range[index_p]
 
-    max_auc_fall = max(AUC_fall)
+    max_auc_fall = max(auc_fall)
     index_p = pixels_range.index(max_auc_fall)
     best_p_fall = pixels_range[index_p]
 
     plt.title('Area Filtering - AUC vs P Pixels')
-    plt.plot(pixels_range, AUC_highway, label='AUC Highway max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
-    plt.plot(pixels_range, AUC_highway, label='AUC Traffic max =%.4f (P = %d)' % (max_auc_traffic, best_p_traffic))
-    plt.plot(pixels_range, AUC_highway, label='AUC Fall max =%.4f (P = %d)' % (max_auc_fall, best_p_fall))
+    plt.plot(pixels_range, auc_highway, label='AUC Highway max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
+    plt.plot(pixels_range, auc_highway, label='AUC Traffic max =%.4f (P = %d)' % (max_auc_traffic, best_p_traffic))
+    plt.plot(pixels_range, auc_highway, label='AUC Fall max =%.4f (P = %d)' % (max_auc_fall, best_p_fall))
 
     plt.xlabel('AUC')
     plt.ylabel('Number of Pixels')

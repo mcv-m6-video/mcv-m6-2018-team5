@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import imp
 import os
 
@@ -12,11 +14,11 @@ class Configuration(object):
     def load(self):
 
         # Get Config path
-        print self.config_path
+        print(self.config_path)
         config_path = os.path.join(os.getcwd(), os.path.dirname(self.config_path),
                                    os.path.basename(self.config_path))
-        print 'Config file loaded: '
-        print config_path
+        print('Config file loaded: ')
+        print(config_path)
 
         cf = imp.load_source('config', config_path)
 
