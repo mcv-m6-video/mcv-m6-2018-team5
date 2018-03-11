@@ -19,16 +19,16 @@ from metrics.optical_flow import read_flow_field
 def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_folder=""):
 
     max_auc_highway = max(auc_highway)
-    index_p = pixels_range.index(max_auc_highway)
-    best_p_highway = pixels_range[index_p]
+    index_p = np.where(auc_highway == max_auc_highway)
+    best_p_highway = pixels_range[index_p[0][0]]
 
     max_auc_traffic = max(auc_traffic)
-    index_p = pixels_range.index(max_auc_traffic)
-    best_p_traffic = pixels_range[index_p]
+    index_p = np.where(auc_traffic == max_auc_traffic)
+    best_p_traffic = pixels_range[index_p[0][0]]
 
     max_auc_fall = max(auc_fall)
-    index_p = pixels_range.index(max_auc_fall)
-    best_p_fall = pixels_range[index_p]
+    index_p = np.where(auc_fall == max_auc_fall)
+    best_p_fall = pixels_range[index_p[0][0]]
 
     plt.title('Area Filtering - AUC vs P Pixels')
     plt.plot(pixels_range, auc_highway, label='AUC Highway max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
