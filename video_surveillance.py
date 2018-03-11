@@ -17,7 +17,6 @@ from tools import visualization, foreground_improving
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
 from tools.log import setup_logging
 from tools.mkdirs import mkdirs
-from skimage import morphology
 
 EPSILON = 1e-8
 
@@ -271,80 +270,116 @@ def foreground_estimation(cf):
         logger.info('Saving results in {}'.format(cf.results_path))
         mkdirs(cf.results_path)
 
-    mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
-                                                                           cf.color_space)
+    if cf.AUC_area_filtering:
+        # Task 2
 
-    alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
-                              num=cf.evaluate_alpha_values)
+        # Load the configuration file for the Highway Dataset
+        configuration = Configuration("config\\highway_background.py", "highway")
+        cf = configuration.load()
+        setup_logging(cf.log_file)
+        logger = logging.getLogger(__name__)
 
-    precision = []
-    recall = []
-    F1_score = []
-    i = 1
-    for alpha in alpha_range:
+        AUC_highway, pixels_range = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+                                                          foreground_img_list, foreground_gt_list)
 
-        logger.info('[{} of {}]\talpha={:.2f}'.format(i, len(alpha_range), alpha))
 
-        tp = 0
-        fp = 0
-        tn = 0
-        fn = 0
+        # Load the configuration file for the Highway Dataset
+        configuration = Configuration("config\\traffic_background.py", "traffic")
+        cf = configuration.load()
+        setup_logging(cf.log_file)
+        logger = logging.getLogger(__name__)
 
-        for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-            gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
-            foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                image, mean, variance, alpha, cf.rho, cf.color_space
-            )
-            foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+        AUC_traffic, pixels_range = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+                                                          foreground_img_list, foreground_gt_list)
 
-            tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground,
-                                                                                            gt_img)
+        # Load the configuration file for the Highway Dataset
+        configuration = Configuration("config\\fall_background.py", "fall")
+        cf = configuration.load()
+        setup_logging(cf.log_file)
+        logger = logging.getLogger(__name__)
 
-            tp += tp_temp
-            fp += fp_temp
-            tn += tn_temp
-            fn += fn_temp
+        AUC_fall, pixels_range = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+                                                          foreground_img_list, foreground_gt_list)
 
-        pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-        rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f1 = 2 * pre * rec / (pre + rec + EPSILON)
+        # Plot AUC vs pixels range
+        visualization.plot_AUC_vs_pixels(AUC_highway, AUC_traffic, AUC_fall, pixels_range, cf.output_folder)
 
-        precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
-        recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
-        F1_score.append(f1)
+    else:
+        # Task 1
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                               cf.color_space)
 
-        i += 1
+        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
+                                  num=cf.evaluate_alpha_values)
 
-    best_f1_score = max(F1_score)
-    index_alpha = F1_score.index(best_f1_score)
-    best_alpha = alpha_range[index_alpha]
-    logger.info('Best alpha: {:.3f}'.format(best_alpha))
-    logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
-    visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
-                                            cf.output_folder)
+        precision = []
+        recall = []
+        F1_score = []
+        i = 1
+        for alpha in alpha_range:
 
-    colors = {
-        'highway': 'blue',
-        'fall': 'green',
-        'traffic': 'orange',
-    }
-    color = colors.get(cf.dataset_name, 'blue')
-    auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
+            logger.info('[{} of {}]\talpha={:.2f}'.format(i, len(alpha_range), alpha))
 
-    logger.info('Best alpha: {:.3f}'.format(best_alpha))
-    logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
-    logger.info('AUC: {:.3f}'.format(auc_pr))
-    if cf.save_results:
-        for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-            gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
-            foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                image, mean, variance, alpha, cf.rho, cf.color_space
-            )
-            foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
-            fore = np.array(foreground, dtype='uint8') * 255
-            cv.imwrite(
-                os.path.join(cf.results_path, image + '.' + cf.result_image_type),
-                fore)
+            tp = 0
+            fp = 0
+            tn = 0
+            fn = 0
+
+            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                    image, mean, variance, alpha, cf.rho, cf.color_space
+                )
+                foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+
+                tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground,
+                                                                                                gt_img)
+
+                tp += tp_temp
+                fp += fp_temp
+                tn += tn_temp
+                fn += fn_temp
+
+            pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            f1 = 2 * pre * rec / (pre + rec + EPSILON)
+
+            precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
+            recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
+            F1_score.append(f1)
+
+            i += 1
+
+        best_f1_score = max(F1_score)
+        index_alpha = F1_score.index(best_f1_score)
+        best_alpha = alpha_range[index_alpha]
+        logger.info('Best alpha: {:.3f}'.format(best_alpha))
+        logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
+        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
+                                                cf.output_folder)
+
+        colors = {
+            'highway': 'blue',
+            'fall': 'green',
+            'traffic': 'orange',
+        }
+        color = colors.get(cf.dataset_name, 'blue')
+        auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
+
+        logger.info('Best alpha: {:.3f}'.format(best_alpha))
+        logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
+        logger.info('AUC: {:.3f}'.format(auc_pr))
+        if cf.save_results:
+            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                    image, mean, variance, alpha, cf.rho, cf.color_space
+                )
+                foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+                fore = np.array(foreground, dtype='uint8') * 255
+                cv.imwrite(
+                    os.path.join(cf.results_path, image + '.' + cf.result_image_type),
+                    fore)
 
 
 # Main function
