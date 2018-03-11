@@ -15,12 +15,12 @@ result_image_type            = 'png'
 alpha                         = 3.051
 rho                           = 0.211
 
-modelling_method              = 'adaptive'  # adaptive instead
-color_images                  = True           # Use RGB, HSV color channels
+modelling_method              = 'adaptive'      # adaptive, non-adaptive
+color_images                  = True            # Use RGB, HSV color channels
 color_space                   = "RGB"           # RGB, HSV
 evaluate_foreground           = True
-evaluate_alpha_range          = [0, 50]      # range of alpha values
-evaluate_alpha_values         = 150          # number of alpha values to evaluate
+evaluate_alpha_range          = [0, 25]     # range of alpha values
+evaluate_alpha_values         = 100         # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = False
@@ -28,6 +28,8 @@ plot_back_model               = False
 
 # Foreground Modelling
 four_connectivity             = False
+AUC_area_filtering            = True		 # Plot AUC vs P pixels
+P_pixels_range                = [0, 1000]    # range of P pixels
 
 # Save results
 save_results                 = True        # Save Log file
