@@ -273,33 +273,104 @@ def foreground_estimation(cf):
     if cf.AUC_area_filtering:
         # Task 2
 
+        # Load the configuration file for the Traffic Dataset
+        configuration = Configuration("config\\traffic_background.py", "traffic")
+        cf = configuration.load()
+        setup_logging(cf.log_file)
+        # Get a list with input images filenames
+        imageList = get_image_list_changedetection_dataset(
+            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+        )
+
+        # Get a list with groung truth images filenames
+        gtList = get_image_list_changedetection_dataset(
+            cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+        )
+        background_img_list = imageList[:len(imageList) // 2]
+        foreground_img_list = imageList[(len(imageList) // 2):]
+        foreground_gt_list = gtList[(len(imageList) // 2):]
+
+        AUC_traffic, pixels_range, best_pixels , best_alpha = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+                                                          foreground_img_list, foreground_gt_list)
+
+        if cf.save_results:
+            mkdirs(cf.results_path)
+            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                    image, mean, variance, best_alpha, cf.rho, cf.color_space
+                )
+                foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                fore = np.array(foreground, dtype='uint8') * 255
+                cv.imwrite(
+                    os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                    fore)
+
+
         # Load the configuration file for the Highway Dataset
         configuration = Configuration("config\\highway_background.py", "highway")
         cf = configuration.load()
         setup_logging(cf.log_file)
-        logger = logging.getLogger(__name__)
+        # Get a list with input images filenames
+        imageList = get_image_list_changedetection_dataset(
+            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+        )
 
-        AUC_highway, pixels_range = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
-                                                          foreground_img_list, foreground_gt_list)
+        # Get a list with groung truth images filenames
+        gtList = get_image_list_changedetection_dataset(
+            cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+        )
+        background_img_list = imageList[:len(imageList) // 2]
+        foreground_img_list = imageList[(len(imageList) // 2):]
+        foreground_gt_list = gtList[(len(imageList) // 2):]
+
+        AUC_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+                                                                foreground_img_list, foreground_gt_list)
+
+        if cf.save_results:
+            mkdirs(cf.results_path)
+            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                    image, mean, variance, best_alpha, cf.rho, cf.color_space
+                )
+                foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                fore = np.array(foreground, dtype='uint8') * 255
+                cv.imwrite(
+                    os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                    fore)
 
 
-        # Load the configuration file for the Highway Dataset
-        configuration = Configuration("config\\traffic_background.py", "traffic")
-        cf = configuration.load()
-        setup_logging(cf.log_file)
-        logger = logging.getLogger(__name__)
-
-        AUC_traffic, pixels_range = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
-                                                          foreground_img_list, foreground_gt_list)
-
-        # Load the configuration file for the Highway Dataset
+        # Load the configuration file for the Fall Dataset
         configuration = Configuration("config\\fall_background.py", "fall")
         cf = configuration.load()
         setup_logging(cf.log_file)
         logger = logging.getLogger(__name__)
+        # Get a list with input images filenames
+        imageList = get_image_list_changedetection_dataset(
+            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+        )
 
-        AUC_fall, pixels_range = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+        # Get a list with groung truth images filenames
+        gtList = get_image_list_changedetection_dataset(
+            cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+        )
+        background_img_list = imageList[:len(imageList) // 2]
+        foreground_img_list = imageList[(len(imageList) // 2):]
+        foreground_gt_list = gtList[(len(imageList) // 2):]
+
+        AUC_fall, pixels_range, best_pixels = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
                                                           foreground_img_list, foreground_gt_list)
+
+        if cf.save_results:
+            mkdirs(cf.results_path)
+            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                    image, mean, variance, best_alpha, cf.rho, cf.color_space
+                )
+                foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                fore = np.array(foreground, dtype='uint8') * 255
+                cv.imwrite(
+                    os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                    fore)
 
         # Plot AUC vs pixels range
         visualization.plot_AUC_vs_pixels(AUC_highway, AUC_traffic, AUC_fall, pixels_range, cf.output_folder)

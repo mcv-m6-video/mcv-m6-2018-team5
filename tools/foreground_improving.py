@@ -15,13 +15,14 @@ def hole_filling(image, fourConnectivity = True):
 
     return outputImage
 # Remove small regios with less than n pixels
-def remove_small_regions(image, nr_pixels):
+def remove_small_regions(image, nr_pixels, conn_pixels = True):
 
     # The connectivity defining the neighborhood of a pixel
-    # Default is 1, we can try different values
-    conn_pixels = 1
-
-    outputImage = morphology.remove_small_objects(image, min_size=nr_pixels, connectivity=conn_pixels)
+    if conn_pixels:
+        conn = 1
+    else:
+        conn = 2
+    outputImage = morphology.remove_small_objects(image, min_size=nr_pixels, connectivity=conn)
 
     return outputImage
 
@@ -37,7 +38,7 @@ def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img
 
     AUC = [] # Store AUC values to plot
     pixels_range = np.linspace(cf.P_pixels_range[0], cf.P_pixels_range[1], num=30)
-
+    best_alphas = []
     for pixels in pixels_range:
         logger.info("Pixels P: " + str(pixels))
 
@@ -45,6 +46,7 @@ def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img
         recall = []
         F1_score = []
         for alpha in alpha_range:
+            logger.info("Alpha : " + str(alpha))
             tp = 0
             fp = 0
             tn = 0
@@ -58,8 +60,8 @@ def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img
                 foreground = hole_filling(foreground, cf.four_connectivity)
 
                 # Area Filtering
-                foreground = remove_small_regions(foreground, pixels)
-
+                foreground = remove_small_regions(foreground, pixels, cf.four_connectivity)
+                foreground = np.array(foreground, dtype='uint8')
                 tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground,
                                                                                                 gt_img)
 
@@ -80,6 +82,7 @@ def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img
         best_f1_score = max(F1_score)
         index_alpha = F1_score.index(best_f1_score)
         best_alpha = alpha_range[index_alpha]
+        best_alphas.append(best_alpha)
 
         try:
             auc_pr = auc(recall, precision, reorder=False)
@@ -93,6 +96,9 @@ def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img
         AUC.append(auc_pr)
 
     max_AUC = max(AUC)
+    index_pixels = AUC.index(max_AUC)
+    best_pixels = pixels_range[index_pixels]
+    best_alpha = best_alphas[index_pixels]
     logger.info('Best AUC: {:.4f}'.format(max_AUC))
 
-    return AUC, pixels_range
+    return AUC, pixels_range, best_pixels, best_alpha
