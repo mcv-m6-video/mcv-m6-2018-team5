@@ -290,7 +290,7 @@ def foreground_estimation(cf):
         foreground_img_list = imageList[(len(imageList) // 2):]
         foreground_gt_list = gtList[(len(imageList) // 2):]
 
-        AUC_traffic, pixels_range, best_pixels , best_alpha = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+        AUC_traffic, pixels_range, best_pixels , best_alpha = foreground_improving.area_filtering_AUC_vs_pixels(cf, logger, background_img_list,
                                                           foreground_img_list, foreground_gt_list)
 
         if cf.save_results:
@@ -323,7 +323,7 @@ def foreground_estimation(cf):
         foreground_img_list = imageList[(len(imageList) // 2):]
         foreground_gt_list = gtList[(len(imageList) // 2):]
 
-        AUC_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+        AUC_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_AUC_vs_pixels(cf, logger, background_img_list,
                                                                 foreground_img_list, foreground_gt_list)
 
         if cf.save_results:
@@ -357,7 +357,7 @@ def foreground_estimation(cf):
         foreground_img_list = imageList[(len(imageList) // 2):]
         foreground_gt_list = gtList[(len(imageList) // 2):]
 
-        AUC_fall, pixels_range, best_pixels = foreground_improving.area_filtering_AUC_vx_pixels(cf, logger, background_img_list,
+        AUC_fall, pixels_range, best_pixels = foreground_improving.area_filtering_AUC_vs_pixels(cf, logger, background_img_list,
                                                           foreground_img_list, foreground_gt_list)
 
         if cf.save_results:

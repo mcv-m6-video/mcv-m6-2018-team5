@@ -27,7 +27,7 @@ def remove_small_regions(image, nr_pixels, conn_pixels = True):
     return outputImage
 
 
-def area_filtering_AUC_vx_pixels(cf, logger, background_img_list, foreground_img_list,
+def area_filtering_AUC_vs_pixels(cf, logger, background_img_list, foreground_img_list,
                                  foreground_gt_list):
 
     mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
