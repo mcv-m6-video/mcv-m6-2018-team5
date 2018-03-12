@@ -13,6 +13,23 @@ from sklearn import metrics
 
 EPSILON = 1e-8
 
+def image_opening(image, strel='rectangle', size_strel=3):
+
+    if strel == 'rectangle':
+        elem = morphology.rectangle(size_strel, size_strel)
+
+    output_image = morphology.opening(image, elem)
+
+    return output_image
+
+def image_closing(image, strel='rectangle', size_strel=3):
+
+    if strel == 'rectangle':
+        elem = morphology.rectangle(size_strel, size_strel)
+
+    output_image = morphology.closing(image, elem)
+
+    return output_image
 
 def hole_filling(image, four_connectivity=True):
     if four_connectivity:
