@@ -16,10 +16,11 @@ EPSILON = 1e-8
 def image_opening(image, strel='rectangle', size_strel=3):
 
     if strel == 'rectangle':
-        elem = morphology.rectangle(size_strel, size_strel)
+        elem = morphology.rectangle(size_strel/2, size_strel)
     elif strel == 'diagonal':
         elem = np.zeros((size_strel, size_strel), int)
         np.fill_diagonal(elem, 1)
+        elem = np.fliplr(elem)
     elif strel == 'diamond':
         elem = morphology.diamond(size_strel)
 
@@ -30,7 +31,7 @@ def image_opening(image, strel='rectangle', size_strel=3):
 def image_closing(image, strel='rectangle', size_strel=3):
 
     if strel == 'rectangle':
-        elem = morphology.rectangle(size_strel, size_strel)
+        elem = morphology.rectangle(size_strel/2, size_strel)
     elif strel == 'diagonal':
         elem = np.zeros((size_strel, size_strel), int)
         np.fill_diagonal(elem, 1)
