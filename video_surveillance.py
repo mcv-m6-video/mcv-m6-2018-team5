@@ -6,6 +6,7 @@ import argparse
 import itertools
 import logging
 import os
+import pickle
 
 import cv2 as cv
 import numpy as np
@@ -15,7 +16,7 @@ from metrics import segmentation_metrics as seg_metrics, optical_flow
 from tools import background_modeling
 from tools import visualization, foreground_improving
 from tools.image_parser import get_image_list_changedetection_dataset, get_image_list_kitti_dataset
-from tools.log import setup_logging, log_context
+from tools.log import log_context
 from tools.mkdirs import mkdirs
 
 EPSILON = 1e-8
@@ -256,11 +257,6 @@ def foreground_estimation(cf):
     if cf.AUC_area_filtering:
         """ TASK 2 """
 
-        # Load the configuration file for the Highway Dataset
-        config_filepath = os.path.join("config", "highway_background.py")
-        configuration = Configuration(config_filepath, "highway")
-        cf = configuration.load()
-
         with log_context(cf.log_file):
 
             # Get a list with input images filenames
@@ -278,9 +274,14 @@ def foreground_estimation(cf):
 
             mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
-            auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+            auc_pr, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
+
+            # Save auc_pr as a pickle
+            auc_pr_path = os.path.join(cf.output_folder, '{}_AUC_vs_pixels.pkl'.format(cf.dataset_name))
+            with open(auc_pr_path, 'w') as fd:
+                pickle.dump(auc_pr, fd)
 
             if cf.save_results:
                 mkdirs(cf.results_path)
@@ -296,90 +297,6 @@ def foreground_estimation(cf):
                     cv.imwrite(
                         os.path.join(cf.results_path, 'task2_' + image_name + '.' + cf.result_image_type),
                         fore)
-
-        # Load the configuration file for the Fall Dataset
-        config_filepath = os.path.join("config", "fall_background.py")
-        configuration = Configuration(config_filepath, "fall")
-        cf = configuration.load()
-
-        with log_context(cf.log_file):
-            # Get a list with input images filenames
-            image_list = get_image_list_changedetection_dataset(
-                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-            )
-
-            # Get a list with groung truth images filenames
-            gt_list = get_image_list_changedetection_dataset(
-                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-            )
-            background_img_list = image_list[:len(image_list) // 2]
-            foreground_img_list = image_list[(len(image_list) // 2):]
-            foreground_gt_list = gt_list[(len(image_list) // 2):]
-
-            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
-
-            auc_fall, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
-                cf, background_img_list, foreground_img_list, foreground_gt_list
-            )
-
-            if cf.save_results:
-                mkdirs(cf.results_path)
-                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                        image, mean, variance, best_alpha, cf.rho, cf.color_space
-                    )
-                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
-                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
-                    fore = np.array(foreground, dtype='uint8') * 255
-                    image_name = os.path.basename(image)
-                    image_name = os.path.splitext(image_name)[0]
-                    cv.imwrite(
-                        os.path.join(cf.results_path, 'task2_' + image_name + '.' + cf.result_image_type),
-                        fore)
-
-        # Load the configuration file for the Traffic Dataset
-        config_filepath = os.path.join("config", "traffic_background.py")
-        configuration = Configuration(config_filepath, "traffic")
-        cf = configuration.load()
-
-        with log_context(cf.log_file):
-            # Get a list with input images filenames
-            image_list = get_image_list_changedetection_dataset(
-                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-            )
-
-            # Get a list with groung truth images filenames
-            gt_list = get_image_list_changedetection_dataset(
-                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-            )
-            background_img_list = image_list[:len(image_list) // 2]
-            foreground_img_list = image_list[(len(image_list) // 2):]
-            foreground_gt_list = gt_list[(len(image_list) // 2):]
-
-            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
-                                                                                   cf.color_space)
-
-            auc_traffic, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
-                cf, background_img_list, foreground_img_list, foreground_gt_list
-            )
-
-            if cf.save_results:
-                mkdirs(cf.results_path)
-                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                        image, mean, variance, best_alpha, cf.rho, cf.color_space
-                    )
-                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
-                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
-                    fore = np.array(foreground, dtype='uint8') * 255
-                    image_name = os.path.basename(image)
-                    image_name = os.path.splitext(image_name)[0]
-                    cv.imwrite(
-                        os.path.join(cf.results_path, 'task2_' + image_name + '.' + cf.result_image_type),
-                        fore)
-
-        # Plot AUC vs pixels range
-        visualization.plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, cf.output_folder)
 
     else:
         # setup_logging(cf.log_path)
