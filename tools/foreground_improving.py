@@ -17,6 +17,8 @@ def image_opening(image, strel='rectangle', size_strel=3):
 
     if strel == 'rectangle':
         elem = morphology.rectangle(size_strel/2, size_strel)
+    elif strel == 'square':
+        elem = morphology.square(size_strel)
     elif strel == 'diagonal':
         elem = np.zeros((size_strel, size_strel), int)
         np.fill_diagonal(elem, 1)
@@ -32,6 +34,8 @@ def image_closing(image, strel='rectangle', size_strel=3):
 
     if strel == 'rectangle':
         elem = morphology.rectangle(size_strel/2, size_strel)
+    elif strel == 'square':
+        elem = morphology.square(size_strel)
     elif strel == 'diagonal':
         elem = np.zeros((size_strel, size_strel), int)
         np.fill_diagonal(elem, 1)
