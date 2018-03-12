@@ -168,6 +168,7 @@ def shadow_detection(cf, back, image_path, foreground):
 
     if cf.save_results:
         image_name = os.path.basename(image_path)
+        image_name = os.path.splitext(image_name)[0]
         cv.imwrite(os.path.join(cf.results_path, 'shadow_' + image_name + '.' + cf.result_image_type), shadow * 255)
         cv.imwrite(os.path.join(cf.results_path, 'high_' + image_name + '.' + cf.result_image_type), highlight * 255)
 

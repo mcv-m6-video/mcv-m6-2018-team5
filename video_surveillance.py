@@ -288,10 +288,13 @@ def foreground_estimation(cf):
                     foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                         image, mean, variance, best_alpha, cf.rho, cf.color_space
                     )
+                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
                     foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
                     fore = np.array(foreground, dtype='uint8') * 255
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
                     cv.imwrite(
-                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        os.path.join(cf.results_path, 'task2_' + image_name + '.' + cf.result_image_type),
                         fore)
 
         # Load the configuration file for the Fall Dataset
@@ -325,10 +328,13 @@ def foreground_estimation(cf):
                     foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                         image, mean, variance, best_alpha, cf.rho, cf.color_space
                     )
+                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
                     foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
                     fore = np.array(foreground, dtype='uint8') * 255
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
                     cv.imwrite(
-                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        os.path.join(cf.results_path, 'task2_' + image_name + '.' + cf.result_image_type),
                         fore)
 
         # Load the configuration file for the Traffic Dataset
@@ -363,10 +369,13 @@ def foreground_estimation(cf):
                     foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                         image, mean, variance, best_alpha, cf.rho, cf.color_space
                     )
+                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
                     foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
                     fore = np.array(foreground, dtype='uint8') * 255
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
                     cv.imwrite(
-                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        os.path.join(cf.results_path, 'task2_' + image_name + '.' + cf.result_image_type),
                         fore)
 
         # Plot AUC vs pixels range
