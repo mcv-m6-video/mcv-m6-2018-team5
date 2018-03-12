@@ -38,7 +38,7 @@ def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_
     plt.xlabel('Number of Pixels')
     plt.ylim([0, 1])
     plt.xlim([pixels_range[0], pixels_range[-1]])
-    leg = plt.legend(loc='upper right', ncol=1, shadow=True, fancybox=True)
+    leg = plt.legend(loc='lower right', ncol=1, shadow=True, fancybox=True)
     leg.get_frame().set_alpha(0.5)
     if output_folder != "":
         plt.savefig(os.path.join(output_folder, "week3_task_2_1_auc_pixels.png"))
