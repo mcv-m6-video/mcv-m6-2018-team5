@@ -34,9 +34,10 @@ def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_
     plt.plot(pixels_range, auc_highway, label='AUC Highway max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
     plt.plot(pixels_range, auc_highway, label='AUC Traffic max =%.4f (P = %d)' % (max_auc_traffic, best_p_traffic))
     plt.plot(pixels_range, auc_highway, label='AUC Fall max =%.4f (P = %d)' % (max_auc_fall, best_p_fall))
-
-    plt.xlabel('AUC')
-    plt.ylabel('Number of Pixels')
+    plt.ylabel('AUC')
+    plt.xlabel('Number of Pixels')
+    plt.ylim([0, 1])
+    plt.xlim([pixels_range[0], pixels_range[-1]])
     leg = plt.legend(loc='upper right', ncol=1, shadow=True, fancybox=True)
     leg.get_frame().set_alpha(0.5)
     if output_folder != "":
