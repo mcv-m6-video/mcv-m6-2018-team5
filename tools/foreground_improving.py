@@ -67,7 +67,7 @@ def remove_small_regions(image, nr_pixels, conn_pixels=True):
 def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, foreground_gt_list):
     logger = logging.getLogger(__name__)
 
-    mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+    mean_back, variance_back = background_modeling.multivariative_gaussian_modelling(background_img_list,
                                                                            cf.color_space)
 
     alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
@@ -88,6 +88,8 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
             fp = 0
             tn = 0
             fn = 0
+            mean = mean_back
+            variance = variance_back
 
             for (image, gt) in zip(foreground_img_list, foreground_gt_list):
                 gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
