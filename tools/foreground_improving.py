@@ -1,22 +1,22 @@
 from __future__ import division
 
 import logging
+import os
 
-import numpy as np
 import cv2 as cv
+import numpy as np
 from skimage import morphology
+from sklearn import metrics
+
 from metrics import segmentation_metrics
 from tools import background_modeling
 
-import os
-from sklearn import metrics
-
 EPSILON = 1e-8
 
-def image_opening(image, strel='rectangle', size_strel=3):
 
+def image_opening(image, strel='rectangle', size_strel=3):
     if strel == 'rectangle':
-        elem = morphology.rectangle(size_strel/2, size_strel)
+        elem = morphology.rectangle(size_strel / 2, size_strel)
     elif strel == 'square':
         elem = morphology.square(size_strel)
     elif strel == 'diagonal':
@@ -30,10 +30,10 @@ def image_opening(image, strel='rectangle', size_strel=3):
 
     return output_image
 
-def image_closing(image, strel='rectangle', size_strel=3):
 
+def image_closing(image, strel='rectangle', size_strel=3):
     if strel == 'rectangle':
-        elem = morphology.rectangle(size_strel/2, size_strel)
+        elem = morphology.rectangle(size_strel / 2, size_strel)
     elif strel == 'square':
         elem = morphology.square(size_strel)
     elif strel == 'diagonal':
@@ -46,6 +46,7 @@ def image_closing(image, strel='rectangle', size_strel=3):
     output_image = morphology.closing(image, elem)
 
     return output_image
+
 
 def hole_filling(image, four_connectivity=True):
     if four_connectivity:
@@ -71,11 +72,11 @@ def remove_small_regions(image, nr_pixels, conn_pixels=True):
 def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, foreground_gt_list):
     logger = logging.getLogger(__name__)
 
-    mean_back, variance_back = background_modeling.multivariative_gaussian_modelling(background_img_list,
-                                                                           cf.color_space)
+    mean_back, variance_back = background_modeling.multivariative_gaussian_modelling(
+        background_img_list, cf.color_space
+    )
 
-    alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1],
-                              num=cf.evaluate_alpha_values)
+    alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
 
     auc = []  # Store AUC values to plot
     pixels_range = np.linspace(cf.P_pixels_range[0], cf.P_pixels_range[1], num=cf.P_pixels_values)
@@ -92,8 +93,8 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
             fp = 0
             tn = 0
             fn = 0
-            mean = mean_back
-            variance = variance_back
+            mean = np.copy(mean_back)
+            variance = np.copy(variance_back)
 
             for (image, gt) in zip(foreground_img_list, foreground_gt_list):
                 gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
@@ -105,8 +106,7 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
                 # Area Filtering
                 foreground = remove_small_regions(foreground, pixels, cf.four_connectivity)
                 foreground = np.array(foreground, dtype='uint8')
-                tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground,
-                                                                                                gt_img)
+                tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground, gt_img)
 
                 tp += tp_temp
                 fp += fp_temp
@@ -124,6 +124,8 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
         best_f1_score = max(f1_score)
         index_alpha = f1_score.index(best_f1_score)
         best_alpha = alpha_range[index_alpha]
+        best_precision = precision[index_alpha]
+        best_recall = recall[index_alpha]
         best_alphas.append(best_alpha)
 
         try:
@@ -134,6 +136,8 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
 
         logger.info('Best alpha: {:.4f}'.format(best_alpha))
         logger.info('Best F1-score: {:.4f}'.format(best_f1_score))
+        logger.info('Best precision: {:.4f}'.format(best_precision))
+        logger.info('Best recall: {:.4f}'.format(best_recall))
         logger.info('AUC: {:.4f}'.format(auc_pr))
         auc.append(auc_pr)
 
@@ -147,7 +151,6 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
 
 
 def shadow_detection(cf, back, image_path, foreground):
-
     image = cv.imread(image_path)
 
     back = back * np.stack([foreground, foreground, foreground], axis=2)

@@ -15,8 +15,8 @@ from sklearn.metrics import auc
 
 from metrics.optical_flow import read_flow_field
 
-def aux_plot_auc_vs_pixels(auc_highway, pixels_range, output_folder=""):
 
+def aux_plot_auc_vs_pixels(auc_highway, pixels_range, output_folder=""):
     max_auc_highway = max(auc_highway)
     index_p = np.where(auc_highway == max_auc_highway)
     best_p_highway = pixels_range[index_p[0][0]]
@@ -35,8 +35,8 @@ def aux_plot_auc_vs_pixels(auc_highway, pixels_range, output_folder=""):
     plt.show(block=False)
     plt.close()
 
-def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_folder=""):
 
+def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_folder=""):
     max_auc_highway = max(auc_highway)
     index_p = np.where(auc_highway == max_auc_highway)
     best_p_highway = pixels_range[index_p[0][0]]
@@ -64,6 +64,7 @@ def plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, output_
 
     plt.show(block=False)
     plt.close()
+
 
 def plot_metrics_vs_threshold(precision, recall, F1_score, threshold,
                               output_folder=""):
