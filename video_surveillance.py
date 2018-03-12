@@ -252,15 +252,17 @@ def background_estimation(cf):
 
 
 def foreground_estimation(cf):
+
     if cf.AUC_area_filtering:
         """ TASK 2 """
 
-        # Load the configuration file for the Traffic Dataset
-        config_filepath = os.path.join("config", "traffic_background.py")
-        configuration = Configuration(config_filepath, "traffic")
+        # Load the configuration file for the Highway Dataset
+        config_filepath = os.path.join("config", "highway_background.py")
+        configuration = Configuration(config_filepath, "highway")
         cf = configuration.load()
 
         with log_context(cf.log_file):
+
             # Get a list with input images filenames
             image_list = get_image_list_changedetection_dataset(
                 cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
@@ -276,7 +278,7 @@ def foreground_estimation(cf):
 
             mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
-            auc_traffic, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+            auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
 
@@ -329,9 +331,9 @@ def foreground_estimation(cf):
                         os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
                         fore)
 
-        # Load the configuration file for the Highway Dataset
-        config_filepath = os.path.join("config", "highway_background.py")
-        configuration = Configuration(config_filepath, "highway")
+        # Load the configuration file for the Traffic Dataset
+        config_filepath = os.path.join("config", "traffic_background.py")
+        configuration = Configuration(config_filepath, "traffic")
         cf = configuration.load()
 
         with log_context(cf.log_file):
@@ -351,7 +353,7 @@ def foreground_estimation(cf):
             mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
                                                                                    cf.color_space)
 
-            auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+            auc_traffic, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
 
@@ -371,7 +373,7 @@ def foreground_estimation(cf):
         visualization.plot_auc_vs_pixels(auc_highway, auc_traffic, auc_fall, pixels_range, cf.output_folder)
 
     else:
-        setup_logging(cf.log_path)
+        # setup_logging(cf.log_path)
 
         logger = logging.getLogger(__name__)
 
@@ -412,6 +414,13 @@ def foreground_estimation(cf):
                 foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                     image, mean, variance, alpha, cf.rho, cf.color_space
                 )
+
+                if cf.task_name == 'task3':
+
+                    foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+
+                    foreground = foreground_improving.image_closing(foreground,  cf.closing_strel, cf.closing_strel_size)
+
                 foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
 
                 tp_temp, fp_temp, tn_temp, fn_temp = seg_metrics.evaluate_single_image(foreground,
