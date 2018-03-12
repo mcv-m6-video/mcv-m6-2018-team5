@@ -255,43 +255,6 @@ def foreground_estimation(cf):
     if cf.AUC_area_filtering:
         """ TASK 2 """
 
-        # Load the configuration file for the Highway Dataset
-        config_filepath = os.path.join("config", "highway_background.py")
-        configuration = Configuration(config_filepath, "highway")
-        cf = configuration.load()
-
-        with log_context(cf.log_file):
-            # Get a list with input images filenames
-            image_list = get_image_list_changedetection_dataset(
-                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-            )
-
-            # Get a list with groung truth images filenames
-            gt_list = get_image_list_changedetection_dataset(
-                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-            )
-            background_img_list = image_list[:len(image_list) // 2]
-            foreground_img_list = image_list[(len(image_list) // 2):]
-            foreground_gt_list = gt_list[(len(image_list) // 2):]
-
-            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
-
-            auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
-                cf, background_img_list, foreground_img_list, foreground_gt_list
-            )
-
-            if cf.save_results:
-                mkdirs(cf.results_path)
-                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                        image, mean, variance, best_alpha, cf.rho, cf.color_space
-                    )
-                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
-                    fore = np.array(foreground, dtype='uint8') * 255
-                    cv.imwrite(
-                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
-                        fore)
-
         # Load the configuration file for the Traffic Dataset
         config_filepath = os.path.join("config", "traffic_background.py")
         configuration = Configuration(config_filepath, "traffic")
@@ -351,6 +314,44 @@ def foreground_estimation(cf):
             mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
             auc_fall, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
+                cf, background_img_list, foreground_img_list, foreground_gt_list
+            )
+
+            if cf.save_results:
+                mkdirs(cf.results_path)
+                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                        image, mean, variance, best_alpha, cf.rho, cf.color_space
+                    )
+                    foreground = foreground_improving.remove_small_regions(foreground, best_pixels)
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(
+                        os.path.join(cf.results_path, 'task2_' + image + '.' + cf.result_image_type),
+                        fore)
+
+        # Load the configuration file for the Highway Dataset
+        config_filepath = os.path.join("config", "highway_background.py")
+        configuration = Configuration(config_filepath, "highway")
+        cf = configuration.load()
+
+        with log_context(cf.log_file):
+            # Get a list with input images filenames
+            image_list = get_image_list_changedetection_dataset(
+                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+            )
+
+            # Get a list with groung truth images filenames
+            gt_list = get_image_list_changedetection_dataset(
+                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+            )
+            background_img_list = image_list[:len(image_list) // 2]
+            foreground_img_list = image_list[(len(image_list) // 2):]
+            foreground_gt_list = gt_list[(len(image_list) // 2):]
+
+            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                                   cf.color_space)
+
+            auc_highway, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
 
