@@ -101,10 +101,17 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
                 foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                     image, mean, variance, alpha, cf.rho, cf.color_space
                 )
+
+                if cf.task_name == 'task3':
+
+                    foreground = image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+
+                    foreground = image_closing(foreground,  cf.closing_strel, cf.closing_strel_size)
+
                 foreground = hole_filling(foreground, cf.four_connectivity)
 
                 # Area Filtering
-                foreground = remove_small_regions(foreground, pixels, cf.four_connectivity)
+                foreground = remove_small_regions(foreground, pixels)
                 foreground = np.array(foreground, dtype='uint8')
                 tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground, gt_img)
 
