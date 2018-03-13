@@ -395,6 +395,8 @@ def foreground_estimation(cf):
             logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
             logger.info('AUC: {:.3f}'.format(auc_pr))
             if cf.save_results:
+                mean = np.copy(mean_back)
+                variance = np.copy(variance_back)
                 logger.info('Saving results in {}'.format(cf.results_path))
                 mkdirs(cf.results_path)
                 for image in foreground_img_list:
