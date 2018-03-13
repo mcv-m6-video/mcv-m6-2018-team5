@@ -27,7 +27,7 @@ find_best_parameters          = False
 plot_back_model               = False
 
 # Foreground Modelling
-four_connectivity             = True
+four_connectivity             = False
 AUC_area_filtering            = False		 # Plot AUC vs P pixels
 P_pixels_range                = [0, 1000]    # range of P pixels
 P_pixels_values               = 40

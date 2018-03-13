@@ -301,121 +301,121 @@ def foreground_estimation(cf):
                         fore)
 
     else:
-        # setup_logging(cf.log_path)
+        #setup_logging(cf.log_path)
+        with log_context(cf.log_file):
+            logger = logging.getLogger(__name__)
 
-        logger = logging.getLogger(__name__)
+            # Get a list with input images filenames
+            image_list = get_image_list_changedetection_dataset(
+                cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+            )
 
-        # Get a list with input images filenames
-        image_list = get_image_list_changedetection_dataset(
-            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
-        )
+            # Get a list with groung truth images filenames
+            gt_list = get_image_list_changedetection_dataset(
+                cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
+            )
+            background_img_list = image_list[:len(image_list) // 2]
+            foreground_img_list = image_list[(len(image_list) // 2):]
+            foreground_gt_list = gt_list[(len(image_list) // 2):]
 
-        # Get a list with groung truth images filenames
-        gt_list = get_image_list_changedetection_dataset(
-            cf.gt_path, 'gt', cf.first_image, cf.gt_image_type, cf.nr_images
-        )
-        background_img_list = image_list[:len(image_list) // 2]
-        foreground_img_list = image_list[(len(image_list) // 2):]
-        foreground_gt_list = gt_list[(len(image_list) // 2):]
+            # Task 1
+            mean_back, variance_back = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                                   cf.color_space)
 
-        # Task 1
-        mean_back, variance_back = background_modeling.multivariative_gaussian_modelling(background_img_list,
-                                                                               cf.color_space)
+            alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
 
-        alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
+            precision = []
+            recall = []
+            F1_score = []
+            i = 1
+            for alpha in alpha_range:
 
-        precision = []
-        recall = []
-        F1_score = []
-        i = 1
-        for alpha in alpha_range:
+                logger.info('[{} of {}]\talpha={:.2f}'.format(i, len(alpha_range), alpha))
 
-            logger.info('[{} of {}]\talpha={:.2f}'.format(i, len(alpha_range), alpha))
+                tp = 0
+                fp = 0
+                tn = 0
+                fn = 0
+                mean = np.copy(mean_back)
+                variance = np.copy(variance_back)
 
-            tp = 0
-            fp = 0
-            tn = 0
-            fn = 0
-            mean = np.copy(mean_back)
-            variance = np.copy(variance_back)
+                for (image, gt) in zip(foreground_img_list, foreground_gt_list):
+                    gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                        image, mean, variance, alpha, cf.rho, cf.color_space
+                    )
 
-            for (image, gt) in zip(foreground_img_list, foreground_gt_list):
-                gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
-                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                    image, mean, variance, alpha, cf.rho, cf.color_space
-                )
+                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
 
-                foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+                    if cf.area_filtering:
+                        # Area Filtering
+                        foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
 
-                if cf.area_filtering:
-                    # Area Filtering
-                    foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
+                    if cf.task_name == 'task3':
+                        foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
 
-                if cf.task_name == 'task3':
-                    foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+                        foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
-                    foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+                    foreground = np.array(foreground, dtype='uint8')
+                    tp_temp, fp_temp, tn_temp, fn_temp = seg_metrics.evaluate_single_image(foreground,
+                                                                                           gt_img)
 
-                foreground = np.array(foreground, dtype='uint8')
-                tp_temp, fp_temp, tn_temp, fn_temp = seg_metrics.evaluate_single_image(foreground,
-                                                                                       gt_img)
+                    tp += tp_temp
+                    fp += fp_temp
+                    tn += tn_temp
+                    fn += fn_temp
 
-                tp += tp_temp
-                fp += fp_temp
-                tn += tn_temp
-                fn += fn_temp
+                pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+                rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+                f1 = 2 * pre * rec / (pre + rec + EPSILON)
 
-            pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-            rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-            f1 = 2 * pre * rec / (pre + rec + EPSILON)
+                precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
+                recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
+                F1_score.append(f1)
 
-            precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
-            recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
-            F1_score.append(f1)
+                i += 1
 
-            i += 1
+            best_f1_score = max(F1_score)
+            index_alpha = F1_score.index(best_f1_score)
+            best_alpha = alpha_range[index_alpha]
+            logger.info('Best alpha: {:.3f}'.format(best_alpha))
+            logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
+            visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
+                                                    cf.output_folder)
 
-        best_f1_score = max(F1_score)
-        index_alpha = F1_score.index(best_f1_score)
-        best_alpha = alpha_range[index_alpha]
-        logger.info('Best alpha: {:.3f}'.format(best_alpha))
-        logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
-        visualization.plot_metrics_vs_threshold(precision, recall, F1_score, alpha_range,
-                                                cf.output_folder)
+            colors = {
+                'highway': 'blue',
+                'fall': 'green',
+                'traffic': 'orange',
+            }
+            color = colors.get(cf.dataset_name, 'blue')
+            auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
 
-        colors = {
-            'highway': 'blue',
-            'fall': 'green',
-            'traffic': 'orange',
-        }
-        color = colors.get(cf.dataset_name, 'blue')
-        auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
+            logger.info('Best alpha: {:.3f}'.format(best_alpha))
+            logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
+            logger.info('AUC: {:.3f}'.format(auc_pr))
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+                for image in foreground_img_list:
+                    foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                        image, mean, variance, best_alpha, cf.rho, cf.color_space
+                    )
+                    foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
 
-        logger.info('Best alpha: {:.3f}'.format(best_alpha))
-        logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
-        logger.info('AUC: {:.3f}'.format(auc_pr))
-        if cf.save_results:
-            logger.info('Saving results in {}'.format(cf.results_path))
-            mkdirs(cf.results_path)
-            for image in foreground_img_list:
-                foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                    image, mean, variance, best_alpha, cf.rho, cf.color_space
-                )
-                foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+                    if cf.area_filtering:
+                        # Area Filtering
+                        foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
 
-                if cf.area_filtering:
-                    # Area Filtering
-                    foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
+                    if cf.task_name == 'task3':
+                        foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
 
-                if cf.task_name == 'task3':
-                    foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+                        foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
-                    foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
-
-                fore = np.array(foreground, dtype='uint8') * 255
-                image_name = os.path.basename(image)
-                image_name = os.path.splitext(image_name)[0]
-                cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    image_name = os.path.basename(image)
+                    image_name = os.path.splitext(image_name)[0]
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
 
 
 # Main function
