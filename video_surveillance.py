@@ -413,10 +413,10 @@ def foreground_estimation(cf):
 
                             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
                         elif  cf.dataset_name == 'fall':
-
+                            pass
 
                         elif cf.dataset_name == 'highway':
-
+                            pass
 
 
                     fore = np.array(foreground, dtype='uint8') * 255
