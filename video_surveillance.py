@@ -317,7 +317,7 @@ def foreground_estimation(cf):
         foreground_gt_list = gt_list[(len(image_list) // 2):]
 
         # Task 1
-        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+        mean_back, variance_back = background_modeling.multivariative_gaussian_modelling(background_img_list,
                                                                                cf.color_space)
 
         alpha_range = np.linspace(cf.evaluate_alpha_range[0], cf.evaluate_alpha_range[1], num=cf.evaluate_alpha_values)
@@ -334,6 +334,8 @@ def foreground_estimation(cf):
             fp = 0
             tn = 0
             fn = 0
+            mean = np.copy(mean_back)
+            variance = np.copy(variance_back)
 
             for (image, gt) in zip(foreground_img_list, foreground_gt_list):
                 gt_img = cv.imread(gt, cv.IMREAD_GRAYSCALE)
