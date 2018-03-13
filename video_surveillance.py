@@ -272,11 +272,11 @@ def foreground_estimation(cf):
             foreground_img_list = image_list[(len(image_list) // 2):]
             foreground_gt_list = gt_list[(len(image_list) // 2):]
 
-            mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
-
             auc_pr, pixels_range, best_pixels, best_alpha = foreground_improving.area_filtering_auc_vs_pixels(
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
+
+            visualization.aux_plot_auc_vs_pixels(auc_pr, pixels_range, cf.output_folder)
 
             # Save auc_pr as a pickle
             auc_pr_path = os.path.join(cf.output_folder, '{}_AUC_vs_pixels.pkl'.format(cf.dataset_name))
@@ -285,6 +285,8 @@ def foreground_estimation(cf):
 
             if cf.save_results:
                 mkdirs(cf.results_path)
+                mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                                       cf.color_space)
                 for (image, gt) in zip(foreground_img_list, foreground_gt_list):
                     foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                         image, mean, variance, best_alpha, cf.rho, cf.color_space
@@ -343,14 +345,18 @@ def foreground_estimation(cf):
                     image, mean, variance, alpha, cf.rho, cf.color_space
                 )
 
-                if cf.task_name == 'task3':
-
-                    foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
-
-                    foreground = foreground_improving.image_closing(foreground,  cf.closing_strel, cf.closing_strel_size)
-
                 foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
 
+                if cf.area_filtering:
+                    # Area Filtering
+                    foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
+
+                if cf.task_name == 'task3':
+                    foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+
+                    foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+
+                foreground = np.array(foreground, dtype='uint8')
                 tp_temp, fp_temp, tn_temp, fn_temp = seg_metrics.evaluate_single_image(foreground,
                                                                                        gt_img)
 
@@ -396,6 +402,16 @@ def foreground_estimation(cf):
                     image, mean, variance, best_alpha, cf.rho, cf.color_space
                 )
                 foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+
+                if cf.area_filtering:
+                    # Area Filtering
+                    foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
+
+                if cf.task_name == 'task3':
+                    foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+
+                    foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+
                 fore = np.array(foreground, dtype='uint8') * 255
                 image_name = os.path.basename(image)
                 image_name = os.path.splitext(image_name)[0]
