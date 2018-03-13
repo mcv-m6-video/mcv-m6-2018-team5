@@ -173,13 +173,7 @@ def shadow_detection(cf, back, image_path, foreground):
     cd = np.linalg.norm(image - (np.stack([bd, bd, bd], axis=2) * back), axis=2)
 
     cd_filter = cd < 10
-    shadow = cd_filter * (1 > bd) * (bd > 0.5)
-    highlight = cd_filter * (1.25 > bd) * (bd > 1)
-
-    if cf.save_results:
-        image_name = os.path.basename(image_path)
-        image_name = os.path.splitext(image_name)[0]
-        cv.imwrite(os.path.join(cf.results_path, 'shadow_' + image_name + '.' + cf.result_image_type), shadow * 255)
-        cv.imwrite(os.path.join(cf.results_path, 'high_' + image_name + '.' + cf.result_image_type), highlight * 255)
+    shadow = cd_filter * (1 > bd) * (bd > 0.5) * 1
+    highlight = cd_filter * (1.25 > bd) * (bd > 1) * 1
 
     return shadow, highlight

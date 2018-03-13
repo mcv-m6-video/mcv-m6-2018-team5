@@ -32,13 +32,14 @@ AUC_area_filtering            = False		 # Plot AUC vs P pixels
 P_pixels_range                = [0, 1000]    # range of P pixels
 P_pixels_values               = 40
 
-task_name                     = 'task1'      # else task1, task2
+task_name                     = 'task3'      # else task1, task2
 opening_strel                 = 'square'
 opening_strel_size            = 5
 closing_strel                 = 'diamond'
 closing_strel_size            = 10
 area_filtering                = False
 area_filtering_P              = 128
+shadow_remove                 = True
 
 # Save results
 save_results                 = True        # Save Log file

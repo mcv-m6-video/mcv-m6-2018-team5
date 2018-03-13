@@ -39,6 +39,7 @@ closing_strel                 = 'diamond'
 closing_strel_size            = 10
 area_filtering                = False
 area_filtering_P              = 1000
+shadow_remove                 = True
 
 # Save results
 save_results                 = True        # Save Log file

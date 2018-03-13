@@ -350,9 +350,21 @@ def foreground_estimation(cf):
                         foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
 
                     if cf.task_name == 'task3':
-                        foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+                        if cf.dataset_name == 'traffic':
+                            foreground = foreground_improving.image_opening(foreground, cf.opening_strel,
+                                                                            cf.opening_strel_size)
 
-                        foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+                            foreground = foreground_improving.image_closing(foreground, cf.closing_strel,
+                                                                            cf.closing_strel_size)
+                        elif cf.dataset_name == 'fall':
+                            pass
+
+                        elif cf.dataset_name == 'highway':
+                            pass
+
+                    if cf.shadow_remove:
+                        shadow, highlight = foreground_improving.shadow_detection(cf, mean, image, foreground)
+                        foreground = foreground - shadow - highlight
 
                     foreground = np.array(foreground, dtype='uint8')
                     tp_temp, fp_temp, tn_temp, fn_temp = seg_metrics.evaluate_single_image(foreground,
@@ -418,10 +430,16 @@ def foreground_estimation(cf):
                         elif cf.dataset_name == 'highway':
                             pass
 
-
-                    fore = np.array(foreground, dtype='uint8') * 255
                     image_name = os.path.basename(image)
                     image_name = os.path.splitext(image_name)[0]
+                    if cf.shadow_remove:
+                        shadow, highlight = foreground_improving.shadow_detection(cf, mean, image, foreground)
+                        foreground = foreground - shadow - highlight
+                        shadow_comp = np.stack([foreground, shadow, highlight], axis=2)
+                        cv.imwrite(os.path.join(cf.results_path, 'rgb_' + image_name + '.' + cf.result_image_type),
+                                   shadow_comp * 255)
+
+                    fore = np.array(foreground, dtype='uint8') * 255
                     cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
 
 
