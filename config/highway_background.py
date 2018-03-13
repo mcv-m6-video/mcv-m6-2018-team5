@@ -19,8 +19,8 @@ modelling_method              = 'adaptive'      # adaptive, non-adaptive
 color_images                  = True            # Use RGB, HSV color channels
 color_space                   = "RGB"           # RGB, HSV
 evaluate_foreground           = True
-evaluate_alpha_range          = [0, 25]     # range of alpha values
-evaluate_alpha_values         = 50          # number of alpha values to evaluate
+evaluate_alpha_range          = [0, 10]     # range of alpha values
+evaluate_alpha_values         = 20          # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
 find_best_parameters          = False
@@ -28,15 +28,17 @@ plot_back_model               = False
 
 # Foreground Modelling
 four_connectivity             = False
-AUC_area_filtering            = True		 # Plot AUC vs P pixels
+AUC_area_filtering            = False		 # Plot AUC vs P pixels
 P_pixels_range                = [0, 1000]    # range of P pixels
 P_pixels_values               = 40
 
-task_name                     = 'task3'      # else task1, task2
-opening_strel                 = 'rectangle'
-opening_strel_size            = 3
-closing_strel                 = 'rectangle'
-closing_strel_size            = 5
+task_name                     = 'task1'      # else task1, task2
+opening_strel                 = 'diagonal'
+opening_strel_size            = 10
+closing_strel                 = 'diamond'
+closing_strel_size            = 10
+area_filtering                = False
+area_filtering_P              = 789
 
 # Save results
 save_results                 = True        # Save Log file
