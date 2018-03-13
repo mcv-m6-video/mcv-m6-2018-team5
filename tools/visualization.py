@@ -22,7 +22,7 @@ def aux_plot_auc_vs_pixels(auc_highway, pixels_range, output_folder=""):
     best_p_highway = pixels_range[index_p[0][0]]
 
     plt.title('Area Filtering - AUC vs P Pixels')
-    plt.plot(pixels_range, auc_highway, label='AUC Highway max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
+    plt.plot(pixels_range, auc_highway, label='AUC max =%.4f (P = %d)' % (max_auc_highway, best_p_highway))
     plt.ylabel('AUC')
     plt.xlabel('Number of Pixels')
     plt.ylim([0, 1])
