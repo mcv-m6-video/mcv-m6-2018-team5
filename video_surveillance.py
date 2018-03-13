@@ -353,11 +353,14 @@ def foreground_estimation(cf):
                         if cf.dataset_name == 'traffic':
                             foreground = foreground_improving.image_opening(foreground, cf.opening_strel,
                                                                             cf.opening_strel_size)
-
                             foreground = foreground_improving.image_closing(foreground, cf.closing_strel,
                                                                             cf.closing_strel_size)
                         elif cf.dataset_name == 'fall':
-                            pass
+                            foreground = foreground_improving.image_opening(foreground, cf.opening_strel,
+                                                                            cf.opening_strel_size)
+
+                            foreground = foreground_improving.image_closing(foreground, cf.closing_strel,
+                                                                            cf.closing_strel_size)
 
                         elif cf.dataset_name == 'highway':
                             foreground = foreground_improving.image_opening(foreground, cf.opening_strel,
@@ -427,8 +430,10 @@ def foreground_estimation(cf):
                             foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
 
                             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
-                        elif  cf.dataset_name == 'fall':
-                            pass
+                        elif cf.dataset_name == 'fall':
+                            foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+
+                            foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
                         elif cf.dataset_name == 'highway':
                             foreground = foreground_improving.image_opening(foreground, cf.opening_strel,
@@ -444,9 +449,6 @@ def foreground_estimation(cf):
                         shadow_comp = np.stack([foreground, shadow, highlight], axis=2)
                         cv.imwrite(os.path.join(cf.results_path, 'rgb_' + image_name + '.' + cf.result_image_type),
                                    shadow_comp * 255)
-
-                    fore = np.array(foreground, dtype='uint8') * 255
-                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
 
 
 # Main function
