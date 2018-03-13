@@ -38,7 +38,7 @@ opening_strel_size            = 5
 closing_strel                 = 'diamond'
 closing_strel_size            = 10
 area_filtering                = False
-area_filtering_P              = 105
+area_filtering_P              = 128
 
 # Save results
 save_results                 = True        # Save Log file
