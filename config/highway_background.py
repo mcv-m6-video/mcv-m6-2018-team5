@@ -19,7 +19,7 @@ modelling_method              = 'adaptive'      # adaptive, non-adaptive
 color_images                  = True            # Use RGB, HSV color channels
 color_space                   = "RGB"           # RGB, HSV
 evaluate_foreground           = True
-evaluate_alpha_range          = [0, 50]     # range of alpha values
+evaluate_alpha_range          = [1, 25]     # range of alpha values
 evaluate_alpha_values         = 100         # number of alpha values to evaluate
 evaluate_rho_range            = [0, 1]      # range of rho values
 evaluate_rho_values           = 20          # number of rho values to evaluate
@@ -36,9 +36,9 @@ task_name                     = 'task3'      # else task1, task2
 opening_strel                 = 'square'
 opening_strel_size            = 5
 closing_strel                 = 'diamond'
-closing_strel_size            = 10
-area_filtering                = False
-area_filtering_P              = 128
+closing_strel_size            = 3
+area_filtering                = True
+area_filtering_P              = 105
 shadow_remove                 = True
 
 # Save results

@@ -16,7 +16,7 @@ EPSILON = 1e-8
 
 def image_opening(image, strel='rectangle', size_strel=3):
     if strel == 'rectangle':
-        elem = morphology.rectangle(size_strel / 2, size_strel)
+        elem = morphology.rectangle(size_strel // 2, size_strel)
     elif strel == 'square':
         elem = morphology.square(size_strel)
     elif strel == 'diagonal':
@@ -25,7 +25,8 @@ def image_opening(image, strel='rectangle', size_strel=3):
         elem = np.fliplr(elem)
     elif strel == 'diamond':
         elem = morphology.diamond(size_strel)
-
+    elif strel == 'horizontal_line':
+        elem = morphology.rectangle(1, size_strel)
     output_image = morphology.opening(image, elem)
 
     return output_image
