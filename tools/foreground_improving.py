@@ -127,7 +127,7 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
             precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
             recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
             f1_score.append(f1)
-
+            logger.info('Alpha: {}. F1-score {} '.format(alpha, f1_score))
         best_f1_score = max(f1_score)
         index_alpha = f1_score.index(best_f1_score)
         best_alpha = alpha_range[index_alpha]

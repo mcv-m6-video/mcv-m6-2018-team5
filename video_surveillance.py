@@ -276,13 +276,13 @@ def foreground_estimation(cf):
                 cf, background_img_list, foreground_img_list, foreground_gt_list
             )
 
-            visualization.aux_plot_auc_vs_pixels(auc_pr, pixels_range, cf.output_folder)
+            #visualization.aux_plot_auc_vs_pixels(auc_pr, pixels_range, cf.output_folder)
 
             # Save auc_pr as a pickle
-            auc_pr_path = os.path.join(cf.output_folder, '{}_AUC_vs_pixels.pkl'.format(cf.dataset_name))
-            with open(auc_pr_path, 'w') as fd:
-                pickle.dump(auc_pr, fd)
-
+            #auc_pr_path = os.path.join(cf.output_folder, '{}_AUC_vs_pixels.pkl'.format(cf.dataset_name))
+            #with open(auc_pr_path, 'w') as fd:
+            #    pickle.dump(auc_pr, fd)
+#
             if cf.save_results:
                 mkdirs(cf.results_path)
                 mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
@@ -330,8 +330,6 @@ def foreground_estimation(cf):
             i = 1
             for alpha in alpha_range:
 
-                logger.info('[{} of {}]\talpha={:.2f}'.format(i, len(alpha_range), alpha))
-
                 tp = 0
                 fp = 0
                 tn = 0
@@ -372,7 +370,7 @@ def foreground_estimation(cf):
                 precision.append(tp / (tp + fp) if (tp + fp) > 0 else 0.0)
                 recall.append(tp / (tp + fn) if (tp + fn) > 0 else 0.0)
                 F1_score.append(f1)
-
+                logger.info('[{} of {}]\talpha: {}. F1-score {} '.format(i, len(alpha_range), alpha, f1))
                 i += 1
 
             best_f1_score = max(F1_score)
@@ -389,11 +387,11 @@ def foreground_estimation(cf):
                 'traffic': 'orange',
             }
             color = colors.get(cf.dataset_name, 'blue')
-            auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
+            #auc_pr = visualization.plot_precision_recall_curve(precision, recall, cf.output_folder, color=color)
 
             logger.info('Best alpha: {:.3f}'.format(best_alpha))
             logger.info('Best F1-score: {:.3f}'.format(best_f1_score))
-            logger.info('AUC: {:.3f}'.format(auc_pr))
+            #logger.info('AUC: {:.3f}'.format(auc_pr))
             if cf.save_results:
                 mean = np.copy(mean_back)
                 variance = np.copy(variance_back)
@@ -410,9 +408,13 @@ def foreground_estimation(cf):
                         foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
 
                     if cf.task_name == 'task3':
-                        foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+                        if cf.dataset_name == 'traffic':
+                            foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
 
-                        foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+                            foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+                        elif  cf.dataset_name == 'fall':
+                            
+
 
                     fore = np.array(foreground, dtype='uint8') * 255
                     image_name = os.path.basename(image)
