@@ -449,6 +449,8 @@ def foreground_estimation(cf):
                         shadow_comp = np.stack([foreground, shadow, highlight], axis=2)
                         cv.imwrite(os.path.join(cf.results_path, 'rgb_' + image_name + '.' + cf.result_image_type),
                                    shadow_comp * 255)
+                        cv.imwrite(os.path.join(cf.results_path, 'shadow_' + image_name + '.' + cf.result_image_type),
+                               foreground*255)
 
 
 # Main function
