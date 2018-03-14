@@ -38,7 +38,7 @@ opening_strel_size            = 5
 closing_strel                 = 'diamond'
 closing_strel_size            = 3
 area_filtering                = True
-area_filtering_P              = 105
+area_filtering_P              = 128
 shadow_remove                 = True
 
 # Save results
