@@ -450,6 +450,9 @@ def foreground_estimation(cf):
                         cv.imwrite(os.path.join(cf.results_path, 'rgb_' + image_name + '.' + cf.result_image_type),
                                    shadow_comp * 255)
 
+                    fore = np.array(foreground, dtype='uint8') * 255
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), fore)
+
 
 # Main function
 def main():
