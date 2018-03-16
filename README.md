@@ -62,15 +62,24 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Compute AUC and gain for each video sequence
 - [x] Provide qualitative interpretation
 2. Area filtering
-- [ ] AUC vs number of pixels
-- [ ] arg max P (AUC) (indicate used library and link to code)
+- [x] AUC vs number of pixels
+- [x] arg max P (AUC) (indicate used library and link to code)
 3. Additional morphological operations
-- [ ] Explore with other morphological filters to improve AUC for foreground pixels (indicate used library and link to code)
+- [x] Explore with other morphological filters to improve AUC for foreground pixels (indicate used library and link to code)
 4. Shadow removal
-- [ ] Implement some shadow removal existing techniques
+- [x] Implement some shadow removal existing techniques
 5. Improvements of this week
-- [ ] Compare the precision / recall curves
-- [ ] Update the AUC and compute the gain
+- [x] Compare the precision / recall curves
+- [x] Update the AUC and compute the gain
+
+### Week 4 - Optical Flow and Video Stabilization
+1. Optical Flow
+- [ ] Optical Flow with Block Matching
+- [ ] Block Matching vs Other Techniques
+2. Video Stabilization
+- [ ] Video Stabilization wih Block Matching
+- [ ] Block Matching Stabilization vs Other Techniques
+- [ ] Stabilize your own video
 
 ## How to run the code
 
@@ -170,5 +179,20 @@ The datasets needed to run the code and their folder organization are the follow
 | *traffic/groundtruth/*  |  Traffic sequence (camera jitter) ground truth |
 | *fall/input/* |  Fall sequence (adaptive background) input images |
 | *fall/groundtruth/*  |  Fall sequence (adaptive background) ground truth |
+
+
+### Week 4
+
+For all the tasks, for each of the sequences:
+
+- `python week4_optical_flow.py optical_flow --config-path config/kitti_evaluate.py --test-name kitti`
+
+The datasets needed to run the code and their folder organization are the following:
+
+| Kitti Dataset | Description |
+| :---: | :---: |
+| *kitti//image_0/*|  Kitti dataset input images |
+| *kitti/flow_noc/*|  Kitti dataset ground truth |
+| *kitti/results/*|  Kitti dataset results |
 
 **TODO**: UPDATE & COMPLETE THIS SECTION
