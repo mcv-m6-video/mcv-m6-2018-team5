@@ -8,9 +8,14 @@ results_path                 = 'datasets/kitti/results'
 image_sequences              = ['000045_10', '000157_10']   # List of the sequences
 image_type                   = 'png'                        # Input image type
 
+# Block Matching Optical Flow
+compensation                = 'backward'  # 'forward' instead
+block_size                  = 16
+search_area                 = 32 # Search area must be bigger than block size
+
 # Evaluate Optical Flow
-evaluate                     = False
-plot_optical_flow            = False
+evaluate                     = True
+plot_optical_flow            = True
 optical_flow_downsample      = 16
 
 # Save results

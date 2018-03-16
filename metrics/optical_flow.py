@@ -29,13 +29,13 @@ def evaluate(testList, gtList):
     return msen, pepn, motion_vector_errors, errors_pixels, valid_pixels_list
 
 
-def flow_errors_MSEN_PEPN(img, gt_img):
-    assert img.shape == gt_img.shape
+def flow_errors_MSEN_PEPN(optical_flow, gt_img):
 
-    optical_flow, _ = read_flow_field(img)
+    # optical_flow, _ = read_flow_field(img)
     optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
-    num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
+    assert optical_flow.shape == optical_flow_gt.shape
 
+    num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
     optical_flow_diff = optical_flow - optical_flow_gt
     optical_flow_se = np.square(optical_flow_diff)
     motion_vector_errors = np.sqrt(np.sum(optical_flow_se, axis=-1))

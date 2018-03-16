@@ -240,7 +240,10 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
     img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
     # Get the optical flow image
-    optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+    # optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+
+    optical_flow = vector_field_path
+    img[:optical_flow.shape[0],:optical_flow.shape[1]]
 
     # Downsample optical flow image
     optical_flow_ds = block_reduce(optical_flow, block_size=(downsample_factor, downsample_factor, 1), func=np.mean)

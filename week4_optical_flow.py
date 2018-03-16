@@ -12,11 +12,12 @@ import cv2 as cv
 import numpy as np
 
 from config.load_configutation import Configuration
-from metrics import optical_flow
-from tools import visualization, optical_flow
+from metrics import optical_flow as of_metrics
+from tools import visualization
 from tools.image_parser import get_image_list_kitti_dataset
 from tools.log import log_context
 from tools.mkdirs import mkdirs
+from tools import optical_flow as of
 
 EPSILON = 1e-8
 
@@ -35,37 +36,41 @@ def optical_flow(cf):
             # Get a list with groung truth images filenames
             gt_list = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
 
-
             # Task 1 Block Matching Algorithm
+            current_image = image_list[1]
+            previous_image = image_list[0]
+            optical_flow_motion_matrix = of.block_matching_algorithm(cf, current_image, previous_image)
 
-            optical_flow.bloch_matching_algorithm()
+            optical_flow = of.expand_motion_matrix(optical_flow_motion_matrix, cf.block_size)
+            optical_flow = optical_flow.astype('float32')
 
-
-            # Get a list with test results filenames
-            test_list = get_image_list_kitti_dataset(cf.results_path, cf.image_sequences, cf.image_type, 'LKflow_')
-
+            # Evaluate the optical flow
             if cf.evaluate:
-                # Call the method to evaluate the optical flow
-                msen, pepn, squared_errors, pixel_errors, valid_pixels = optical_flow.evaluate(test_list, gt_list)
+                optical_flow_gt = cv.imread(gt_list[1], cv.IMREAD_UNCHANGED)
+                optical_flow_gt = optical_flow_gt[:optical_flow.shape[0],:optical_flow.shape[1]]
+
+                msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(optical_flow,
+                                                                                                            optical_flow_gt)
                 logger.info('Mean Squared Error: {}'.format(msen))
                 logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
-                for mse, se, pe, vp, seq_name, original_image in zip(msen, squared_errors, pixel_errors, valid_pixels,
-                                                                     cf.image_sequences, image_list):
-                    # Histogram
-                    visualization.plot_histogram_msen(mse, np.ravel(se[vp]), seq_name, cf.output_folder)
-                    # Image
-                    visualization.plot_msen_image(original_image, se, pe, vp, seq_name, cf.output_folder)
+                # Histogram
+                visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequences[1],
+                                                  cf.output_folder)
+                # Image
+                visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
+                                              cf.image_sequences[1], cf.output_folder)
+
 
             if cf.plot_optical_flow:
-                for image, test_image, seq_name in zip(image_list, test_list, cf.image_sequences):
-                    # Quiver plot
-                    output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(seq_name))
-                    visualization.plot_optical_flow(image, test_image, cf.optical_flow_downsample, seq_name, output_path)
+                # Quiver plot
+                output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequences[1]))
+                visualization.plot_optical_flow(image_list[1], optical_flow, cf.optical_flow_downsample,
+                                                cf.image_sequences[1], output_path)
 
-                    # HSV plot
-                    output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(seq_name))
-                    visualization.plot_optical_flow_hsv(image, test_image, seq_name, output_path)
+                # HSV plot
+                output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequences[1]))
+                visualization.plot_optical_flow_hsv(image_list[1], optical_flow, cf.image_sequences[1], output_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
