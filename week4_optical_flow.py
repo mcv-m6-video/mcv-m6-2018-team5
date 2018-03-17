@@ -66,18 +66,7 @@ def optical_flow(cf):
                     output_path = os.path.join(cf.output_folder, 'optical_flow_prediction_{}.png'.format(
                         cf.image_sequences[1]
                     ))
-
-                    # TODO: Refactor visualization functions to get ndarrays as input, not image paths
-                    # Representation of errors as an image
-                    color_map = plt.cm.get_cmap('jet')
                     plt.imshow(predicted_image, cmap='gray')
-                    se_valid = np.zeros_like(squared_errors)
-                    se_valid[valid_pixels] = squared_errors[valid_pixels]
-                    se_valid *= pixel_errors
-                    plt.imshow(se_valid, cmap=color_map, alpha=0.5, label='Squared Errors')
-                    plt.title('Sequence {}'.format(cf.image_sequences[1]))
-                    plt.colorbar(orientation="horizontal")
-                    plt.xlabel('Squared Error (Non-occluded areas)')
                     plt.show(block=False)
                     plt.savefig(output_path)
                     plt.close()
@@ -92,8 +81,9 @@ def optical_flow(cf):
             if cf.plot_optical_flow:
                 # Quiver plot
                 output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequences[1]))
-                visualization.plot_optical_flow(image_list[1], optical_flow, cf.optical_flow_downsample,
-                                                cf.image_sequences[1], output_path)
+                im = cv.imread(image_list[1], cv.IMREAD_GRAYSCALE)
+                visualization.plot_optical_flow(im, dense_optical_flow, cf.optical_flow_downsample,
+                                                cf.image_sequences[1], output_path, is_ndarray=True)
 
                 # HSV plot
                 output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequences[1]))

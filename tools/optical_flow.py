@@ -22,19 +22,27 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
     assert max_search_range > 0, 'Max search range should be bigger than 0 pixels'
     assert norm in norm_options, '{} norm not supported. Choose one of {}'.format(norm, norm_options)
 
+    # Pad reference image to have dimensions multiple of block size
+    pad_ref_height = int(block_size * np.ceil(height / block_size))
+    pad_ref_width = int(block_size * np.ceil(width / block_size))
+    pad_y = pad_ref_height - height
+    pad_x = pad_ref_width - width
+
+    pad_reference_img = np.pad(reference_img, ((0, pad_y), (0, pad_x)), mode='constant')
+
     # Placeholder for predicted frame and optical flow
-    predicted_frame = np.empty_like(reference_img, dtype=np.uint8)
-    num_blocks_width, num_blocks_height = int(width / block_size), int(height / block_size)
+    pad_predicted_frame = np.empty_like(pad_reference_img, dtype=np.uint8)
+    num_blocks_width, num_blocks_height = int(pad_ref_width / block_size), int(pad_ref_height / block_size)
     optical_flow = np.zeros((num_blocks_height, num_blocks_width, 2))
 
     # Loop through every NxN block in the target image
     for (block_row, block_col) in itertools.product(
-            range(0, height - (block_size - 1), block_size),
-            range(0, width - (block_size - 1), block_size)
+            range(0, pad_ref_height - (block_size - 1), block_size),
+            range(0, pad_ref_width - (block_size - 1), block_size)
     ):
 
         # Current block in the reference image
-        block = reference_img[block_row:block_row + block_size, block_col:block_col + block_size]
+        block = pad_reference_img[block_row:block_row + block_size, block_col:block_col + block_size]
 
         # Placeholders for minimum norm and matching block
         dfd_n_min = np.infty
@@ -74,7 +82,7 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
                 dx = search_row
 
         # construct the predicted image with the block that matches this block
-        predicted_frame[block_row:block_row + block_size, block_col:block_col + block_size] = matching_block
+        pad_predicted_frame[block_row:block_row + block_size, block_col:block_col + block_size] = matching_block
 
         if verbose:
             logger.info(
@@ -104,5 +112,9 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
     logger.info('Total time: {:.0f} s\tTime per block: {:.0f} s'.format(
         total_time, total_time / (num_blocks_height * num_blocks_width)
     ))
+
+    # Crop results to match real input dimensions
+    predicted_frame = pad_predicted_frame[:-pad_y, :-pad_x]
+    dense_optical_flow = dense_optical_flow[:-pad_y, :-pad_x]
 
     return predicted_frame, optical_flow, dense_optical_flow

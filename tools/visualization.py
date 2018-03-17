@@ -208,12 +208,16 @@ def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name,
     plt.close()
 
 
-def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_path):
-    # Get the original image
-    img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
+def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_path, is_ndarray=False):
+    if not is_ndarray:
+        # Get the original image
+        img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
-    # Get the optical flow image
-    optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+        # Get the optical flow image
+        optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+    else:
+        img = img_path
+        optical_flow = vector_field_path
 
     magnitude, angle = cv.cartToPolar(np.square(optical_flow[:, :, 0]), np.square(optical_flow[:, :, 1]),
                                       None, None, True)
@@ -235,12 +239,16 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     plt.close()
 
 
-def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_name, output_path):
-    # Get the original image
-    img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
+def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_name, output_path, is_ndarray=False):
+    if not is_ndarray:
+        # Get the original image
+        img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
-    # Get the optical flow image
-    optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+        # Get the optical flow image
+        optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+    else:
+        img = img_path
+        optical_flow = vector_field_path
 
     # Downsample optical flow image
     optical_flow_ds = block_reduce(optical_flow, block_size=(downsample_factor, downsample_factor, 1), func=np.mean)

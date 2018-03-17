@@ -10,7 +10,7 @@ image_type                   = 'png'                        # Input image type
 
 # Block Matching Optical Flow
 compensation                = 'backward'  # 'forward' instead
-block_size                  = 32
+block_size                  = 8
 search_area                 = 32          # Search area must be bigger than block size
 dfd_norm_type               = 'l1'         # One of: 'l1', 'l2'
 
