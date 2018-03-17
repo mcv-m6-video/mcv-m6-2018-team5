@@ -5,27 +5,25 @@ from __future__ import division
 import argparse
 import logging
 import os
-import itertools
-import pickle
 
 import cv2 as cv
+import matplotlib.pyplot as plt
 import numpy as np
 
 from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
+from tools import optical_flow as of
 from tools import visualization
 from tools.image_parser import get_image_list_kitti_dataset
 from tools.log import log_context
-from tools.mkdirs import mkdirs
-from tools import optical_flow as of
 
 EPSILON = 1e-8
 
+
 def optical_flow(cf):
+
     with log_context(cf.log_file):
-
         logger = logging.getLogger(__name__)
-
         logger.info(' ---> Init test: ' + cf.test_name + ' <---')
 
         if cf.dataset_name == 'kitti':
@@ -39,20 +37,50 @@ def optical_flow(cf):
             # Task 1 Block Matching Algorithm
             current_image = image_list[1]
             previous_image = image_list[0]
-            optical_flow_motion_matrix = of.block_matching_algorithm(cf, current_image, previous_image)
 
-            optical_flow = of.expand_motion_matrix(optical_flow_motion_matrix, cf.block_size)
-            optical_flow = optical_flow.astype('float32')
+            if cf.compensation == 'backward':
+                reference_image = current_image
+                search_image = previous_image
+            else:
+                reference_image = previous_image
+                search_image = current_image
+
+            ref_img_data = cv.imread(reference_image, cv.IMREAD_GRAYSCALE)
+            search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
+
+            predicted_image, optical_flow, dense_optical_flow = of.exhaustive_search_block_matching(
+                ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type, verbose=True
+            )
 
             # Evaluate the optical flow
             if cf.evaluate:
                 optical_flow_gt = cv.imread(gt_list[1], cv.IMREAD_UNCHANGED)
-                optical_flow_gt = optical_flow_gt[:optical_flow.shape[0],:optical_flow.shape[1]]
 
-                msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(optical_flow,
-                                                                                                            optical_flow_gt)
+                msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(
+                    dense_optical_flow, optical_flow_gt
+                )
                 logger.info('Mean Squared Error: {}'.format(msen))
                 logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
+
+                if cf.plot_prediction:
+                    output_path = os.path.join(cf.output_folder, 'optical_flow_prediction_{}.png'.format(
+                        cf.image_sequences[1]
+                    ))
+
+                    # TODO: Refactor visualization functions to get ndarrays as input, not image paths
+                    # Representation of errors as an image
+                    color_map = plt.cm.get_cmap('jet')
+                    plt.imshow(predicted_image, cmap='gray')
+                    se_valid = np.zeros_like(squared_errors)
+                    se_valid[valid_pixels] = squared_errors[valid_pixels]
+                    se_valid *= pixel_errors
+                    plt.imshow(se_valid, cmap=color_map, alpha=0.5, label='Squared Errors')
+                    plt.title('Sequence {}'.format(cf.image_sequences[1]))
+                    plt.colorbar(orientation="horizontal")
+                    plt.xlabel('Squared Error (Non-occluded areas)')
+                    plt.show(block=False)
+                    plt.savefig(output_path)
+                    plt.close()
 
                 # Histogram
                 visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequences[1],
@@ -60,7 +88,6 @@ def optical_flow(cf):
                 # Image
                 visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
                                               cf.image_sequences[1], cf.output_folder)
-
 
             if cf.plot_optical_flow:
                 # Quiver plot

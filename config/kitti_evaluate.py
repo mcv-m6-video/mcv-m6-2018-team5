@@ -10,12 +10,14 @@ image_type                   = 'png'                        # Input image type
 
 # Block Matching Optical Flow
 compensation                = 'backward'  # 'forward' instead
-block_size                  = 16
-search_area                 = 32 # Search area must be bigger than block size
+block_size                  = 32
+search_area                 = 32          # Search area must be bigger than block size
+dfd_norm_type               = 'l1'         # One of: 'l1', 'l2'
 
 # Evaluate Optical Flow
 evaluate                     = True
 plot_optical_flow            = True
+plot_prediction              = True
 optical_flow_downsample      = 16
 
 # Save results

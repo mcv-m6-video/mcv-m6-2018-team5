@@ -1,97 +1,108 @@
 from __future__ import division
 
+import itertools
 import logging
 
-import cv2 as cv
 import numpy as np
 import time
-import sys
 
-def block_matching_algorithm(cf, current_image, previous_image):
+
+def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
+                                     verbose=False):
+
     logger = logging.getLogger(__name__)
 
-    start = time.time()
+    norm_options = {'l1', 'l2'}
+    start_time = time.time()
+    height = reference_img.shape[0]
+    width = reference_img.shape[1]
 
-    # Read Input images in GRAY
-    c_img = cv.imread(current_image, cv.IMREAD_GRAYSCALE)
-    p_img = cv.imread(previous_image, cv.IMREAD_GRAYSCALE)
+    # Assertions
+    assert block_size > 0, 'Block size should be bigger than 0 pixels'
+    assert max_search_range > 0, 'Max search range should be bigger than 0 pixels'
+    assert norm in norm_options, '{} norm not supported. Choose one of {}'.format(norm, norm_options)
 
-    # Block Matching algorithm
-    if cf.compensation == 'backward':
-        input_image = c_img
-        search_image = p_img
-    else:
-        input_image = p_img
-        search_image = c_img
+    # Placeholder for predicted frame and optical flow
+    predicted_frame = np.empty_like(reference_img, dtype=np.uint8)
+    num_blocks_width, num_blocks_height = int(width / block_size), int(height / block_size)
+    optical_flow = np.zeros((num_blocks_height, num_blocks_width, 2))
 
-    img_height = input_image.shape[0]
-    img_width = input_image.shape[1]
+    # Loop through every NxN block in the target image
+    for (block_row, block_col) in itertools.product(
+            range(0, height - (block_size - 1), block_size),
+            range(0, width - (block_size - 1), block_size)
+    ):
 
-    # Reshape to a multiple of blocksize
-    h_tmp = img_height // cf.block_size
-    w_tmp = img_width // cf.block_size
-    input_image = input_image[:h_tmp*cf.block_size,:w_tmp*cf.block_size]
+        # Current block in the reference image
+        block = reference_img[block_row:block_row + block_size, block_col:block_col + block_size]
 
-    img_height = input_image.shape[0]
-    img_width = input_image.shape[1]
+        # Placeholders for minimum norm and matching block
+        dfd_n_min = np.infty
+        matching_block = np.zeros((block_size, block_size))
 
-    search_image = search_image[:img_height,:img_width]
-    # Get the block size
-    block_h = img_height // cf.block_size
-    block_w = img_width // cf.block_size
+        # Search in a surronding region, determined by search_range
+        search_range = range(-max_search_range, block_size + max_search_range)
+        for (search_col, search_row) in itertools.product(search_range, search_range):
+            # Up left corner of the candidate block
+            up_left_y = block_row + search_row
+            up_left_x = block_col + search_col
+            # Bottom right corner of the candidate block
+            bottom_right_y = block_row + search_row + block_size - 1
+            bottom_right_x = block_col + search_col + block_size - 1
 
-    # Add padding in the search image
-    pad_search_image = np.zeros([img_height + 2 * cf.search_area, img_width + 2 * cf.search_area])
-    pad_search_image[cf.search_area : cf.search_area + img_height, cf.search_area : cf.search_area + img_width] = search_image[:,:]
+            # Do not search if upper left corner is defined outside the reference image
+            if up_left_y < 0 or up_left_x < 0:
+                continue
+            # Do not search if bottom right corner is defined outside the reference image
+            if bottom_right_y >= height or bottom_right_x >= width:
+                continue
 
-    motion_matrix = np.zeros([block_h, block_w, 2])
+            # Get the candidate block
+            candidate_block = search_img[up_left_y:bottom_right_y+1, up_left_x:bottom_right_x+1]
+            assert candidate_block.shape == (block_size, block_size)
 
-    for row in range(block_h):
-        for col in range(block_w):
+            # Compute the Displaced Frame Difference (DFD) and compute the specified norm
+            dfd = np.array(candidate_block, dtype=np.float32) - np.array(block, dtype=np.float32)
+            norm_order = 2 if norm == 'l2' else 1
+            candidate_dfd_norm = np.linalg.norm(dfd, ord=norm_order)
 
-            search_block = input_image[row * cf.block_size:row * cf.block_size + cf.block_size,
-                              col * cf.block_size:col * cf.block_size + cf.block_size]
-            region = pad_search_image[row * cf.block_size:row * cf.block_size + cf.block_size + 2 * cf.search_area,
-                                col * cf.block_size:col * cf.block_size + cf.block_size + 2 * cf.search_area]
+            # Store the minimum norm and corresponding displacement vector
+            if candidate_dfd_norm < dfd_n_min:
+                dfd_n_min = candidate_dfd_norm
+                matching_block = candidate_block
+                dy = search_col
+                dx = search_row
 
-            h_motion, w_motion = match_block(region, search_block, cf.block_size, cf.search_area)
+        # construct the predicted image with the block that matches this block
+        predicted_frame[block_row:block_row + block_size, block_col:block_col + block_size] = matching_block
 
-            motion_matrix[row, col, 0] = h_motion
-            motion_matrix[row, col, 1] = w_motion
+        if verbose:
+            logger.info(
+                "Block [{blk_row}, {blk_col}] out of [{total_blks_rows}, {total_blks_cols}] --> "
+                "Displacement: ({dx}, {dy})\t Minimum DFD norm: {norm}".format(
+                    blk_row=block_row // block_size,
+                    blk_col=block_col // block_size,
+                    total_blks_rows=num_blocks_height,
+                    total_blks_cols=num_blocks_width,
+                    dx=dx,
+                    dy=dy,
+                    norm=dfd_n_min,
+                )
+            )
 
-    end = time.time()
+        # Store displacement of this block in each direction
+        optical_flow[block_row // block_size, block_col // block_size, 0] = dy
+        optical_flow[block_row // block_size, block_col // block_size, 1] = dx
 
-    logger.info("Block matching estimated in {:.2f} s".format(end - start))
+    # Create dense optical flow to match input image dimensions by repeating values
+    dense_optical_flow = np.repeat(optical_flow, block_size, axis=0)
+    dense_optical_flow = np.repeat(dense_optical_flow, block_size, axis=1)
 
-    return motion_matrix
+    end_time = time.time()
+    total_time = end_time - start_time
 
+    logger.info('Total time: {:.0f} s\tTime per block: {:.0f} s'.format(
+        total_time, total_time / (num_blocks_height * num_blocks_width)
+    ))
 
-def match_block(region, block_to_search, block_size, search_area):
-
-    h_size = region.shape[0]
-    w_size = region.shape[1]
-
-    min_diff = sys.float_info.max
-
-    for row in range(h_size - search_area):
-        for col in range(w_size - search_area):
-            region_block = region[row : row + block_size, col : col + block_size]
-            diff = sum(sum(abs(region_block - block_to_search)**2))
-            if diff < min_diff:
-                min_diff = diff
-                h_motion = - row + search_area
-                w_motion = col - search_area
-
-    return h_motion, w_motion
-
-
-def expand_motion_matrix(motion_matrix, block_size):
-
-    pixel_motion_matrix=np.zeros([motion_matrix.shape[0]*block_size,motion_matrix.shape[1]*block_size,2])
-
-    for xx in range(motion_matrix.shape[0]):
-        for yy in range(motion_matrix.shape[1]):
-            pixel_motion_matrix[xx*block_size:xx*block_size+block_size,yy*block_size:yy*block_size+block_size,0] = motion_matrix[xx,yy,0]
-            pixel_motion_matrix[xx*block_size:xx*block_size+block_size,yy*block_size:yy*block_size+block_size,1] = motion_matrix[xx,yy,1]
-
-    return pixel_motion_matrix
+    return predicted_frame, optical_flow, dense_optical_flow
