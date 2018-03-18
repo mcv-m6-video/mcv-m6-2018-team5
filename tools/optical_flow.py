@@ -6,6 +6,9 @@ import logging
 import numpy as np
 import time
 
+import sys
+import tqdm
+
 
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
                                      verbose=False):
@@ -34,12 +37,13 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
     pad_predicted_frame = np.empty_like(pad_reference_img, dtype=np.uint8)
     num_blocks_width, num_blocks_height = int(pad_ref_width / block_size), int(pad_ref_height / block_size)
     optical_flow = np.zeros((num_blocks_height, num_blocks_width, 2))
+    total_number_blocks = num_blocks_width * num_blocks_height
 
     # Loop through every NxN block in the target image
-    for (block_row, block_col) in itertools.product(
+    for (block_row, block_col) in tqdm.tqdm(itertools.product(
             range(0, pad_ref_height - (block_size - 1), block_size),
             range(0, pad_ref_width - (block_size - 1), block_size)
-    ):
+    ), desc='Exhaustive Block Matching progress', total=total_number_blocks, file=sys.stdout):
 
         # Current block in the reference image
         block = pad_reference_img[block_row:block_row + block_size, block_col:block_col + block_size]
@@ -99,8 +103,8 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
             )
 
         # Store displacement of this block in each direction
-        optical_flow[block_row // block_size, block_col // block_size, 0] = dy
-        optical_flow[block_row // block_size, block_col // block_size, 1] = dx
+        optical_flow[block_row // block_size, block_col // block_size, 0] = dx
+        optical_flow[block_row // block_size, block_col // block_size, 1] = dy
 
     # Create dense optical flow to match input image dimensions by repeating values
     dense_optical_flow = np.repeat(optical_flow, block_size, axis=0)
@@ -109,7 +113,7 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
     end_time = time.time()
     total_time = end_time - start_time
 
-    logger.info('Total time: {:.0f} s\tTime per block: {:.0f} s'.format(
+    logger.info('Total time: {:.2f} s\tTime per block: {:.2f} s'.format(
         total_time, total_time / (num_blocks_height * num_blocks_width)
     ))
 
