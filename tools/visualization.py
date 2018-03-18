@@ -218,20 +218,15 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     else:
         img = img_path
         optical_flow = vector_field_path
-
-    magnitude, angle = cv.cartToPolar(np.square(optical_flow[:, :, 0]), np.square(optical_flow[:, :, 1]),
-                                      None, None, True)
-    magnitude = cv.normalize(magnitude, 0, 255, norm_type=cv.NORM_MINMAX)
-
-    optical_flow_hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.float32)
-    optical_flow_hsv[..., 0] = angle
-    optical_flow_hsv[..., 1] = 255
-    optical_flow_hsv[:, :, 2] = magnitude
-    # optical_flow_hsv[:, :, 1] = np.ones((img.shape[0], img.shape[1]), dtype=np.float32)
-    optical_flow_rgb = cv.cvtColor(optical_flow_hsv, cv.COLOR_HSV2BGR)
+    hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
+    hsv[:, :, 1] = 255
+    magnitude, angle = cv.cartToPolar((optical_flow[:, :, 0]),(optical_flow[:, :, 1]))
+    hsv[:, :, 0] = angle * 180 / np.pi
+    hsv[:, :, 2] = cv.normalize(magnitude, None, 0, 255, cv.NORM_MINMAX)
+    bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
 
     plt.imshow(img, cmap='gray')
-    plt.imshow(optical_flow_rgb, alpha=0.5)
+    plt.imshow(bgr, alpha=0.5)
     plt.axis('off')
     plt.title(sequence_name)
     plt.show(block=False)
