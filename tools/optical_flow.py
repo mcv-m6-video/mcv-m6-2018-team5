@@ -9,6 +9,8 @@ import time
 import sys
 import tqdm
 
+from scipy import stats
+from matplotlib import pyplot as plt
 
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
                                      verbose=False):
@@ -132,3 +134,37 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
         dense_optical_flow = dense_optical_flow
 
     return predicted_frame, optical_flow, dense_optical_flow, total_time
+
+def video_stabilization(image, flow, direction, u, v):
+    if direction == 'forward':
+        mean_u = u + int(np.round(stats.trim_mean(flow[:, :, 0], 0.1, axis=None)))
+        mean_v = v + int(np.round(stats.trim_mean(flow[:, :, 1], 0.1, axis=None)))
+    else:
+        mean_u = u - int(np.round(stats.trim_mean(flow[:, :, 0], 0.1, axis=None)))
+        mean_v = v - int(np.round(stats.trim_mean(flow[:, :, 1], 0.1, axis=None)))
+
+    rect_image = np.zeros(image.shape)
+    if mean_u == 0 and mean_v == 0:
+        rect_image = image
+    elif mean_u == 0:
+        if mean_v > 0:
+            rect_image[:, mean_v:] = image[:, :-mean_v]
+        else:
+            rect_image[:, :mean_v] = image[:, -mean_v:]
+    elif mean_v == 0:
+        if mean_u > 0:
+            rect_image[mean_u:, :] = image[:-mean_u, :]
+        else:
+            rect_image[:mean_u, :] = image[-mean_u:, :]
+    elif mean_u > 0:
+        if mean_v > 0:
+            rect_image[mean_u:, mean_v:] = image[:-mean_u, :-mean_v]
+        else:
+            rect_image[mean_u:, :mean_v] = image[:-mean_u, -mean_v:]
+    else:
+        if mean_v > 0:
+            rect_image[:mean_u, mean_v:] = image[-mean_u:, :-mean_v]
+        else:
+            rect_image[:mean_u, :mean_v] = image[-mean_u:, -mean_v:]
+
+    return rect_image, mean_u, mean_v

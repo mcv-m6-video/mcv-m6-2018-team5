@@ -17,8 +17,9 @@ from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
 from tools import optical_flow as of
 from tools import visualization
-from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset
+from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, get_image_list_changedetection_dataset
 from tools.log import log_context
+from tools.mkdirs import mkdirs
 
 EPSILON = 1e-8
 
@@ -129,8 +130,43 @@ def optical_flow(cf):
                     output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequence))
                     visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequence, output_path,
                                                         is_ndarray=True)
+        else:
 
-        logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
+            # Get a list with input images filenames
+            image_list = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type,
+                                                                cf.nr_images)
+
+            if cf.save_results:
+                logger.info('Saving results in {}'.format(cf.results_path))
+                mkdirs(cf.results_path)
+
+            u = 0
+            v = 0
+            for idx in range(1, len(image_list)):
+                current_image = image_list[idx]
+                previous_image = image_list[idx - 1]
+
+                if cf.compensation == 'backward':
+                    reference_image = current_image
+                    search_image = previous_image
+                else:
+                    reference_image = previous_image
+                    search_image = current_image
+
+                ref_img_data = cv.imread(reference_image, cv.IMREAD_GRAYSCALE)
+                search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
+
+                predicted_image, optical_flow, dense_optical_flow, _ = of.exhaustive_search_block_matching(
+                    ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type, verbose=False)
+
+                rect_image, u, v = of.video_stabilization(search_img_data, optical_flow, cf.compensation, u, v)
+
+                if cf.save_results:
+                    image_name = os.path.basename(current_image)
+                    image_name = os.path.splitext(image_name)[0]
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
+
+            logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
 
 # Main function
