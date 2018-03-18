@@ -118,7 +118,17 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
     ))
 
     # Crop results to match real input dimensions
-    predicted_frame = pad_predicted_frame[:-pad_y, :-pad_x]
-    dense_optical_flow = dense_optical_flow[:-pad_y, :-pad_x]
+    if pad_y != 0 and pad_x != 0:
+        predicted_frame = pad_predicted_frame[:-pad_y, :-pad_x]
+        dense_optical_flow = dense_optical_flow[:-pad_y, :-pad_x]
+    elif pad_y != 0:
+        predicted_frame = pad_predicted_frame[:-pad_y, :]
+        dense_optical_flow = dense_optical_flow[:-pad_y, :]
+    elif pad_x != 0:
+        predicted_frame = pad_predicted_frame[:, :-pad_x]
+        dense_optical_flow = dense_optical_flow[:, :-pad_x]
+    else:
+        predicted_frame = pad_predicted_frame
+        dense_optical_flow = dense_optical_flow
 
     return predicted_frame, optical_flow, dense_optical_flow, total_time
