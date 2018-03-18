@@ -121,4 +121,4 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
     predicted_frame = pad_predicted_frame[:-pad_y, :-pad_x]
     dense_optical_flow = dense_optical_flow[:-pad_y, :-pad_x]
 
-    return predicted_frame, optical_flow, dense_optical_flow
+    return predicted_frame, optical_flow, dense_optical_flow, total_time
