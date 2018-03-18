@@ -81,6 +81,38 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [ ] Block Matching Stabilization vs Other Techniques
 - [ ] Stabilize your own video
 
+## Development environment
+
+This project has been developed and tested with **Python 2.7**.
+
+### Using `conda`
+
+The preferred method to prepare the development environment is using `conda`, as the whole environment is easily 
+reproducible for the same platform:
+
+If you are running in a **Linux 64** platform, run the following command:
+```
+$ conda create --name va_project_t5 --file spec-file-linux-64.txt
+```
+Alternatively, if you are runnign in a **Windows 64** platform, you should run:
+```
+$ conda create --name va_project_t5 --file spec-file-win-64.txt
+```
+
+Once the creation process finishes you can `activate` the environment via `$ source activate va_project_t5`.
+
+### Using `pip`
+
+If you are using a `virtualenv` or the system Python, you can use `pip` to install the required libraries to run this 
+code:
+```
+$ pip install -r requirements.txt
+```
+
+Unlike with `conda`, you will have to install **OpenCV** either by downloading the pre-built binaries for your platform or compiling it from 
+source.
+
+
 ## How to run the code
 
 ### General information
