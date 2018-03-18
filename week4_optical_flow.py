@@ -14,7 +14,7 @@ from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
 from tools import optical_flow as of
 from tools import visualization
-from tools.image_parser import get_image_list_kitti_dataset
+from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset
 from tools.log import log_context
 
 EPSILON = 1e-8
@@ -29,10 +29,10 @@ def optical_flow(cf):
         if cf.dataset_name == 'kitti':
 
             # Get a list with input images filenames
-            image_list = get_image_list_kitti_dataset(cf.dataset_path, cf.image_sequences, cf.image_type)
+            image_list = get_sequence_list_kitti_dataset(cf.dataset_path, cf.image_sequence, cf.image_type)
 
             # Get a list with groung truth images filenames
-            gt_list = get_image_list_kitti_dataset(cf.gt_path, cf.image_sequences, cf.image_type)
+            gt_list = get_gt_list_kitti_dataset(cf.gt_path, cf.image_sequence, cf.image_type)
 
             # Task 1 Block Matching Algorithm
             current_image = image_list[1]
@@ -54,7 +54,7 @@ def optical_flow(cf):
 
             # Evaluate the optical flow
             if cf.evaluate:
-                optical_flow_gt = cv.imread(gt_list[1], cv.IMREAD_UNCHANGED)
+                optical_flow_gt = cv.imread(gt_list[0], cv.IMREAD_UNCHANGED)
 
                 msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(
                     dense_optical_flow, optical_flow_gt
@@ -64,7 +64,7 @@ def optical_flow(cf):
 
                 if cf.plot_prediction:
                     output_path = os.path.join(cf.output_folder, 'optical_flow_prediction_{}.png'.format(
-                        cf.image_sequences[1]
+                        cf.image_sequence
                     ))
                     plt.imshow(predicted_image, cmap='gray')
                     plt.show(block=False)
@@ -72,22 +72,22 @@ def optical_flow(cf):
                     plt.close()
 
                 # Histogram
-                visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequences[1],
+                visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequence,
                                                   cf.output_folder)
                 # Image
                 visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
-                                              cf.image_sequences[1], cf.output_folder)
+                                              cf.image_sequence, cf.output_folder)
 
             if cf.plot_optical_flow:
                 # Quiver plot
-                output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequences[1]))
+                output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequence))
                 im = cv.imread(image_list[1], cv.IMREAD_GRAYSCALE)
                 visualization.plot_optical_flow(im, dense_optical_flow, cf.optical_flow_downsample,
-                                                cf.image_sequences[1], output_path, is_ndarray=True)
+                                                cf.image_sequence, output_path, is_ndarray=True)
 
                 # HSV plot
-                output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequences[1]))
-                visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequences[1], output_path,
+                output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequence))
+                visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequence, output_path,
                                                     is_ndarray=True)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')

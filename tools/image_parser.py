@@ -19,3 +19,25 @@ def get_image_list_kitti_dataset(dataset_path, image_sequences, image_type, imag
         image_path = os.path.join(dataset_path, tmp_img + '.' + image_type)
         imageList.append(image_path)
     return imageList
+
+def get_sequence_list_kitti_dataset(dataset_path, image_sequence, image_type):
+    imageList = []
+
+    tmp_img = image_sequence + '_10'
+    image_path = os.path.join(dataset_path, tmp_img + '.' + image_type)
+    imageList.append(image_path)
+    tmp_img = image_sequence + '_11'
+    image_path = os.path.join(dataset_path, tmp_img + '.' + image_type)
+    imageList.append(image_path)
+
+    return imageList
+
+
+def get_gt_list_kitti_dataset(gt_path, image_sequence,image_type):
+    gtList = []
+
+    tmp_img = image_sequence + '_10'
+    image_path = os.path.join(gt_path, tmp_img + '.' + image_type)
+    gtList.append(image_path)
+
+    return gtList
