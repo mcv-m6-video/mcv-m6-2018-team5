@@ -49,7 +49,7 @@ def optical_flow(cf):
             search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
 
             predicted_image, optical_flow, dense_optical_flow = of.exhaustive_search_block_matching(
-                ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type, verbose=True
+                ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type, verbose=False
             )
 
             # Evaluate the optical flow
