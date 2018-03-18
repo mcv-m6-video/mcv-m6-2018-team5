@@ -218,6 +218,7 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     else:
         img = img_path
         optical_flow = vector_field_path
+
     hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
     hsv[:, :, 1] = 255
     magnitude, angle = cv.cartToPolar((optical_flow[:, :, 0]),(optical_flow[:, :, 1]))

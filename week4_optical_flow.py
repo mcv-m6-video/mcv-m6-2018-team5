@@ -86,6 +86,49 @@ def optical_flow(cf):
                         output_path = os.path.join(cf.output_folder, '{}_ebma_optimization.pkl'.format(cf.dataset_name))
                         with open(output_path, 'w') as fd:
                             pickle.dump(optimization_results, fd)
+            elif(cf.sota_opt_flow):
+                if cf.sota_opt_flow_option == 'opencv':
+                    dense_optical_flow = of.opencv_optflow(
+                        ref_img_data, search_img_data, cf.block_size)
+                    # Evaluate the optical flow
+                    if cf.evaluate:
+                        optical_flow_gt = cv.imread(gt_list[0], cv.IMREAD_UNCHANGED)
+
+                        msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(
+                            dense_optical_flow, optical_flow_gt
+                        )
+                        logger.info('Mean Squared Error: {}'.format(msen))
+                        logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
+                        '''
+                        if cf.plot_prediction:
+                            output_path = os.path.join(cf.output_folder, 'optical_flow_prediction_{}.png'.format(
+                                cf.image_sequence
+                            ))
+                            plt.imshow(predicted_image, cmap='gray')
+                            plt.show(block=False)
+                            plt.savefig(output_path)
+                            plt.close()
+                        '''
+                        # Histogram
+                        visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequence,
+                                                          cf.output_folder)
+                        # Image
+                        visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
+                                                      cf.image_sequence, cf.output_folder)
+
+                    if cf.plot_optical_flow:
+                        # Quiver plot
+                        output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequence))
+                        im = cv.imread(image_list[1], cv.IMREAD_GRAYSCALE)
+                        visualization.plot_optical_flow(im, dense_optical_flow, cf.optical_flow_downsample,
+                                                        cf.image_sequence, output_path, is_ndarray=True)
+
+                        # HSV plot
+                        output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequence))
+                        visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequence, output_path,
+                                                            is_ndarray=True)
+
+                    logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
             else:
                 # Run Task 1: Block Matching Algorithm

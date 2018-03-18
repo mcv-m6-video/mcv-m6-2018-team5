@@ -5,6 +5,7 @@ import logging
 
 import numpy as np
 import time
+import cv2 as cv
 
 import sys
 import tqdm
@@ -134,6 +135,20 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
         dense_optical_flow = dense_optical_flow
 
     return predicted_frame, optical_flow, dense_optical_flow, total_time
+
+def opencv_optflow(ref_img_data, search_img_data, block_size):
+    farneback_params = {
+        'pyr_scale': 0.5,
+        'levels': 3,
+        'winsize': block_size,
+        'iterations': 3,
+        'poly_n': 5,
+        'poly_sigma': 1.2,
+        'flags': cv.OPTFLOW_USE_INITIAL_FLOW
+    }
+    dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, **farneback_params)
+
+    return dense_flow
 
 def video_stabilization(image, flow, direction, u, v):
     if direction == 'forward':
