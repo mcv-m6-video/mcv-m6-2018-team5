@@ -5,17 +5,19 @@ gt_path                      = 'datasets/kitti/flow_noc'        # Ground truth p
 results_path                 = 'datasets/kitti/results'
 
 # Input Images
-image_sequence              = '000157'              # '000045' or '000157']
+image_sequence              = '000045'              # '000045' or '000157']
 image_type                   = 'png'                        # Input image type
 
 # Block Matching Optical Flow
-compensation                = 'backward'  # 'forward' instead
-block_size                  = 4
+compensation                = 'forward'  # 'forward' instead
+block_size                  = 15
 search_area                 = 64          # Search area must be bigger than block size
 dfd_norm_type               = 'l1'        # One of: 'l1', 'l2'
-optimize_block_matching     = True        # Whether to optimize parameters of block matching or not
+optimize_block_matching     = False        # Whether to optimize parameters of block matching or not
 block_size_range            = [4, 8, 16, 32, 64]
 search_area_range           = [4, 8, 16, 32, 64]
+sota_opt_flow               = True
+sota_opt_flow_option        = 'opencv'
 
 # Evaluate Optical Flow
 evaluate                     = True
