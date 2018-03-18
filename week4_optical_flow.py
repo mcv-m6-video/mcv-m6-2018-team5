@@ -87,7 +87,8 @@ def optical_flow(cf):
 
                 # HSV plot
                 output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequences[1]))
-                visualization.plot_optical_flow_hsv(image_list[1], optical_flow, cf.image_sequences[1], output_path)
+                visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequences[1], output_path,
+                                                    is_ndarray=True)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
