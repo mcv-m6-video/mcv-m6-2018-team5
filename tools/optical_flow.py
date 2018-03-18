@@ -136,6 +136,7 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
 
     return predicted_frame, optical_flow, dense_optical_flow, total_time
 
+
 def opencv_optflow(ref_img_data, search_img_data, block_size):
     farneback_params = {
         'pyr_scale': 0.5,
@@ -150,13 +151,18 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
 
     return dense_flow
 
+
 def video_stabilization(image, flow, direction, u, v):
+
+    mean_u = int(np.round(stats.trim_mean(flow[:, :, 0], 0.1, axis=None)))
+    mean_v = int(np.round(stats.trim_mean(flow[:, :, 1], 0.1, axis=None)))
+
     if direction == 'forward':
-        mean_u = u + int(np.round(stats.trim_mean(flow[:, :, 0], 0.1, axis=None)))
-        mean_v = v + int(np.round(stats.trim_mean(flow[:, :, 1], 0.1, axis=None)))
+        mean_u = u + mean_u
+        mean_v = v + mean_v
     else:
-        mean_u = u - int(np.round(stats.trim_mean(flow[:, :, 0], 0.1, axis=None)))
-        mean_v = v - int(np.round(stats.trim_mean(flow[:, :, 1], 0.1, axis=None)))
+        mean_u = u - mean_u
+        mean_v = v - mean_v
 
     rect_image = np.zeros(image.shape)
     if mean_u == 0 and mean_v == 0:

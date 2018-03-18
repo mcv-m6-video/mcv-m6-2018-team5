@@ -12,7 +12,7 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Block Matching Optical Flow
-compensation                = 'backward'  # 'forward' instead
+compensation                = 'forward'  # 'forward' instead
 block_size                  = 16
 search_area                 = 16          # Search area must be bigger than block size
 dfd_norm_type               = 'l1'        # One of: 'l1', 'l2'
