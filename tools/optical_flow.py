@@ -172,6 +172,8 @@ def video_stabilization(image, flow, direction, u, v):
         mean_u = u + mean_u
         mean_v = v + mean_v
 
+    print('Accumulated displacement: (%s,%s)' % (mean_u, mean_v))
+
     rect_image = np.zeros(image.shape)
     if mean_u == 0 and mean_v == 0:
         rect_image = image
