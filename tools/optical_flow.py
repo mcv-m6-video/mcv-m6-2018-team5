@@ -213,6 +213,7 @@ def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_co
             prev_corner2.append(prev_corner[i])
             cur_corner2.append(cur_corner[i])
     prev_corner2 = np.array(prev_corner2)
+    prev_corner2 = np.array(prev_corner2)
     cur_corner2 = np.array(cur_corner2)
     # estimate partial transform (resource: http://nghiaho.com/?p=2208)
     T_new = cv.estimateRigidTransform(prev_corner2, cur_corner2, False)
@@ -226,8 +227,5 @@ def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_co
     da = np.arctan2(T[1, 0], T[0, 0])
     # store for saving to disk as table
     prev_to_cur_transform.append([dx, dy, da])
-    # set current frame to prev frame for use in next iteration
 
-    # apply saved transform (resource: http://nghiaho.com/?p=2208)
-    cur2 = cv.warpAffine(cur_gray, T, (cur_gray.shape[0], cur_gray.shape[1]))
-    return prev_to_cur_transform, cur2, prev_corner2
+    return prev_to_cur_transform

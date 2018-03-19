@@ -13,6 +13,7 @@ import cv2 as cv
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
@@ -91,7 +92,7 @@ def optical_flow(cf):
                 if cf.sota_opt_flow_option == 'opencv':
                     dense_optical_flow = of.opencv_optflow(
                         ref_img_data, search_img_data, cf.block_size)
-                    if dense_optical_flow == None:
+                    if dense_optical_flow is None:
                         logger.info('OpenCV version not supported')
                         sys.exit()
                     # Evaluate the optical flow
@@ -188,7 +189,7 @@ def optical_flow(cf):
                     previous_image = image_list[idx - 1]
                     curr_image = cv.imread(current_image, cv.IMREAD_GRAYSCALE)
                     prev_image = cv.imread(previous_image, cv.IMREAD_GRAYSCALE)
-                    prev_to_cur_transform, rect_image, prev_corner = of.video_stabilization_sota(prev_image, curr_image,
+                    prev_to_cur_transform = of.video_stabilization_sota(prev_image, curr_image,
                                                                                                  prev_to_cur_transform,
                                                                                                  prev_corner)
                 # convert list of transforms to array
@@ -209,13 +210,9 @@ def optical_flow(cf):
                 T = np.zeros((2, 3))
                 # convert transform df to array
                 new_prev_to_cur_transform = np.array(new_prev_to_cur_transform)
-                if cf.save_results:
-                    image_name = os.path.basename(image_list[0])
-                    image_name = os.path.splitext(image_name)[0]
-                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type),
-                               cv.imread(image_list[0]))
+
                 for k in range(len(image_list) - 1):
-                    cur = cv.imread(image_list[k + 1])
+                    cur = cv.imread(image_list[k])
                     T[0, 0] = np.cos(new_prev_to_cur_transform[k][2])
                     T[0, 1] = -np.sin(new_prev_to_cur_transform[k][2])
                     T[1, 0] = np.sin(new_prev_to_cur_transform[k][2])
@@ -225,7 +222,7 @@ def optical_flow(cf):
                     # apply saved transform (resource: http://nghiaho.com/?p=2208)
                     rect_image = cv.warpAffine(cur, T, (cur.shape[0], cur.shape[1]))
                     if cf.save_results:
-                        image_name = os.path.basename(image_list[k + 1])
+                        image_name = os.path.basename(image_list[k])
                         image_name = os.path.splitext(image_name)[0]
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
 
