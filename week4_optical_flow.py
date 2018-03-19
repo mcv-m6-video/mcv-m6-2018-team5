@@ -202,7 +202,9 @@ def optical_flow(cf):
                 predicted_image, optical_flow, dense_optical_flow, _ = of.exhaustive_search_block_matching(
                     ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type, verbose=False)
 
-                rect_image, u, v = of.video_stabilization(search_img_data, optical_flow, cf.compensation, u, v)
+                image_data = cv.imread(current_image, cv.IMREAD_COLOR)
+
+                rect_image, u, v = of.video_stabilization(image_data, optical_flow, cf.compensation, u, v)
 
                 if cf.save_results:
                     image_name = os.path.basename(current_image)

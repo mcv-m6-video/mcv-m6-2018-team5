@@ -169,23 +169,23 @@ def video_stabilization(image, flow, direction, u, v):
         rect_image = image
     elif mean_u == 0:
         if mean_v > 0:
-            rect_image[:, mean_v:] = image[:, :-mean_v]
+            rect_image[:, mean_v:, :] = image[:, :-mean_v, :]
         else:
-            rect_image[:, :mean_v] = image[:, -mean_v:]
+            rect_image[:, :mean_v, :] = image[:, -mean_v:, :]
     elif mean_v == 0:
         if mean_u > 0:
-            rect_image[mean_u:, :] = image[:-mean_u, :]
+            rect_image[mean_u:, :, :] = image[:-mean_u, :, :]
         else:
-            rect_image[:mean_u, :] = image[-mean_u:, :]
+            rect_image[:mean_u, :, :] = image[-mean_u:, :, :]
     elif mean_u > 0:
         if mean_v > 0:
-            rect_image[mean_u:, mean_v:] = image[:-mean_u, :-mean_v]
+            rect_image[mean_u:, mean_v:, :] = image[:-mean_u, :-mean_v, :]
         else:
-            rect_image[mean_u:, :mean_v] = image[:-mean_u, -mean_v:]
+            rect_image[mean_u:, :mean_v, :] = image[:-mean_u, -mean_v:, :]
     else:
         if mean_v > 0:
-            rect_image[:mean_u, mean_v:] = image[-mean_u:, :-mean_v]
+            rect_image[:mean_u, mean_v:, :] = image[-mean_u:, :-mean_v, :]
         else:
-            rect_image[:mean_u, :mean_v] = image[-mean_u:, -mean_v:]
+            rect_image[:mean_u, :mean_v, :] = image[-mean_u:, -mean_v:, :]
 
     return rect_image, mean_u, mean_v
