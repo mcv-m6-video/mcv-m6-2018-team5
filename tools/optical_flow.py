@@ -147,7 +147,10 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
         'poly_sigma': 1.2,
         'flags': cv.OPTFLOW_USE_INITIAL_FLOW
     }
-    dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, **farneback_params)
+    if '3.1' in cv.__version__:
+        dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, None, **farneback_params)
+    elif '2.4' in cv.__version__:
+        dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, **farneback_params)
 
     return dense_flow
 
@@ -189,3 +192,37 @@ def video_stabilization(image, flow, direction, u, v):
             rect_image[:mean_u, :mean_v, :] = image[-mean_u:, -mean_v:, :]
 
     return rect_image, mean_u, mean_v
+
+def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
+
+    #prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
+    # calc flow of movement (resource: http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html)
+    cur_corner, status, err = cv.calcOpticalFlowPyrLK(prev_gray, cur_gray, prev_corner, None)
+    # storage for keypoints with status 1
+    prev_corner2 = []
+    cur_corner2 = []
+    for i, st in enumerate(status):
+        # if keypoint found in frame i & i-1
+        if st == 1:
+            # store coords of keypoints that appear in both
+            prev_corner2.append(prev_corner[i])
+            cur_corner2.append(cur_corner[i])
+    prev_corner2 = np.array(prev_corner2)
+    cur_corner2 = np.array(cur_corner2)
+    # estimate partial transform (resource: http://nghiaho.com/?p=2208)
+    T_new = cv.estimateRigidTransform(prev_corner2, cur_corner2, False)
+    if T_new is not None:
+        T = T_new
+    # translation x
+    dx = T[0, 2]
+    # translation y
+    dy = T[1, 2]
+    # rotation
+    da = np.arctan2(T[1, 0], T[0, 0])
+    # store for saving to disk as table
+    prev_to_cur_transform.append([dx, dy, da])
+    # set current frame to prev frame for use in next iteration
+
+    # apply saved transform (resource: http://nghiaho.com/?p=2208)
+    cur2 = cv.warpAffine(cur_gray, T, (cur_gray.shape[0], cur_gray.shape[1]))
+    return prev_to_cur_transform, cur2, prev_corner2
