@@ -154,15 +154,17 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
 
 def video_stabilization(image, flow, direction, u, v):
 
-    mean_u = int(np.round(stats.trim_mean(flow[:, :, 0], 0.1, axis=None)))
-    mean_v = int(np.round(stats.trim_mean(flow[:, :, 1], 0.1, axis=None)))
+    mean_u = int(np.round(stats.trim_mean(flow[:, :, 0], 0.2, axis=None)))
+    mean_v = int(np.round(stats.trim_mean(flow[:, :, 1], 0.2, axis=None)))
+
+    print('Displacement: (%s,%s)' % (mean_u, mean_v))
 
     if direction == 'forward':
-        mean_u = u + mean_u
-        mean_v = v + mean_v
-    else:
         mean_u = u - mean_u
         mean_v = v - mean_v
+    else:
+        mean_u = u + mean_u
+        mean_v = v + mean_v
 
     rect_image = np.zeros(image.shape)
     if mean_u == 0 and mean_v == 0:
