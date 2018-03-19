@@ -154,15 +154,15 @@ def optical_flow(cf):
                             logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
                             # Histogram
-                            savefig_path = os.path.join(pre_compute_of_folder, 'flownet2_{}_msen_hist.png'.format(
-                                fnet_variant
+                            savefig_path = os.path.join(pre_compute_of_folder, 'flownet2_{}_msen_hist_{}.png'.format(
+                                fnet_variant, cf.image_sequence
                             ))
                             visualization.plot_histogram_msen(
                                 msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequence, savefig_path
                             )
                             # Image
-                            savefig_path = os.path.join(pre_compute_of_folder, 'flownet2_{}_msen_im.png'.format(
-                                fnet_variant
+                            savefig_path = os.path.join(pre_compute_of_folder, 'flownet2_{}_msen_im_{}.png'.format(
+                                fnet_variant, cf.image_sequence
                             ))
                             visualization.plot_msen_image(
                                 image_list[0], squared_errors, pixel_errors, valid_pixels, cf.image_sequence,

@@ -5,7 +5,7 @@ gt_path                      = 'datasets/kitti/flow_noc'        # Ground truth p
 results_path                 = 'datasets/kitti/results'
 
 # Input Images
-image_sequence              = '000157'              # '000045' or '000157']
+image_sequence              = '000045'              # '000045' or '000157']
 image_type                   = 'png'                        # Input image type
 
 # Block Matching Optical Flow
@@ -21,8 +21,8 @@ sota_opt_flow_option        = 'flownet2'
 
 # Evaluate Optical Flow
 evaluate                     = True
-plot_optical_flow            = True
-plot_prediction              = True
+plot_optical_flow            = False
+plot_prediction              = False
 optical_flow_downsample      = 16
 
 # Save results
