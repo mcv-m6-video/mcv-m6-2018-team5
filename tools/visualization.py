@@ -160,7 +160,7 @@ def plot_desynch_vs_time(F1_score, desynchronization_frames, output_folder=""):
 
 
 def plot_histogram_msen(msen, squared_errors, seq_name, output_path=None, nbins=50):
-    fig = plt.figure()
+    plt.figure(figsize=(10, 5), dpi=200)
     color_map = plt.cm.get_cmap('jet')
     # Histogram
     n, bins, patches = plt.hist(squared_errors, bins=nbins, normed=True)
@@ -193,6 +193,7 @@ def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name,
     # Representation of errors as an image
     color_map = plt.cm.get_cmap('jet')
     im_data = cv.imread(image, cv.IMREAD_GRAYSCALE)
+    plt.figure(figsize=(10, 5), dpi=200)
     plt.imshow(im_data, cmap='gray')
     se_valid = np.zeros_like(squared_errors)
     se_valid[valid_pixels] = squared_errors[valid_pixels]
@@ -225,6 +226,7 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
     hsv[:, :, 2] = cv.normalize(magnitude, None, 0, 255, cv.NORM_MINMAX)
     bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
 
+    plt.figure(figsize=(10, 5), dpi=200)
     plt.imshow(img, cmap='gray')
     plt.imshow(bgr, alpha=0.5)
     plt.axis('off')
@@ -252,6 +254,7 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
     X = np.meshgrid(x_pos)
     Y = np.meshgrid(y_pos)
 
+    plt.figure(figsize=(10, 5), dpi=200)
     plt.imshow(img, cmap='gray')
     plt.quiver(X, Y, optical_flow_ds[:, :, 0], optical_flow_ds[:, :, 1], color='yellow')
     plt.axis('off')
