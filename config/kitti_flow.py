@@ -5,7 +5,7 @@ gt_path                      = 'datasets/kitti/flow_noc'        # Ground truth p
 results_path                 = 'datasets/kitti/results'
 
 # Input Images
-image_sequence              = '000045'              # '000045' or '000157']
+image_sequence              = '000157'              # '000045' or '000157']
 image_type                   = 'png'                        # Input image type
 
 # Block Matching Optical Flow
@@ -17,7 +17,7 @@ optimize_block_matching     = False        # Whether to optimize parameters of b
 block_size_range            = [4, 8, 16, 32, 64]
 search_area_range           = [4, 8, 16, 32, 64]
 sota_opt_flow               = True
-sota_opt_flow_option        = 'opencv'
+sota_opt_flow_option        = 'flownet2'
 
 # Evaluate Optical Flow
 evaluate                     = True

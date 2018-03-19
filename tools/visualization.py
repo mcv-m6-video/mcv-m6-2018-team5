@@ -159,7 +159,7 @@ def plot_desynch_vs_time(F1_score, desynchronization_frames, output_folder=""):
     plt.close()
 
 
-def plot_histogram_msen(msen, squared_errors, seq_name, output_folder="", nbins=50):
+def plot_histogram_msen(msen, squared_errors, seq_name, output_path=None, nbins=50):
     fig = plt.figure()
     color_map = plt.cm.get_cmap('jet')
     # Histogram
@@ -184,13 +184,12 @@ def plot_histogram_msen(msen, squared_errors, seq_name, output_folder="", nbins=
     plt.legend()
     plt.show(block=False)
 
-    if output_folder != "":
-        save_path = os.path.join(output_folder, "task_3_histogram_{}.png".format(seq_name))
-        plt.savefig(save_path)
+    if output_path is not None:
+        plt.savefig(output_path)
     plt.close()
 
 
-def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name, output_folder=""):
+def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name, output_path=None):
     # Representation of errors as an image
     color_map = plt.cm.get_cmap('jet')
     im_data = cv.imread(image, cv.IMREAD_GRAYSCALE)
@@ -203,8 +202,8 @@ def plot_msen_image(image, squared_errors, pixel_errors, valid_pixels, seq_name,
     plt.colorbar(orientation="horizontal")
     plt.xlabel('Squared Error (Non-occluded areas)')
     plt.show(block=False)
-    save_path = os.path.join(output_folder, "task_3_error_image_{}.png".format(seq_name))
-    plt.savefig(save_path)
+    if output_path is not None:
+        plt.savefig(output_path)
     plt.close()
 
 

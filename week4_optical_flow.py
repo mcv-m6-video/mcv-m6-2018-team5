@@ -88,7 +88,8 @@ def optical_flow(cf):
                         output_path = os.path.join(cf.output_folder, '{}_ebma_optimization.pkl'.format(cf.dataset_name))
                         with open(output_path, 'w') as fd:
                             pickle.dump(optimization_results, fd)
-            elif(cf.sota_opt_flow):
+
+            elif cf.sota_opt_flow:
                 if cf.sota_opt_flow_option == 'opencv':
                     dense_optical_flow = of.opencv_optflow(
                         ref_img_data, search_img_data, cf.block_size)
@@ -125,6 +126,74 @@ def optical_flow(cf):
                                                             is_ndarray=True)
 
                     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
+
+                elif cf.sota_opt_flow_option == 'flownet2':
+                    # Evaluate the optical flow
+                    if cf.evaluate:
+                        # Groun-truth optical flow
+                        optical_flow_gt = cv.imread(gt_list[0], cv.IMREAD_UNCHANGED)
+
+                        # Reference image
+                        ref_img = cv.imread(image_list[0], cv.IMREAD_GRAYSCALE)
+
+                        # Load pre-computed optical flows with different architecture and training procedures
+                        pre_compute_of_folder = cf.output_folder
+
+                        # FlowNet variants
+                        flownet_variants = ('css', 's', 'S', 'SD')
+                        for fnet_variant in flownet_variants:
+                            logger.info('Evaluating FlowNet2-{}'.format(fnet_variant))
+                            flow_path = os.path.join(pre_compute_of_folder,
+                                                     'flownet2_{}_{}_10.flo'.format(fnet_variant, cf.image_sequence))
+                            optical_flow_data = of.read_flow(flow_path)
+
+                            msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(
+                                optical_flow_data, optical_flow_gt
+                            )
+                            logger.info('Mean Squared Error: {}'.format(msen))
+                            logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
+
+                            # Histogram
+                            savefig_path = os.path.join(pre_compute_of_folder, 'flownet2_{}_msen_hist.png'.format(
+                                fnet_variant
+                            ))
+                            visualization.plot_histogram_msen(
+                                msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequence, savefig_path
+                            )
+                            # Image
+                            savefig_path = os.path.join(pre_compute_of_folder, 'flownet2_{}_msen_im.png'.format(
+                                fnet_variant
+                            ))
+                            visualization.plot_msen_image(
+                                image_list[0], squared_errors, pixel_errors, valid_pixels, cf.image_sequence,
+                                savefig_path
+                            )
+
+                            if cf.plot_optical_flow:
+                                # Quiver plot
+                                output_path = os.path.join(
+                                    cf.output_folder, 'flownet_{}_optical_flow_{}.png'.format(
+                                        fnet_variant, cf.image_sequence
+                                    )
+                                )
+                                visualization.plot_optical_flow(
+                                    ref_img, optical_flow_data, cf.optical_flow_downsample, cf.image_sequence,
+                                    output_path, is_ndarray=True
+                                )
+
+                                # HSV plot
+                                output_path = os.path.join(
+                                    cf.output_folder, 'flownet_{}_optical_flow_hsv_{}.png'.format(
+                                        fnet_variant, cf.image_sequence
+                                    )
+                                )
+                                visualization.plot_optical_flow_hsv(
+                                    ref_img, optical_flow_data, cf.image_sequence, output_path, is_ndarray=True
+                                )
+
+
+                else:
+                    raise ValueError('cv.sota_opt_flow_option {!r} not supported'.format(cf.sota_opt_flow_option))
 
             else:
                 # Run Task 1: Block Matching Algorithm
