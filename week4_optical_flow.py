@@ -257,6 +257,9 @@ def optical_flow(cf):
 
                     image_data = cv.imread(current_image, cv.IMREAD_COLOR)
 
+                    if idx % 10 == 0:
+                        v = 0
+                        u = 0
                     rect_image, u, v = of.video_stabilization(image_data, opt_flow, cf.compensation, u, v)
 
                     if cf.save_results:
