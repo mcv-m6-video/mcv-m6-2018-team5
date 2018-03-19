@@ -15,7 +15,6 @@ from matplotlib import pyplot as plt
 
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
                                      verbose=False):
-
     logger = logging.getLogger(__name__)
 
     norm_options = {'l1', 'l2'}
@@ -73,7 +72,7 @@ def exhaustive_search_block_matching(reference_img, search_img, block_size=16, m
                 continue
 
             # Get the candidate block
-            candidate_block = search_img[up_left_y:bottom_right_y+1, up_left_x:bottom_right_x+1]
+            candidate_block = search_img[up_left_y:bottom_right_y + 1, up_left_x:bottom_right_x + 1]
             assert candidate_block.shape == (block_size, block_size)
 
             # Compute the Displaced Frame Difference (DFD) and compute the specified norm
@@ -154,7 +153,6 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
     else:
         dense_flow = None
 
-
     return dense_flow
 
 
@@ -200,9 +198,9 @@ def video_stabilization(image, flow, direction, u, v):
 
     return rect_image, mean_u, mean_v
 
-def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
 
-    #prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
+def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
+    # prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
     # calc flow of movement (resource: http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html)
     cur_corner, status, err = cv.calcOpticalFlowPyrLK(prev_gray, cur_gray, prev_corner, None)
     # storage for keypoints with status 1
@@ -231,3 +229,18 @@ def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_co
     prev_to_cur_transform.append([dx, dy, da])
 
     return prev_to_cur_transform
+
+
+def read_flow(name):
+    flow = None
+    with open(name, 'rb') as f:
+        header = f.read(4)
+        if header.decode("utf-8") != 'PIEH':
+            raise Exception('Flow file header does not contain PIEH')
+
+        width = np.fromfile(f, np.int32, 1).squeeze()
+        height = np.fromfile(f, np.int32, 1).squeeze()
+
+        flow = np.fromfile(f, np.float32, width * height * 2).reshape((height, width, 2))
+
+    return flow.astype(np.float32)
