@@ -151,7 +151,10 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
         dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, None, **farneback_params)
     elif '2.4' in cv.__version__:
         dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, **farneback_params)
-
+    else:
+        logger.error('OpenCV version not supported')
+        sys.exit()
+        
     return dense_flow
 
 
