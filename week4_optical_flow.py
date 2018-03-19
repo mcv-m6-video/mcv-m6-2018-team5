@@ -5,6 +5,7 @@ from __future__ import division
 import argparse
 import logging
 import os
+import sys
 
 import pickle
 
@@ -90,6 +91,9 @@ def optical_flow(cf):
                 if cf.sota_opt_flow_option == 'opencv':
                     dense_optical_flow = of.opencv_optflow(
                         ref_img_data, search_img_data, cf.block_size)
+                    if dense_optical_flow == None:
+                        logger.info('OpenCV version not supported')
+                        sys.exit()
                     # Evaluate the optical flow
                     if cf.evaluate:
                         optical_flow_gt = cv.imread(gt_list[0], cv.IMREAD_UNCHANGED)
