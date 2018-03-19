@@ -166,11 +166,11 @@ def video_stabilization(image, flow, direction, u, v):
     print('Displacement: (%s,%s)' % (mean_u, mean_v))
 
     if direction == 'forward':
-        mean_u = u - mean_u
-        mean_v = v - mean_v
-    else:
         mean_u = u + mean_u
         mean_v = v + mean_v
+    else:
+        mean_u = u - mean_u
+        mean_v = v - mean_v
 
     print('Accumulated displacement: (%s,%s)' % (mean_u, mean_v))
 
