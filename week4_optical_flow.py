@@ -5,6 +5,7 @@ from __future__ import division
 import argparse
 import logging
 import os
+import sys
 
 import pickle
 
@@ -90,6 +91,9 @@ def optical_flow(cf):
                 if cf.sota_opt_flow_option == 'opencv':
                     dense_optical_flow = of.opencv_optflow(
                         ref_img_data, search_img_data, cf.block_size)
+                    if dense_optical_flow == None:
+                        logger.info('OpenCV version not supported')
+                        sys.exit()
                     # Evaluate the optical flow
                     if cf.evaluate:
                         optical_flow_gt = cv.imread(gt_list[0], cv.IMREAD_UNCHANGED)
@@ -99,16 +103,7 @@ def optical_flow(cf):
                         )
                         logger.info('Mean Squared Error: {}'.format(msen))
                         logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
-                        '''
-                        if cf.plot_prediction:
-                            output_path = os.path.join(cf.output_folder, 'optical_flow_prediction_{}.png'.format(
-                                cf.image_sequence
-                            ))
-                            plt.imshow(predicted_image, cmap='gray')
-                            plt.show(block=False)
-                            plt.savefig(output_path)
-                            plt.close()
-                        '''
+
                         # Histogram
                         visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequence,
                                                           cf.output_folder)
@@ -175,7 +170,6 @@ def optical_flow(cf):
                                                         is_ndarray=True)
         else:
 
-            # Get a list with input images filenames
             image_list = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type,
                                                                 cf.nr_images)
 
@@ -183,33 +177,95 @@ def optical_flow(cf):
                 logger.info('Saving results in {}'.format(cf.results_path))
                 mkdirs(cf.results_path)
 
-            u = 0
-            v = 0
-            for idx in range(1, len(image_list)):
-                current_image = image_list[idx]
-                previous_image = image_list[idx - 1]
+            if cf.sota_video_stab:
+                prev_to_cur_transform = []
+                previous_image = image_list[0]
+                prev_image = cv.imread(previous_image, cv.IMREAD_GRAYSCALE)
+                prev_corner = cv.goodFeaturesToTrack(prev_image, maxCorners=200, qualityLevel=0.01, minDistance=30.0,
+                                                     blockSize=3)
+                for idx in range(1, len(image_list)):
+                    current_image = image_list[idx]
+                    previous_image = image_list[idx - 1]
+                    curr_image = cv.imread(current_image, cv.IMREAD_GRAYSCALE)
+                    prev_image = cv.imread(previous_image, cv.IMREAD_GRAYSCALE)
+                    prev_to_cur_transform, rect_image, prev_corner = of.video_stabilization_sota(prev_image, curr_image,
+                                                                                                 prev_to_cur_transform,
+                                                                                                 prev_corner)
+                # convert list of transforms to array
+                prev_to_cur_transform = np.array(prev_to_cur_transform)
+                # cumsum of all transforms for trajectory
+                trajectory = np.cumsum(prev_to_cur_transform, axis=0)
 
-                if cf.compensation == 'backward':
-                    reference_image = current_image
-                    search_image = previous_image
-                else:
-                    reference_image = previous_image
-                    search_image = current_image
+                # convert trajectory array to df
+                trajectory = pd.DataFrame(trajectory)
+                # rolling mean to smooth
+                smoothed_trajectory = trajectory.rolling(window=30, center=False).mean()
+                # back fill nas caused by smoothing
+                smoothed_trajectory = smoothed_trajectory.fillna(method='bfill')
+                # new set of prev to cur transform, removing trajectory and replacing w/smoothed
+                new_prev_to_cur_transform = prev_to_cur_transform + (smoothed_trajectory - trajectory)
 
-                ref_img_data = cv.imread(reference_image, cv.IMREAD_GRAYSCALE)
-                search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
-
-                predicted_image, optical_flow, dense_optical_flow, _ = of.exhaustive_search_block_matching(
-                    ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type, verbose=False)
-
-                image_data = cv.imread(current_image, cv.IMREAD_COLOR)
-
-                rect_image, u, v = of.video_stabilization(image_data, optical_flow, cf.compensation, u, v)
-
+                # initialize transformation matrix
+                T = np.zeros((2, 3))
+                # convert transform df to array
+                new_prev_to_cur_transform = np.array(new_prev_to_cur_transform)
                 if cf.save_results:
-                    image_name = os.path.basename(current_image)
+                    image_name = os.path.basename(image_list[0])
                     image_name = os.path.splitext(image_name)[0]
-                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
+                    cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type),
+                               cv.imread(image_list[0]))
+                for k in range(len(image_list) - 1):
+                    cur = cv.imread(image_list[k + 1])
+                    T[0, 0] = np.cos(new_prev_to_cur_transform[k][2])
+                    T[0, 1] = -np.sin(new_prev_to_cur_transform[k][2])
+                    T[1, 0] = np.sin(new_prev_to_cur_transform[k][2])
+                    T[1, 1] = np.cos(new_prev_to_cur_transform[k][2])
+                    T[0, 2] = new_prev_to_cur_transform[k][0]
+                    T[1, 2] = new_prev_to_cur_transform[k][1]
+                    # apply saved transform (resource: http://nghiaho.com/?p=2208)
+                    rect_image = cv.warpAffine(cur, T, (cur.shape[0], cur.shape[1]))
+                    if cf.save_results:
+                        image_name = os.path.basename(image_list[k + 1])
+                        image_name = os.path.splitext(image_name)[0]
+                        cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
+
+
+            else:
+                u = 0
+                v = 0
+                for idx in range(1, len(image_list)):
+                    current_image = image_list[idx]
+                    previous_image = image_list[idx - 1]
+
+                    if cf.compensation == 'backward':
+                        reference_image = current_image
+                        search_image = previous_image
+                    else:
+                        reference_image = previous_image
+                        search_image = current_image
+
+                    ref_img_data = cv.imread(reference_image, cv.IMREAD_GRAYSCALE)
+                    search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
+
+                    save_path = os.path.join(cf.output_folder, '{}_{}_{}_{}.pkl'.format(idx, (cf.block_size), (cf.search_area), cf.compensation))
+                    try:
+                        with open(save_path, 'rb') as file_flow:
+                            opt_flow = pickle.load(file_flow)
+                    except:
+                        with open(save_path, 'wb') as fd:
+                            predicted_image, opt_flow, _, _ = of.exhaustive_search_block_matching(
+                                ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type,
+                                verbose=False)
+                            pickle.dump(opt_flow, fd)
+
+                    image_data = cv.imread(current_image, cv.IMREAD_COLOR)
+
+                    rect_image, u, v = of.video_stabilization(image_data, opt_flow, cf.compensation, u, v)
+
+                    if cf.save_results:
+                        image_name = os.path.basename(current_image)
+                        image_name = os.path.splitext(image_name)[0]
+                        cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
 
             logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
