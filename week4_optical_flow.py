@@ -25,6 +25,7 @@ from tools.mkdirs import mkdirs
 EPSILON = 1e-8
 
 
+# noinspection PyUnboundLocalVariable
 def optical_flow(cf):
 
     with log_context(cf.log_file):
@@ -294,8 +295,17 @@ def optical_flow(cf):
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)'''
 
             else:
-                u = 0
-                v = 0
+                acc_u = 0
+                acc_v = 0
+                # Running average of directions
+                previous_u = 0
+                previous_v = 0
+
+                if cf.save_results:
+                    # Create folder to store histograms
+                    histogram_folder = os.path.join(cf.results_path, 'histograms')
+                    mkdirs(histogram_folder)
+
                 for idx in range(1, len(image_list)):
                     current_image = image_list[idx]
                     previous_image = image_list[idx - 1]
@@ -329,19 +339,31 @@ def optical_flow(cf):
 
                     image_data = cv.imread(current_image, cv.IMREAD_COLOR)
 
-                    # Compute 2D histogram of optical flow directions (x, y)
-                    # flow_hist2d = np.histogram2d(np.ravel(dense_flow[:, :, 0]), np.ravel(dense_flow[:, :, 1]),
-                    #                              range=[[0, cf.search_area], [0, cf.search_area]], normed=True)
+                    # Params
+                    strategy = 'background_block'  # 'max', 'trimmed_mean', 'background_block'
+                    if strategy == 'background_block':
+                        additional_params = {
+                            'center_position': (150, 30)
+                        }
+                    else:
+                        additional_params = dict()
+                    running_avg = 0
 
-                    '''if idx % 10 == 0:
-                        v = 0
-                        u = 0'''
-                    rect_image, u, v = of.video_stabilization(image_data, dense_flow, cf.compensation, u, v)
+                    # Run
+                    rect_image, acc_direction, previous_direction = of.video_stabilization(
+                        image_data, dense_flow, cf.compensation, strategy, cf.search_area,
+                        (acc_u, acc_v), (previous_u, previous_v), running_avg, **additional_params
+                    )
+                    acc_u, acc_v = acc_direction
+                    previous_u, previous_v = previous_direction
 
                     if cf.save_results:
                         image_name = os.path.basename(current_image)
                         image_name = os.path.splitext(image_name)[0]
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
+                        # Save histogram of directions
+                        hist_path = os.path.join(histogram_folder, image_name + '_hist_2d.' + cf.result_image_type)
+                        visualization.plot_optical_flow_histogram(dense_flow, cf.search_area, hist_path)
 
             logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

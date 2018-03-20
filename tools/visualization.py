@@ -221,7 +221,7 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
 
     hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
     hsv[:, :, 1] = 255
-    magnitude, angle = cv.cartToPolar((optical_flow[:, :, 0]),(optical_flow[:, :, 1]))
+    magnitude, angle = cv.cartToPolar((optical_flow[:, :, 0]), (optical_flow[:, :, 1]))
     hsv[:, :, 0] = angle * 180 / np.pi
     hsv[:, :, 2] = cv.normalize(magnitude, None, 0, 255, cv.NORM_MINMAX)
     bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
@@ -371,3 +371,26 @@ def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
         plt.savefig(os.path.join(output_path, filename))
 
     return mean_val, var_val
+
+
+def plot_optical_flow_histogram(optical_flow, area_search, output_path):
+    # Compute 2D histogram of optical flow directions (x, y)
+    xedges = np.arange(-area_search, area_search + 1)
+    yedges = np.arange(-area_search, area_search + 1)
+    flow_hist2d, _, _ = np.histogram2d(
+        np.ravel(optical_flow[:, :, 0]), np.ravel(optical_flow[:, :, 1]), bins=(xedges, yedges)
+    )
+    flow_hist2d = flow_hist2d.T
+
+    fig = plt.figure(figsize=(7, 7), dpi=200)
+    ax = fig.add_subplot(111, title='2D histogram of optical flow directions',
+                         aspect='equal', xlim=xedges[[0, -1]], ylim=yedges[[0, -1]])
+    im = mpl.image.NonUniformImage(ax, interpolation='bilinear')
+    xcenters = (xedges[:-1] + xedges[1:]) / 2
+    ycenters = (yedges[:-1] + yedges[1:]) / 2
+    im.set_data(xcenters, ycenters, flow_hist2d)
+    ax.images.append(im)
+    ax.set_xlabel('u')
+    ax.set_ylabel('v')
+    plt.savefig(output_path)
+    plt.close()

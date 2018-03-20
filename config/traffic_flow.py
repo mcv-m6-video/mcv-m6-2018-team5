@@ -19,7 +19,7 @@ dfd_norm_type               = 'l1'        # One of: 'l1', 'l2'
 optimize_block_matching     = False        # Whether to optimize parameters of block matching or not
 block_size_range            = [4, 8, 16, 32, 64]
 search_area_range           = [4, 8, 16, 32, 64]
-sota_opt_flow               = True
+sota_opt_flow               = False
 sota_opt_flow_option        = 'opencv'
 
 sota_video_stab             = False
