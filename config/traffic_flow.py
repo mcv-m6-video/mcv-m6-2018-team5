@@ -2,7 +2,7 @@
 dataset_name                 = 'traffic'                        # Dataset name
 dataset_path                 = 'datasets/traffic/input'         # Dataset path
 gt_path                      = 'datasets/traffic/groundtruth'   # Ground truth path
-results_path                 = 'datasets/traffic/results/stabilization'
+results_path                 = 'datasets/traffic/results/stabilization/bblocks_no_running_avg'
 
 # Input Images
 nr_images                    = 100

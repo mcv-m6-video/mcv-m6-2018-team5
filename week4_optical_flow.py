@@ -12,6 +12,7 @@ import sys
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.patches as patches
 
 from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
@@ -27,7 +28,6 @@ EPSILON = 1e-8
 
 # noinspection PyUnboundLocalVariable
 def optical_flow(cf):
-
     with log_context(cf.log_file):
         logger = logging.getLogger(__name__)
         logger.info(' ---> Init test: ' + cf.test_name + ' <---')
@@ -65,7 +65,7 @@ def optical_flow(cf):
                         itertools.product(cf.block_size_range, cf.search_area_range)
                 ):
                     logger.info('[{} / {}] block_size={}\t area_search={}'.format(
-                        i+1, total_iters, block_size, area_search
+                        i + 1, total_iters, block_size, area_search
                     ))
 
                     _, _, dense_optical_flow, total_time = of.exhaustive_search_block_matching(
@@ -107,7 +107,8 @@ def optical_flow(cf):
                         logger.info('Percentage of Erroneous Pixels: {}'.format(pepn))
 
                         # Histogram
-                        visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]), cf.image_sequence,
+                        visualization.plot_histogram_msen(msen, np.ravel(squared_errors[valid_pixels]),
+                                                          cf.image_sequence,
                                                           cf.output_folder)
                         # Image
                         visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
@@ -121,7 +122,8 @@ def optical_flow(cf):
                                                         cf.image_sequence, output_path, is_ndarray=True)
 
                         # HSV plot
-                        output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_opencv_{}.png'.format(cf.image_sequence))
+                        output_path = os.path.join(cf.output_folder,
+                                                   'optical_flow_hsv_{}.png'.format(cf.image_sequence))
                         visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequence, output_path,
                                                             is_ndarray=True)
 
@@ -367,10 +369,11 @@ def optical_flow(cf):
                     # Params
                     strategy = 'background_blocks'  # 'max', 'trimmed_mean', 'background_block'
                     if strategy == 'background_blocks':
-                        center_positions = [(15, 300), (220, 15)]
+                        center_positions = [(30, 290), (210, 30)]
+                        neighborhood = 20
                         additional_params = {
                             'center_positions': center_positions,
-                            'neighborhood': 12,
+                            'neighborhood': neighborhood,
                         }
                     else:
                         additional_params = dict()
@@ -390,11 +393,28 @@ def optical_flow(cf):
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
                         if cf.save_plots:
                             if strategy == 'background_blocks':
+                                fig = plt.figure(figsize=(10, 10))
+                                ax = fig.add_subplot(111)
                                 plt.imshow(image_data)
-                                for center_position in center_positions:
-                                    plt.scatter(center_position[1], center_position[0])
-                                plot_path = os.path.join(histogram_folder, image_name + '_block_markers.'
-                                                         + cf.result_image_type)
+                                for center_position, color in zip(center_positions, itertools.cycle(['r', 'y', 'b'])):
+                                    ax.scatter(center_position[1], center_position[0], s=8, marker='x', color=color,
+                                               label='Pixel position ({0}, {1})'.format(*center_position))
+                                    rectangle_center = (center_position[1] - neighborhood,
+                                                        center_position[0] - neighborhood)
+                                    ax.add_patch(
+                                        patches.Rectangle(
+                                            rectangle_center,
+                                            neighborhood * 2,
+                                            neighborhood * 2,
+                                            fill=False, color=color
+                                        )
+                                    )
+                                plt.legend()
+                                plt.axis('off')
+                                plot_path = os.path.join(
+                                    histogram_folder,
+                                    image_name + '_block_markers.' + cf.result_image_type
+                                )
                                 plt.savefig(plot_path)
                                 plt.close()
 
