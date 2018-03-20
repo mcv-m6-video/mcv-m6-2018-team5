@@ -3,23 +3,22 @@
 from __future__ import division
 
 import argparse
+import itertools
 import logging
 import os
+import pickle
 import sys
 
-import pickle
-
 import cv2 as cv
-import itertools
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
 from tools import optical_flow as of
 from tools import visualization
-from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, get_image_list_changedetection_dataset
+from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, \
+    get_image_list_changedetection_dataset
 from tools.log import log_context
 from tools.mkdirs import mkdirs
 
@@ -190,8 +189,6 @@ def optical_flow(cf):
                                 visualization.plot_optical_flow_hsv(
                                     ref_img, optical_flow_data, cf.image_sequence, output_path, is_ndarray=True
                                 )
-
-
                 else:
                     raise ValueError('cv.sota_opt_flow_option {!r} not supported'.format(cf.sota_opt_flow_option))
 
@@ -296,7 +293,6 @@ def optical_flow(cf):
                         image_name = os.path.splitext(image_name)[0]
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)'''
 
-
             else:
                 u = 0
                 v = 0
@@ -314,20 +310,28 @@ def optical_flow(cf):
                     ref_img_data = cv.imread(reference_image, cv.IMREAD_GRAYSCALE)
                     search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
 
-                    save_path = os.path.join(cf.output_folder, '{}_{}_{}_{}.pkl'.format(idx, (cf.block_size), (cf.search_area), cf.compensation))
-                    try:
-                        with open(save_path, 'rb') as file_flow:
-                            #opt_flow = pickle.load(file_flow)
-                            dense_flow = pickle.load(file_flow)
-                    except:
-                        with open(save_path, 'wb') as fd:
-                            _, opt_flow, dense_flow, _ = of.exhaustive_search_block_matching(
-                                ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type,
-                                verbose=False)
-                            #pickle.dump(opt_flow, fd)
-                            pickle.dump(dense_flow, fd)
+                    save_path = os.path.join(cf.output_folder, '{}_{}_{}_{}.pkl'.format(
+                        idx, cf.block_size, cf.search_area, cf.compensation
+                    ))
+                    if cf.sota_opt_flow and cf.sota_opt_flow_option == 'opencv':
+                        dense_flow = of.opencv_optflow(
+                            ref_img_data, search_img_data, cf.block_size)
+                    else:
+                        try:
+                            with open(save_path, 'rb') as file_flow:
+                                dense_flow = pickle.load(file_flow)
+                        except Exception:
+                            with open(save_path, 'wb') as fd:
+                                _, opt_flow, dense_flow, _ = of.exhaustive_search_block_matching(
+                                    ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type,
+                                    verbose=False)
+                                pickle.dump(dense_flow, fd)
 
                     image_data = cv.imread(current_image, cv.IMREAD_COLOR)
+
+                    # Compute 2D histogram of optical flow directions (x, y)
+                    # flow_hist2d = np.histogram2d(np.ravel(dense_flow[:, :, 0]), np.ravel(dense_flow[:, :, 1]),
+                    #                              range=[[0, cf.search_area], [0, cf.search_area]], normed=True)
 
                     '''if idx % 10 == 0:
                         v = 0

@@ -15,6 +15,7 @@ from matplotlib import pyplot as plt
 
 import stabFuntions
 
+
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
                                      verbose=False):
     logger = logging.getLogger(__name__)
@@ -148,7 +149,7 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
         'poly_sigma': 1.2,
         'flags': cv.OPTFLOW_USE_INITIAL_FLOW
     }
-    if '3.1' in cv.__version__:
+    if '3' in cv.__version__:
         dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, None, **farneback_params)
     elif '2.4' in cv.__version__:
         dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, **farneback_params)
@@ -159,7 +160,6 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
 
 
 def video_stabilization(image, flow, direction, u, v):
-
     mean_u = int(np.round(stats.trim_mean(flow[:, :, 0], 0.2, axis=None)))
     mean_v = int(np.round(stats.trim_mean(flow[:, :, 1], 0.2, axis=None)))
 
@@ -199,6 +199,7 @@ def video_stabilization(image, flow, direction, u, v):
             rect_image[:mean_u, :mean_v, :] = image[-mean_u:, -mean_v:, :]
 
     return rect_image, mean_u, mean_v
+
 
 def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
     # prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
@@ -270,6 +271,7 @@ def video_stabilization_sota2(videoInList, videoOutPath):
 
     # video reconstruction
     stabFuntions.reconVideo(videoInList, videoOutPath, trans, BORDER_CUT)
+
 
 def read_flow(name):
     flow = None
