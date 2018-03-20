@@ -115,16 +115,25 @@ def optical_flow(cf):
 
                     if cf.plot_optical_flow:
                         # Quiver plot
-                        output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequence))
+                        output_path = os.path.join(cf.output_folder, 'optical_flow_opencv_{}.png'.format(cf.image_sequence))
                         im = cv.imread(image_list[1], cv.IMREAD_GRAYSCALE)
                         visualization.plot_optical_flow(im, dense_optical_flow, cf.optical_flow_downsample,
                                                         cf.image_sequence, output_path, is_ndarray=True)
 
                         # HSV plot
-                        output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequence))
+                        output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_opencv_{}.png'.format(cf.image_sequence))
                         visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequence, output_path,
                                                             is_ndarray=True)
 
+                        output_path = os.path.join(cf.output_folder,
+                                                   'optical_flow_middlebury_opencv_{}.png'.format(cf.image_sequence))
+                        middlebury = visualization.flow_to_image(dense_optical_flow)
+                        plt.figure(figsize=(10, 5), dpi=200)
+                        plt.imshow(middlebury)
+                        plt.axis('off')
+                        plt.show(block=False)
+                        plt.savefig(output_path)
+                        plt.close()
                     logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
                 elif cf.sota_opt_flow_option == 'flownet2':
@@ -191,6 +200,17 @@ def optical_flow(cf):
                                     ref_img, optical_flow_data, cf.image_sequence, output_path, is_ndarray=True
                                 )
 
+                                output_path = os.path.join(cf.output_folder,
+                                                           'flownet_{}_optical_flow_middlebury_{}.png'.format(
+                                        fnet_variant, cf.image_sequence))
+                                middlebury = visualization.flow_to_image(optical_flow_data)
+                                plt.figure(figsize=(10, 5), dpi=200)
+                                plt.imshow(middlebury)
+                                plt.axis('off')
+                                plt.show(block=False)
+                                plt.savefig(output_path)
+                                plt.close()
+
 
                 else:
                     raise ValueError('cv.sota_opt_flow_option {!r} not supported'.format(cf.sota_opt_flow_option))
@@ -227,6 +247,8 @@ def optical_flow(cf):
                     visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
                                                   cf.image_sequence, cf.output_folder)
 
+
+
                 if cf.plot_optical_flow:
                     # Quiver plot
                     output_path = os.path.join(cf.output_folder, 'optical_flow_{}.png'.format(cf.image_sequence))
@@ -238,6 +260,7 @@ def optical_flow(cf):
                     output_path = os.path.join(cf.output_folder, 'optical_flow_hsv_{}.png'.format(cf.image_sequence))
                     visualization.plot_optical_flow_hsv(im, dense_optical_flow, cf.image_sequence, output_path,
                                                         is_ndarray=True)
+
         else:
 
             image_list = get_image_list_changedetection_dataset(cf.dataset_path, 'in', cf.first_image, cf.image_type,
