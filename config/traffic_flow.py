@@ -20,7 +20,7 @@ optimize_block_matching     = False        # Whether to optimize parameters of b
 block_size_range            = [4, 8, 16, 32, 64]
 search_area_range           = [4, 8, 16, 32, 64]
 
-sota_video_stab             = False
+sota_video_stab             = True
 
 # Save results
 save_results                 = True        # Save Log file

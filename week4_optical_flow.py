@@ -248,7 +248,8 @@ def optical_flow(cf):
                 mkdirs(cf.results_path)
 
             if cf.sota_video_stab:
-                prev_to_cur_transform = []
+                of.video_stabilization_sota2(image_list, cf.output_folder)
+                '''prev_to_cur_transform = []
                 previous_image = image_list[0]
                 prev_image = cv.imread(previous_image, cv.IMREAD_GRAYSCALE)
                 prev_corner = cv.goodFeaturesToTrack(prev_image, maxCorners=200, qualityLevel=0.01, minDistance=30.0,
@@ -293,7 +294,7 @@ def optical_flow(cf):
                     if cf.save_results:
                         image_name = os.path.basename(image_list[k])
                         image_name = os.path.splitext(image_name)[0]
-                        cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
+                        cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)'''
 
 
             else:
@@ -316,20 +317,22 @@ def optical_flow(cf):
                     save_path = os.path.join(cf.output_folder, '{}_{}_{}_{}.pkl'.format(idx, (cf.block_size), (cf.search_area), cf.compensation))
                     try:
                         with open(save_path, 'rb') as file_flow:
-                            opt_flow = pickle.load(file_flow)
+                            #opt_flow = pickle.load(file_flow)
+                            dense_flow = pickle.load(file_flow)
                     except:
                         with open(save_path, 'wb') as fd:
-                            predicted_image, opt_flow, _, _ = of.exhaustive_search_block_matching(
+                            _, opt_flow, dense_flow, _ = of.exhaustive_search_block_matching(
                                 ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type,
                                 verbose=False)
-                            pickle.dump(opt_flow, fd)
+                            #pickle.dump(opt_flow, fd)
+                            pickle.dump(dense_flow, fd)
 
                     image_data = cv.imread(current_image, cv.IMREAD_COLOR)
 
-                    if idx % 10 == 0:
+                    '''if idx % 10 == 0:
                         v = 0
-                        u = 0
-                    rect_image, u, v = of.video_stabilization(image_data, opt_flow, cf.compensation, u, v)
+                        u = 0'''
+                    rect_image, u, v = of.video_stabilization(image_data, dense_flow, cf.compensation, u, v)
 
                     if cf.save_results:
                         image_name = os.path.basename(current_image)

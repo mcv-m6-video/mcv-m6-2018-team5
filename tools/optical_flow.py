@@ -13,6 +13,8 @@ import tqdm
 from scipy import stats
 from matplotlib import pyplot as plt
 
+import stabFuntions
+
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
                                      verbose=False):
     logger = logging.getLogger(__name__)
@@ -198,7 +200,6 @@ def video_stabilization(image, flow, direction, u, v):
 
     return rect_image, mean_u, mean_v
 
-
 def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
     # prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
     # calc flow of movement (resource: http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html)
@@ -230,6 +231,45 @@ def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_co
 
     return prev_to_cur_transform
 
+
+def video_stabilization_sota2(videoInList, videoOutPath):
+    # detector and matcher
+    detector = cv.ORB_create()
+    bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
+
+    # parameters
+    MATCH_THRES = float('Inf')
+    RANSAC_THRES = 0.2
+    BORDER_CUT = 10
+    # FILT = "square"
+    FILT = "gauss"
+    FILT_WIDTH = 7
+    FILT_SIGMA = 0.2
+    FAST = True
+    if FILT == "square":
+        filt = (1.0 / FILT_WIDTH) * np.ones(FILT_WIDTH)
+        suffix = "_MT_" + str(MATCH_THRES) + "_RT_" + str(RANSAC_THRES) + "_FILT_" + FILT + "_FW_" + str(
+            FILT_WIDTH) + "_FAST_" + str(FAST)
+    elif FILT == "gauss":
+        filtx = np.linspace(-3 * FILT_SIGMA, 3 * FILT_SIGMA, FILT_WIDTH)
+        filt = np.exp(-np.square(filtx) / (2 * FILT_SIGMA))
+        filt = 1 / (np.sum(filt)) * filt
+        suffix = "_MT_" + str(MATCH_THRES) + "_RT_" + str(RANSAC_THRES) + "_FILT_" + FILT + "_FW_" + str(
+            FILT_WIDTH) + "_SG_" + str(FILT_SIGMA) + "_FAST_" + str(FAST)
+
+    # numpy array
+    frame = cv.imread(videoInList[0])
+    videoArr = np.zeros((len(videoInList), frame.shape[0], frame.shape[1], frame.shape[2]), dtype=np.uint8)
+    # fill array
+    for i in range(0, len(videoInList)):
+        videoArr[i, :, :] = cv.imread(videoInList[i])
+
+    ### get transformation
+    trans = stabFuntions.getTrans(videoArr, detector, bf, MATCH_THRES, RANSAC_THRES, filt, FAST)
+    # plotTrans(trans, None, videoBaseName, suffix, show=False)
+
+    # video reconstruction
+    stabFuntions.reconVideo(videoInList, videoOutPath, trans, BORDER_CUT)
 
 def read_flow(name):
     flow = None
