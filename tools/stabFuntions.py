@@ -108,7 +108,7 @@ def reconVideo(videoInList, videoOutPath, trans, BORDER_CUT):
     # frame transformation
     for i in range(0, len(videoInList)):
         frame = cv.imread(videoInList[i])
-        frameOut = cv.warpPerspective(frame, trans[i, :, :], (frame.shape[0], frame.shape[1], frame.shape[2]), flags=cv.INTER_NEAREST)
+        frameOut = cv.warpPerspective(frame, trans[i, :, :], (frame.shape[0], frame.shape[1]), flags=cv.INTER_NEAREST)
         frameOut = frameOut[BORDER_CUT:-BORDER_CUT, BORDER_CUT:-BORDER_CUT]
         image_name = os.path.basename(videoInList[i])
         image_name = os.path.splitext(image_name)[0]
