@@ -226,10 +226,10 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
         optical_flow = vector_field_path
 
     hsv = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-    hsv[:, :, 1] = 255
+    hsv[:, :, 2] = 255
     magnitude, angle = cv.cartToPolar((optical_flow[:, :, 0]), (optical_flow[:, :, 1]))
     hsv[:, :, 0] = angle * 180 / np.pi
-    hsv[:, :, 2] = cv.normalize(magnitude, None, 0, 255, cv.NORM_MINMAX)
+    hsv[:, :, 1] = cv.normalize(magnitude, None, 0, 255, cv.NORM_MINMAX)
     bgr = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
 
     plt.figure(figsize=(10, 5), dpi=200)
@@ -378,7 +378,6 @@ def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
 
     return mean_val, var_val
 
-<<<<<<< HEAD
 def flow_to_image(flow):
     """
     Convert flow into middlebury color code image
