@@ -184,13 +184,25 @@ def video_stabilization(image, flow, optical_flow_mode, strategy, area_search, a
         u_compensate = int(np.round(stats.trim_mean(flow[:, :, 0], 0.2, axis=None)))
         v_compensate = int(np.round(stats.trim_mean(flow[:, :, 1], 0.2, axis=None)))
 
-    elif strategy == 'background_block':
-        center_i, center_j = kwargs['center_position']
-        u_compensate = flow[center_i, center_j, 0]
-        v_compensate = flow[center_i, center_j, 1]
+    elif strategy == 'background_blocks':
+        center_positions = kwargs['center_positions']
+        neighborhood = kwargs['neighborhood']
+        u_compensate = 0
+        v_compensate = 0
+        for center_i, center_j in center_positions:
+            u_compensate_vals = flow[center_i-neighborhood:center_i+neighborhood,
+                                     center_j-neighborhood:center_j+neighborhood, 0]
+            v_compensate_vals = flow[center_i-neighborhood:center_i+neighborhood,
+                                     center_j-neighborhood:center_j+neighborhood, 1]
+            u_compensate += np.mean(u_compensate_vals)
+            v_compensate += np.mean(v_compensate_vals)
+        u_compensate /= len(center_positions)
+        v_compensate /= len(center_positions)
 
     else:
-        raise ValueError('Strategy {!r} not supported. Use one of: [max, trimmed_mean]'.format(strategy))
+        raise ValueError('Strategy {!r} not supported. Use one of: [max, trimmed_mean, background_blocks]'.format(
+            strategy
+        ))
 
     print('Displacement (before running avg.): (%s,%s)' % (u_compensate, v_compensate))
 

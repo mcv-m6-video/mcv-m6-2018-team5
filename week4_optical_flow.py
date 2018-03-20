@@ -340,10 +340,12 @@ def optical_flow(cf):
                     image_data = cv.imread(current_image, cv.IMREAD_COLOR)
 
                     # Params
-                    strategy = 'background_block'  # 'max', 'trimmed_mean', 'background_block'
-                    if strategy == 'background_block':
+                    strategy = 'background_blocks'  # 'max', 'trimmed_mean', 'background_block'
+                    if strategy == 'background_blocks':
+                        center_positions = [(15, 300), (220, 15)]
                         additional_params = {
-                            'center_position': (150, 30)
+                            'center_positions': center_positions,
+                            'neighborhood': 12,
                         }
                     else:
                         additional_params = dict()
@@ -361,9 +363,19 @@ def optical_flow(cf):
                         image_name = os.path.basename(current_image)
                         image_name = os.path.splitext(image_name)[0]
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
-                        # Save histogram of directions
-                        hist_path = os.path.join(histogram_folder, image_name + '_hist_2d.' + cf.result_image_type)
-                        visualization.plot_optical_flow_histogram(dense_flow, cf.search_area, hist_path)
+                        if cf.save_plots:
+                            if strategy == 'background_blocks':
+                                plt.imshow(image_data)
+                                for center_position in center_positions:
+                                    plt.scatter(center_position[1], center_position[0])
+                                plot_path = os.path.join(histogram_folder, image_name + '_block_markers.'
+                                                         + cf.result_image_type)
+                                plt.savefig(plot_path)
+                                plt.close()
+
+                            # Save histogram of directions
+                            hist_path = os.path.join(histogram_folder, image_name + '_hist_2d.' + cf.result_image_type)
+                            visualization.plot_optical_flow_histogram(dense_flow, cf.search_area, hist_path)
 
             logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
