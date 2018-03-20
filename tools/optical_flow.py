@@ -15,6 +15,7 @@ from matplotlib import pyplot as plt
 
 import stabFuntions
 
+
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
                                      verbose=False):
     logger = logging.getLogger(__name__)
@@ -148,7 +149,7 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
         'poly_sigma': 1.2,
         'flags': cv.OPTFLOW_USE_INITIAL_FLOW
     }
-    if '3.1' in cv.__version__:
+    if '3' in cv.__version__:
         dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, None, **farneback_params)
     elif '2.4' in cv.__version__:
         dense_flow = cv.calcOpticalFlowFarneback(ref_img_data, search_img_data, **farneback_params)
@@ -158,47 +159,94 @@ def opencv_optflow(ref_img_data, search_img_data, block_size):
     return dense_flow
 
 
-def video_stabilization(image, flow, direction, u, v):
+def video_stabilization(image, flow, optical_flow_mode, strategy, area_search, acc_direction, previous_direction,
+                        running_avg_weight, **kwargs):
+    # Unpack directions
+    previous_u, previous_v = previous_direction
+    acc_u, acc_v = acc_direction
 
-    mean_u = int(np.round(stats.trim_mean(flow[:, :, 0], 0.2, axis=None)))
-    mean_v = int(np.round(stats.trim_mean(flow[:, :, 1], 0.2, axis=None)))
+    # Find compensation optical_flow_mode
+    if strategy == 'max':
+        xedges = np.arange(-area_search, area_search + 2)
+        yedges = np.arange(-area_search, area_search + 2)
+        flow_hist2d, _, _ = np.histogram2d(
+            np.ravel(flow[:, :, 0]), np.ravel(flow[:, :, 1]), bins=(xedges, yedges)
+        )
+        flow_hist2d = flow_hist2d.T
 
-    print('Displacement: (%s,%s)' % (mean_u, mean_v))
+        max_pos = np.argwhere(flow_hist2d == flow_hist2d.max())
+        y_max_pos = max_pos[0, 0]
+        x_max_pos = max_pos[0, 1]
+        u_compensate = xedges[x_max_pos]
+        v_compensate = yedges[y_max_pos]
+    elif strategy == 'trimmed_mean':
+        # Use the mean optical_flow_mode to compensate
+        u_compensate = int(np.round(stats.trim_mean(flow[:, :, 0], 0.2, axis=None)))
+        v_compensate = int(np.round(stats.trim_mean(flow[:, :, 1], 0.2, axis=None)))
 
-    if direction == 'forward':
-        mean_u = u - mean_u
-        mean_v = v - mean_v
+    elif strategy == 'background_blocks':
+        center_positions = kwargs['center_positions']
+        neighborhood = kwargs['neighborhood']
+        u_compensate = 0
+        v_compensate = 0
+        for center_i, center_j in center_positions:
+            u_compensate_vals = flow[center_i-neighborhood:center_i+neighborhood,
+                                     center_j-neighborhood:center_j+neighborhood, 0]
+            v_compensate_vals = flow[center_i-neighborhood:center_i+neighborhood,
+                                     center_j-neighborhood:center_j+neighborhood, 1]
+            u_compensate += np.mean(u_compensate_vals)
+            v_compensate += np.mean(v_compensate_vals)
+        u_compensate /= len(center_positions)
+        v_compensate /= len(center_positions)
+
     else:
-        mean_u = u + mean_u
-        mean_v = v + mean_v
+        raise ValueError('Strategy {!r} not supported. Use one of: [max, trimmed_mean, background_blocks]'.format(
+            strategy
+        ))
 
-    print('Accumulated displacement: (%s,%s)' % (mean_u, mean_v))
+    print('Displacement (before running avg.): (%s,%s)' % (u_compensate, v_compensate))
+
+    # Compute a running average
+    u_compensate = running_avg_weight * previous_u + (1 - running_avg_weight) * u_compensate
+    v_compensate = running_avg_weight * previous_v + (1 - running_avg_weight) * v_compensate
+
+    print('Displacement (after running avg.): (%s,%s)' % (u_compensate, v_compensate))
+
+    if optical_flow_mode == 'forward':
+        acc_u = int(acc_u - u_compensate)
+        acc_v = int(acc_v - v_compensate)
+    else:
+        acc_u = int(acc_u + u_compensate)
+        acc_v = int(acc_v + v_compensate)
+
+    print('Accumulated displacement: (%s,%s)' % (acc_u, acc_v))
 
     rect_image = np.zeros(image.shape)
-    if mean_u == 0 and mean_v == 0:
+    if acc_u == 0 and acc_v == 0:
         rect_image = image
-    elif mean_u == 0:
-        if mean_v > 0:
-            rect_image[:, mean_v:, :] = image[:, :-mean_v, :]
+    elif acc_u == 0:
+        if acc_v > 0:
+            rect_image[:, acc_v:, :] = image[:, :-acc_v, :]
         else:
-            rect_image[:, :mean_v, :] = image[:, -mean_v:, :]
-    elif mean_v == 0:
-        if mean_u > 0:
-            rect_image[mean_u:, :, :] = image[:-mean_u, :, :]
+            rect_image[:, :acc_v, :] = image[:, -acc_v:, :]
+    elif acc_v == 0:
+        if acc_u > 0:
+            rect_image[acc_u:, :, :] = image[:-acc_u, :, :]
         else:
-            rect_image[:mean_u, :, :] = image[-mean_u:, :, :]
-    elif mean_u > 0:
-        if mean_v > 0:
-            rect_image[mean_u:, mean_v:, :] = image[:-mean_u, :-mean_v, :]
+            rect_image[:acc_u, :, :] = image[-acc_u:, :, :]
+    elif acc_u > 0:
+        if acc_v > 0:
+            rect_image[acc_u:, acc_v:, :] = image[:-acc_u, :-acc_v, :]
         else:
-            rect_image[mean_u:, :mean_v, :] = image[:-mean_u, -mean_v:, :]
+            rect_image[acc_u:, :acc_v, :] = image[:-acc_u, -acc_v:, :]
     else:
-        if mean_v > 0:
-            rect_image[:mean_u, mean_v:, :] = image[-mean_u:, :-mean_v, :]
+        if acc_v > 0:
+            rect_image[:acc_u, acc_v:, :] = image[-acc_u:, :-acc_v, :]
         else:
-            rect_image[:mean_u, :mean_v, :] = image[-mean_u:, -mean_v:, :]
+            rect_image[:acc_u, :acc_v, :] = image[-acc_u:, -acc_v:, :]
 
-    return rect_image, mean_u, mean_v
+    return rect_image, (acc_u, acc_v), (u_compensate, v_compensate)
+
 
 def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
     # prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
@@ -270,6 +318,7 @@ def video_stabilization_sota2(videoInList, videoOutPath):
 
     # video reconstruction
     stabFuntions.reconVideo(videoInList, videoOutPath, trans, BORDER_CUT)
+
 
 def read_flow(name):
     flow = None

@@ -3,29 +3,29 @@
 from __future__ import division
 
 import argparse
+import itertools
 import logging
 import os
+import pickle
 import sys
 
-import pickle
-
 import cv2 as cv
-import itertools
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 from config.load_configutation import Configuration
 from metrics import optical_flow as of_metrics
 from tools import optical_flow as of
 from tools import visualization
-from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, get_image_list_changedetection_dataset
+from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, \
+    get_image_list_changedetection_dataset
 from tools.log import log_context
 from tools.mkdirs import mkdirs
 
 EPSILON = 1e-8
 
 
+# noinspection PyUnboundLocalVariable
 def optical_flow(cf):
 
     with log_context(cf.log_file):
@@ -319,10 +319,18 @@ def optical_flow(cf):
                         image_name = os.path.splitext(image_name)[0]
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)'''
 
-
             else:
-                u = 0
-                v = 0
+                acc_u = 0
+                acc_v = 0
+                # Running average of directions
+                previous_u = 0
+                previous_v = 0
+
+                if cf.save_results:
+                    # Create folder to store histograms
+                    histogram_folder = os.path.join(cf.results_path, 'histograms')
+                    mkdirs(histogram_folder)
+
                 for idx in range(1, len(image_list)):
                     current_image = image_list[idx]
                     previous_image = image_list[idx - 1]
@@ -337,30 +345,62 @@ def optical_flow(cf):
                     ref_img_data = cv.imread(reference_image, cv.IMREAD_GRAYSCALE)
                     search_img_data = cv.imread(search_image, cv.IMREAD_GRAYSCALE)
 
-                    save_path = os.path.join(cf.output_folder, '{}_{}_{}_{}.pkl'.format(idx, (cf.block_size), (cf.search_area), cf.compensation))
-                    try:
-                        with open(save_path, 'rb') as file_flow:
-                            #opt_flow = pickle.load(file_flow)
-                            dense_flow = pickle.load(file_flow)
-                    except:
-                        with open(save_path, 'wb') as fd:
-                            _, opt_flow, dense_flow, _ = of.exhaustive_search_block_matching(
-                                ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type,
-                                verbose=False)
-                            #pickle.dump(opt_flow, fd)
-                            pickle.dump(dense_flow, fd)
+                    save_path = os.path.join(cf.output_folder, '{}_{}_{}_{}.pkl'.format(
+                        idx, cf.block_size, cf.search_area, cf.compensation
+                    ))
+                    if cf.sota_opt_flow and cf.sota_opt_flow_option == 'opencv':
+                        dense_flow = of.opencv_optflow(
+                            ref_img_data, search_img_data, cf.block_size)
+                    else:
+                        try:
+                            with open(save_path, 'rb') as file_flow:
+                                dense_flow = pickle.load(file_flow)
+                        except Exception:
+                            with open(save_path, 'wb') as fd:
+                                _, opt_flow, dense_flow, _ = of.exhaustive_search_block_matching(
+                                    ref_img_data, search_img_data, cf.block_size, cf.search_area, cf.dfd_norm_type,
+                                    verbose=False)
+                                pickle.dump(dense_flow, fd)
 
                     image_data = cv.imread(current_image, cv.IMREAD_COLOR)
 
-                    '''if idx % 10 == 0:
-                        v = 0
-                        u = 0'''
-                    rect_image, u, v = of.video_stabilization(image_data, dense_flow, cf.compensation, u, v)
+                    # Params
+                    strategy = 'background_blocks'  # 'max', 'trimmed_mean', 'background_block'
+                    if strategy == 'background_blocks':
+                        center_positions = [(15, 300), (220, 15)]
+                        additional_params = {
+                            'center_positions': center_positions,
+                            'neighborhood': 12,
+                        }
+                    else:
+                        additional_params = dict()
+                    running_avg = 0
+
+                    # Run
+                    rect_image, acc_direction, previous_direction = of.video_stabilization(
+                        image_data, dense_flow, cf.compensation, strategy, cf.search_area,
+                        (acc_u, acc_v), (previous_u, previous_v), running_avg, **additional_params
+                    )
+                    acc_u, acc_v = acc_direction
+                    previous_u, previous_v = previous_direction
 
                     if cf.save_results:
                         image_name = os.path.basename(current_image)
                         image_name = os.path.splitext(image_name)[0]
                         cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), rect_image)
+                        if cf.save_plots:
+                            if strategy == 'background_blocks':
+                                plt.imshow(image_data)
+                                for center_position in center_positions:
+                                    plt.scatter(center_position[1], center_position[0])
+                                plot_path = os.path.join(histogram_folder, image_name + '_block_markers.'
+                                                         + cf.result_image_type)
+                                plt.savefig(plot_path)
+                                plt.close()
+
+                            # Save histogram of directions
+                            hist_path = os.path.join(histogram_folder, image_name + '_hist_2d.' + cf.result_image_type)
+                            visualization.plot_optical_flow_histogram(dense_flow, cf.search_area, hist_path)
 
             logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
