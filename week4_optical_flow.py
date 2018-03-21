@@ -447,10 +447,6 @@ def optical_flow(cf):
                 mkdirs(histogram_folder)
 
             for idx in range(1, len(image_list)):
-                # Reset accumulator every 5 frames
-                if idx % 5 == 0:
-                    acc_u = 0
-                    acc_v = 0
 
                 current_image = image_list[idx]
                 previous_image = image_list[idx - 1]
