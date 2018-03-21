@@ -478,9 +478,10 @@ def optical_flow(cf):
                 image_data = cv.imread(current_image, cv.IMREAD_COLOR)
 
                 # Params
-                strategy = 'max'  # 'max', 'trimmed_mean', 'background_block'
+                strategy = 'background_blocks'  # 'max', 'trimmed_mean', 'background_block'
                 if strategy == 'background_blocks':
-                    center_positions = [(30, 290), (210, 30)]
+                    center_positions = [(210, 30)]
+                    # center_positions = [(30, 290), (210, 30)]
                     neighborhood = 20
                     additional_params = {
                         'center_positions': center_positions,
@@ -532,6 +533,13 @@ def optical_flow(cf):
                         # Save histogram of directions
                         hist_path = os.path.join(histogram_folder, image_name + '_hist_2d.' + cf.result_image_type)
                         visualization.plot_optical_flow_histogram(dense_flow, cf.search_area, hist_path)
+
+                        # Save optical flow plot
+                        opt_flow_path = os.path.join(histogram_folder, image_name + '_flow.' + cf.result_image_type)
+                        visualization.plot_optical_flow(
+                            image_data, dense_flow, 16, 'ski-video-{}'.format(image_name),
+                            opt_flow_path, is_ndarray=True
+                        )
 
             logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

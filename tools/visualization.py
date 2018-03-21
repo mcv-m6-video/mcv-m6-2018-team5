@@ -265,7 +265,6 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
     plt.quiver(X, Y, optical_flow_ds[:, :, 0], optical_flow_ds[:, :, 1], color='yellow')
     plt.axis('off')
     plt.title(sequence_name)
-    plt.show(block=False)
     plt.savefig(output_path)
     plt.close()
 
