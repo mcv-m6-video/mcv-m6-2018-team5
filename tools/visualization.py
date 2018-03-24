@@ -378,7 +378,6 @@ def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
 
     return mean_val, var_val
 
-<<<<<<< HEAD
 def flow_to_image(flow):
     """
     Convert flow into middlebury color code image
