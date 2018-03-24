@@ -11,9 +11,8 @@ import sys
 import tqdm
 
 from scipy import stats
-from matplotlib import pyplot as plt
 
-import stabFuntions
+from tools.others import stabFuntions
 
 
 def exhaustive_search_block_matching(reference_img, search_img, block_size=16, max_search_range=16, norm='l1',
@@ -249,8 +248,6 @@ def video_stabilization(image, flow, optical_flow_mode, strategy, area_search, a
 
 
 def video_stabilization_sota(prev_gray, cur_gray, prev_to_cur_transform, prev_corner):
-    # prev_corner = cv.goodFeaturesToTrack(prev_gray, maxCorners=200, qualityLevel=0.01, minDistance=30.0, blockSize=3)
-    # calc flow of movement (resource: http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html)
     cur_corner, status, err = cv.calcOpticalFlowPyrLK(prev_gray, cur_gray, prev_corner, None)
     # storage for keypoints with status 1
     prev_corner2 = []
@@ -320,7 +317,7 @@ def video_stabilization_sota2(videoInList, videoOutPath):
     stabFuntions.reconVideo(videoInList, videoOutPath, trans, BORDER_CUT)
 
 
-def read_flow(name):
+def read_flo_flow(name):
     flow = None
     with open(name, 'rb') as f:
         header = f.read(4)
@@ -333,3 +330,15 @@ def read_flow(name):
         flow = np.fromfile(f, np.float32, width * height * 2).reshape((height, width, 2))
 
     return flow.astype(np.float32)
+
+
+def read_kitti_flow(img):
+    # BGR -> RGB
+    img = img[:, :, ::-1]
+
+    optical_flow = img[:, :, :2].astype(float)
+    optical_flow -= 2 ** 15
+    optical_flow /= 64.0
+    valid_pixels = img[:, :, 2] == 1.0
+
+    return optical_flow, valid_pixels
