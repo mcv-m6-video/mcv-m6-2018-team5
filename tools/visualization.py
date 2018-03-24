@@ -14,8 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from skimage.measure import block_reduce
 from sklearn.metrics import auc
 
-from metrics.optical_flow import read_flow_field
-
+from tools.optical_flow import read_kitti_flow
 
 UNKNOWN_FLOW_THRESH = 1e7
 SMALLFLOW = 0.0
@@ -220,7 +219,7 @@ def plot_optical_flow_hsv(img_path, vector_field_path, sequence_name, output_pat
         img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
         # Get the optical flow image
-        optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+        optical_flow, _ = read_kitti_flow(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
     else:
         img = img_path
         optical_flow = vector_field_path
@@ -248,7 +247,7 @@ def plot_optical_flow(img_path, vector_field_path, downsample_factor, sequence_n
         img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
 
         # Get the optical flow image
-        optical_flow, _ = read_flow_field(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
+        optical_flow, _ = read_kitti_flow(cv.imread(vector_field_path, cv.IMREAD_UNCHANGED))
     else:
         img = img_path
         optical_flow = vector_field_path

@@ -14,14 +14,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.patches as patches
 
-from config.load_configutation import Configuration
-from metrics import optical_flow as of_metrics
+from utils.load_configutation import Configuration
+from tools.metrics import optical_flow as of_metrics
 from tools import optical_flow as of
 from tools import visualization
 from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, \
     get_image_list_changedetection_dataset, get_image_list_ski_video_dataset
-from tools.log import log_context
-from tools.mkdirs import mkdirs
+from utils.log import log_context
+from utils.mkdirs import mkdirs
 
 EPSILON = 1e-8
 
@@ -156,7 +156,7 @@ def optical_flow(cf):
                             logger.info('Evaluating FlowNet2-{}'.format(fnet_variant))
                             flow_path = os.path.join(pre_compute_of_folder,
                                                      'flownet2_{}_{}_10.flo'.format(fnet_variant, cf.image_sequence))
-                            optical_flow_data = of.read_flow(flow_path)
+                            optical_flow_data = of.read_flo_flow(flow_path)
 
                             msen, pepn, squared_errors, pixel_errors, valid_pixels = of_metrics.flow_errors_MSEN_PEPN(
                                 optical_flow_data, optical_flow_gt
@@ -212,8 +212,6 @@ def optical_flow(cf):
                                 plt.show(block=False)
                                 plt.savefig(output_path)
                                 plt.close()
-
-
                 else:
                     raise ValueError('cv.sota_opt_flow_option {!r} not supported'.format(cf.sota_opt_flow_option))
 
@@ -248,8 +246,6 @@ def optical_flow(cf):
                     # Image
                     visualization.plot_msen_image(image_list[1], squared_errors, pixel_errors, valid_pixels,
                                                   cf.image_sequence, cf.output_folder)
-
-
 
                 if cf.plot_optical_flow:
                     # Quiver plot
@@ -546,14 +542,9 @@ def optical_flow(cf):
 
 # Main function
 def main():
-    # Task choices
-    tasks = {
-        'optical_flow': optical_flow
-    }
 
     # Get parameters from arguments
-    parser = argparse.ArgumentParser(description='Video surveillance application, Team 5')
-    parser.add_argument('task', choices=tasks.keys(), help='Task to run')
+    parser = argparse.ArgumentParser(description='W4 - Optical flow estimation and evaluation techniques [Team 5]')
     parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')
     parser.add_argument('-t', '--test-name', type=str, required=True, help='Name of the test')
 
@@ -571,8 +562,7 @@ def main():
     cf = configuration.load()
 
     # Run task
-    task_fn = tasks[arguments.task]
-    task_fn(cf)
+    optical_flow(cf)
 
 
 # Entry point of the script

@@ -5,8 +5,7 @@ import pickle
 import numpy as np
 from matplotlib import pyplot as plt
 
-from config.load_configutation import Configuration
-from tools import visualization
+from utils.load_configutation import Configuration
 
 if __name__ == '__main__':
 
@@ -36,10 +35,10 @@ if __name__ == '__main__':
         pepn.append(result['pepn'])
         execution_time.append(result['execution_time'])
 
-    size_4 = np.ma.masked_not_equal(block_size, 4)*16
-    size_8 = np.ma.masked_not_equal(block_size, 8)*8
-    size_16 = np.ma.masked_not_equal(block_size, 16)*4
-    size_32 = np.ma.masked_not_equal(block_size, 32)*2
+    size_4 = np.ma.masked_not_equal(block_size, 4) * 16
+    size_8 = np.ma.masked_not_equal(block_size, 8) * 8
+    size_16 = np.ma.masked_not_equal(block_size, 16) * 4
+    size_32 = np.ma.masked_not_equal(block_size, 32) * 2
     size_64 = np.ma.masked_not_equal(block_size, 64)
 
     plt.figure(figsize=(50, 10))
@@ -63,6 +62,5 @@ if __name__ == '__main__':
     plt.show(block=False)
     plt.savefig(os.path.join(args.results, "week4_optical_optimization.png"))
     plt.close()
-
 
     print('End')

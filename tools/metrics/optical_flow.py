@@ -3,6 +3,8 @@ from __future__ import division
 import cv2 as cv
 import numpy as np
 
+from tools.optical_flow import read_kitti_flow
+
 
 def evaluate(testList, gtList):
     msen = []
@@ -32,7 +34,7 @@ def evaluate(testList, gtList):
 def flow_errors_MSEN_PEPN(optical_flow, gt_img):
 
     # optical_flow, _ = read_flow_field(img)
-    optical_flow_gt, valid_pixels_gt = read_flow_field(gt_img)
+    optical_flow_gt, valid_pixels_gt = read_kitti_flow(gt_img)
     assert optical_flow.shape == optical_flow_gt.shape
 
     num_valid_pixels_gt = np.count_nonzero(valid_pixels_gt)
@@ -48,15 +50,3 @@ def flow_errors_MSEN_PEPN(optical_flow, gt_img):
     pepn = (np.count_nonzero(error_pixels) / num_valid_pixels_gt) * 100
 
     return msen, pepn, motion_vector_errors, error_pixels, valid_pixels_gt
-
-
-def read_flow_field(img):
-    # BGR -> RGB
-    img = img[:, :, ::-1]
-
-    optical_flow = img[:, :, :2].astype(float)
-    optical_flow -= 2 ** 15
-    optical_flow /= 64.0
-    valid_pixels = img[:, :, 2] == 1.0
-
-    return optical_flow, valid_pixels

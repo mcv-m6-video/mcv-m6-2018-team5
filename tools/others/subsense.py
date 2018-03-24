@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import os
-import numpy as np
 import ctypes as c
+import os
+
+import numpy as np
 from numpy.ctypeslib import ndpointer
 
 LIB_PATH = os.path.dirname(__file__)

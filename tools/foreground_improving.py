@@ -8,7 +8,7 @@ import numpy as np
 from skimage import morphology
 from sklearn import metrics
 
-from metrics import segmentation_metrics
+from metrics import segmentation
 from tools import background_modeling
 
 EPSILON = 1e-8
@@ -114,7 +114,7 @@ def area_filtering_auc_vs_pixels(cf, background_img_list, foreground_img_list, f
                 # Area Filtering
                 foreground = remove_small_regions(foreground, pixels)
                 foreground = np.array(foreground, dtype='uint8')
-                tp_temp, fp_temp, tn_temp, fn_temp = segmentation_metrics.evaluate_single_image(foreground, gt_img)
+                tp_temp, fp_temp, tn_temp, fn_temp = segmentation.evaluate_single_image(foreground, gt_img)
 
                 tp += tp_temp
                 fp += fp_temp

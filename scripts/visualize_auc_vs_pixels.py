@@ -4,7 +4,7 @@ import pickle
 
 import numpy as np
 
-from config.load_configutation import Configuration
+from utils.load_configutation import Configuration
 from tools import visualization
 
 if __name__ == '__main__':

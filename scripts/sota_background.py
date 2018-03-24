@@ -4,19 +4,16 @@ import argparse
 import logging
 import os
 import sys
-import itertools
 
-from sklearn.metrics import auc
 import cv2 as cv
 import numpy as np
-import matplotlib.pyplot as plt
 
-from config.load_configutation import Configuration
+from utils.load_configutation import Configuration
+from tools.metrics.segmentation import evaluate_single_image
+from tools.others import subsense
 from tools.image_parser import get_image_list_changedetection_dataset
-from tools.log import setup_logging
-from metrics.segmentation_metrics import evaluate_single_image
+from utils.log import setup_logging
 from tools.visualization import plot_roc_curve
-from tools import Subsense
 
 EPSILON = 1e-8
 
@@ -244,7 +241,7 @@ def lbsp_background_estimator(imageList, gtList, cf):
     logger = logging.getLogger(__name__)
     logger.info('Running local svd binary pattern background estimation')
 
-    lbsp = Subsense.LBSP()
+    lbsp = subsense.LBSP()
 
     for image, gt in imageList:
         foreground = lbsp.apply(image)

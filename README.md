@@ -11,7 +11,12 @@ The goal of this project is to learn the basic concepts and techniques related t
 | [Santi Puch](https://www.linkedin.com/in/santipuch/) | santiago.puch.giner@gmail.com | [santipuch590](https://github.com/santipuch590) |
 | [Xènia Salinas](https://www.linkedin.com/in/x%C3%A8nia-salinas-ventall%C3%B3-509081156/) | salinasxenia@gmail.com | [XeniaSalinas](https://github.com/XeniaSalinas) |
 
-## Milestones 
+
+## Description
+
+**TODO**
+
+## Project milestones 
 
 ### Week 1 - Introduction
 1. Segmentation metrics. Understand precision & recall.
@@ -76,158 +81,15 @@ The goal of this project is to learn the basic concepts and techniques related t
 1. Optical Flow
 - [x] Optical Flow with Block Matching
 - [x] Block Matching vs Other Techniques:
-  - [x] Try OpenCV Farneback implementation
-  - [x] Try FlowNet 2.0 implementation
+- [x] Try OpenCV Farneback implementation
+- [x] Try FlowNet 2.0 implementation
 
 2. Video Stabilization
 - [x] Video Stabilization wih Block Matching
 - [x] Block Matching Stabilization vs Other Techniques
 - [x] Stabilize your own video
 
-## Development environment
+## Running the code
 
-This project has been developed and tested with **Python 2.7**.
-
-### Using `conda`
-
-The preferred method to prepare the development environment is using `conda`, as the whole environment is easily 
-reproducible for the same platform:
-
-If you are running in a **Linux 64** platform, run the following command:
-```
-$ conda create --name va_project_t5 --file spec-file-linux-64.txt
-```
-Alternatively, if you are runnign in a **Windows 64** platform, you should run:
-```
-$ conda create --name va_project_t5 --file spec-file-win-64.txt
-```
-
-Once the creation process finishes you can `activate` the environment via `$ source activate va_project_t5`.
-
-### Using `pip`
-
-If you are using a `virtualenv` or the system Python, you can use `pip` to install the required libraries to run this 
-code:
-```
-$ pip install -r requirements.txt
-```
-
-Unlike with `conda`, you will have to install **OpenCV** either by downloading the pre-built binaries for your platform or compiling it from 
-source.
-
-
-## How to run the code
-
-### General information
-
-The Command Line Interface (CLI) usage is the following:
-
-```
-$ python video_surveillance.py 
-usage: video_surveillance.py [-h] -c CONFIG_PATH -t TEST_NAME
-                             {evaluate_metrics,background_estimation}
-
-```
-
-It provides the following help information:
-```
-usage: video_surveillance.py [-h] -c CONFIG_PATH -t TEST_NAME
-                             {evaluate_metrics,background_estimation}
-
-Video surveillance application, Team 5
-
-positional arguments:
-  {evaluate_metrics,background_estimation}
-                        Task to run
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -c CONFIG_PATH, --config-path CONFIG_PATH
-                        Configuration file path
-  -t TEST_NAME, --test-name TEST_NAME
-                        Name of the test
-```
-
-### Week 1
-
-For tasks 1, 2, and 4:
-
-- `python video_surveillance.py evaluate_metrics --config-path config/highway_evaluate.py --test-name test_A`
-
-- `python video_surveillance.py evaluate_metrics --config-path config/highway_evaluate.py --test-name test_B`
-
-For tasks 3 and 5:
-
-- `python video_surveillance.py evaluate_metrics --config-path config/kitti_evaluate.py --test-name test_flow`
-
-In order to run the code, the datasets must be on the path *datasets/*.
-
-The datasets needed to run the code and their folder organization are the following:
-
-| ChangeDetection Dataset | Description | 
-| :---: | :---: | 
-| *highway/input/* |  Highway sequence (baseline) input images | 
-| *highway/groundtruth/*  |  Highway sequence (baseline) ground truth | 
-| *highway/results_testAB_changedetection/* |  Highway sequence (baseline) results using parameters A and B |
-
-| Kitti Dataset | Description | 
-| :---: | :---: | 
-| *kitti//image_0/*|  Kitti dataset input images | 
-| *kitti/flow_noc/*|  Kitti dataset ground truth | 
-| *kitti/results/*|  Kitti dataset results | 
-
-### Week 2
-
-For tasks 1 and 2, for each of the sequences:
-
-- `python video_surveillance.py background_estimation --config-path config/highway_background.py --test-name highway`
-- `python video_surveillance.py background_estimation --config-path config/traffic_background.py --test-name traffic`
-- `python video_surveillance.py background_estimation --config-path config/fall_background.py --test-name fall`
-
-The datasets needed to run the code and their folder organization are the following:
-
-| ChangeDetection Dataset | Description | 
-| :---: | :---: | 
-| *highway/input/* |  Highway sequence (baseline) input images | 
-| *highway/groundtruth/*  |  Highway sequence (baseline) ground truth | 
-| *traffic/input/* |  Traffic sequence (camera jitter) input images | 
-| *traffic/groundtruth/*  |  Traffic sequence (camera jitter) ground truth | 
-| *fall/input/* |  Fall sequence (adaptive background) input images | 
-| *fall/groundtruth/*  |  Fall sequence (adaptive background) ground truth | 
-
-
-### Week 3
-
-For all the tasks, for each of the sequences:
-
-- `python video_surveillance.py foreground_estimation --config-path config/highway_background.py --test-name highway`
-- `python video_surveillance.py foreground_estimation --config-path config/traffic_background.py --test-name traffic`
-- `python video_surveillance.py foreground_estimation --config-path config/fall_background.py --test-name fall`
-
-The datasets needed to run the code and their folder organization are the following:
-
-| ChangeDetection Dataset | Description |
-| :---: | :---: |
-| *highway/input/* |  Highway sequence (baseline) input images |
-| *highway/groundtruth/*  |  Highway sequence (baseline) ground truth |
-| *traffic/input/* |  Traffic sequence (camera jitter) input images |
-| *traffic/groundtruth/*  |  Traffic sequence (camera jitter) ground truth |
-| *fall/input/* |  Fall sequence (adaptive background) input images |
-| *fall/groundtruth/*  |  Fall sequence (adaptive background) ground truth |
-
-
-### Week 4
-
-For all the tasks, for each of the sequences:
-
-- `python week4_optical_flow.py optical_flow --config-path config/kitti_evaluate.py --test-name kitti`
-
-The datasets needed to run the code and their folder organization are the following:
-
-| Kitti Dataset | Description |
-| :---: | :---: |
-| *kitti//image_0/*|  Kitti dataset input images |
-| *kitti/flow_noc/*|  Kitti dataset ground truth |
-| *kitti/results/*|  Kitti dataset results |
-
-**TODO**: UPDATE & COMPLETE THIS SECTION
+Check the README file in the `run` folder for further details on how to prepare the running environment and how to 
+run the code.
