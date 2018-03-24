@@ -2,7 +2,7 @@
 dataset_name                 = 'traffic'                        # Dataset name
 dataset_path                 = 'datasets/traffic/input'         # Dataset path
 gt_path                      = 'datasets/traffic/groundtruth'   # Ground truth path
-results_path                 = 'datasets/traffic/results/stabilization'
+results_path                 = 'datasets/traffic/results/stabilization/GT_maxhist'
 
 # Input Images
 nr_images                    = 100
@@ -12,7 +12,7 @@ gt_image_type                = 'png'        # Ground truth image type
 result_image_type            = 'png'
 
 # Block Matching Optical Flow
-compensation                = 'forward'  # 'forward' instead
+compensation                = 'forward'  # 'forward' 'backward'
 block_size                  = 4
 search_area                 = 4          # Search area must be bigger than block size
 dfd_norm_type               = 'l1'        # One of: 'l1', 'l2'

@@ -74,12 +74,15 @@ The goal of this project is to learn the basic concepts and techniques related t
 
 ### Week 4 - Optical Flow and Video Stabilization
 1. Optical Flow
-- [ ] Optical Flow with Block Matching
-- [ ] Block Matching vs Other Techniques
+- [x] Optical Flow with Block Matching
+- [x] Block Matching vs Other Techniques:
+  - [x] Try OpenCV Farneback implementation
+  - [x] Try FlowNet 2.0 implementation
+
 2. Video Stabilization
-- [ ] Video Stabilization wih Block Matching
-- [ ] Block Matching Stabilization vs Other Techniques
-- [ ] Stabilize your own video
+- [x] Video Stabilization wih Block Matching
+- [x] Block Matching Stabilization vs Other Techniques
+- [x] Stabilize your own video
 
 ## Development environment
 
