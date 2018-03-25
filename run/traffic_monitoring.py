@@ -3,25 +3,10 @@
 from __future__ import division
 
 import argparse
-import itertools
 import logging
-import os
-import pickle
-import sys
-
-import cv2 as cv
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.patches as patches
 
 from utils.load_configutation import Configuration
-from tools.metrics import optical_flow as of_metrics
-from tools import optical_flow as of
-from tools import visualization
-from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, \
-    get_image_list_changedetection_dataset, get_image_list_ski_video_dataset
 from utils.log import log_context
-from utils.mkdirs import mkdirs
 
 EPSILON = 1e-8
 
@@ -32,7 +17,7 @@ def traffic_monitoring(cf):
         logger = logging.getLogger(__name__)
         logger.info(' ---> Init test: ' + cf.test_name + ' <---')
 
-
+        # TODO: add traffic monitoring algorithm
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

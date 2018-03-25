@@ -3,23 +3,13 @@
 from __future__ import division
 
 import argparse
-import itertools
 import logging
-import os
-import pickle
-import sys
-
 import cv2 as cv
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.patches as patches
+import os
 
+from tools import background_modeling, foreground_improving
+from tools.image_parser import get_image_list_changedetection_dataset
 from utils.load_configutation import Configuration
-from tools.metrics import optical_flow as of_metrics
-from tools import optical_flow as of
-from tools import visualization
-from tools.image_parser import get_sequence_list_kitti_dataset, get_gt_list_kitti_dataset, \
-    get_image_list_changedetection_dataset, get_image_list_ski_video_dataset
 from utils.log import log_context
 from utils.mkdirs import mkdirs
 
@@ -32,7 +22,39 @@ def vehicle_tracker(cf):
         logger = logging.getLogger(__name__)
         logger.info(' ---> Init test: ' + cf.test_name + ' <---')
 
+        if cf.save_results:
+            logger.info('Saving results in {}'.format(cf.results_path))
+            mkdirs(cf.results_path)
 
+        image_list = get_image_list_changedetection_dataset(
+            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+        )
+
+        background_img_list = image_list[:len(image_list) // 2]
+        foreground_img_list = image_list[(len(image_list) // 2):]
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+
+        for image_path in foreground_img_list:
+            foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
+                image_path, mean, variance, cf.alpha, cf.rho, cf.color_space)
+
+            foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
+            foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
+            foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
+            foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+
+            # TODO: add kalman filter
+            # TODO: add speed estimation
+
+            if cf.save_results:
+                image_name = os.path.basename(image_path)
+                image_name = os.path.splitext(image_name)[0]
+
+                image = cv.imread(image_path)
+
+                # TODO: add bounding box drawing with car id and speed
+
+                cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), image)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
