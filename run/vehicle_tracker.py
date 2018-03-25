@@ -41,7 +41,7 @@ def vehicle_tracker(cf):
 def main():
 
     # Get parameters from arguments
-    parser = argparse.ArgumentParser(description='W5 - Vehicle tracker [Team 5]')
+    parser = argparse.ArgumentParser(description='W5 - Vehicle tracker and speed estimator [Team 5]')
     parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')
     parser.add_argument('-t', '--test-name', type=str, required=True, help='Name of the test')
 
