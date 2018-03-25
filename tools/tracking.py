@@ -2,6 +2,7 @@
 Code based on Srini Ananthakrishnan's implementation
 https://github.com/srianant/kalman_filter_multi_object_tracking/blob/master/tracker.py
 """
+
 from __future__ import print_function
 
 import numpy as np
@@ -11,45 +12,36 @@ from kalman_filter import KalmanFilter
 
 
 class Track(object):
-    """Track class for every object to be tracked
-    """
+    """ Track class for every object to be tracked """
 
-    def __init__(self, prediction, trackIdCount):
-        """Initialize variables used by Track class
-        Args:
-            prediction: predicted centroids of object to be tracked
-            trackIdCount: identification of each track object
-        Return:
-            None
-        """
-        self.track_id = trackIdCount  # identification of each track object
+    def __init__(self, prediction, track_id):
+        self.track_id = track_id  # identification of each track object
         self.KF = KalmanFilter()  # KF instance to track this object
         self.prediction = np.asarray(prediction)  # predicted centroids (x,y)
         self.skipped_frames = 0  # number of frames skipped undetected
         self.trace = []  # trace path
 
 
+# noinspection PyPep8Naming
 class Tracker(object):
-    """Tracker class that updates track vectors of object tracked
-    """
+    """ Tracker class that updates track vectors of object tracked """
 
-    def __init__(self, dist_thresh, max_frames_to_skip, max_trace_length, trackIdCount):
+    def __init__(self, dist_thresh, max_frames_to_skip, max_trace_length, track_id_count):
         """Initialize variable used by Tracker class
-        Args:
-            dist_thresh: distance threshold. When exceeds the threshold,
-                         track will be deleted and new track is created
-            max_frames_to_skip: maximum allowed frames to be skipped for
-                                the track object undetected
-            max_trace_lenght: trace path history length
-            trackIdCount: identification of each track object
+            max_trace_lenght:
+            track_id_count:
         Return:
             None
         """
+        # Distance threshold. When exceeds the threshold, track will be deleted and new track is created
         self.dist_thresh = dist_thresh
+        # Maximum allowed frames to be skipped for the track object undetected
         self.max_frames_to_skip = max_frames_to_skip
+        # Trace path history length
         self.max_trace_length = max_trace_length
         self.tracks = []
-        self.trackIdCount = trackIdCount
+        # identification of each track object
+        self.track_id_count = track_id_count
 
     def update(self, detections):
         """Update tracks vector using following steps:
@@ -64,17 +56,13 @@ class Tracker(object):
             - Now look for un_assigned detects
             - Start new tracks
             - Update KalmanFilter state, lastResults and tracks trace
-        Args:
-            detections: detected centroids of object to be tracked
-        Return:
-            None
         """
 
         # Create tracks if no tracks vector found
         if len(self.tracks) == 0:
             for i in range(len(detections)):
-                track = Track(detections[i], self.trackIdCount)
-                self.trackIdCount += 1
+                track = Track(detections[i], self.track_id_count)
+                self.track_id_count += 1
                 self.tracks.append(track)
 
         # Calculate cost using sum of square distance between
@@ -86,16 +74,14 @@ class Tracker(object):
             for j in range(len(detections)):
                 try:
                     diff = self.tracks[i].prediction - detections[j]
-                    distance = np.sqrt(diff[0][0]*diff[0][0] +
-                                       diff[1][0]*diff[1][0])
+                    distance = np.sqrt(diff[0][0]*diff[0][0] + diff[1][0]*diff[1][0])
                     cost[i][j] = distance
                 except Exception:
                     pass
 
         # Let's average the squared ERROR
-        cost = (0.5) * cost
-        # Using Hungarian Algorithm assign the correct detected measurements
-        # to predicted tracks
+        cost = 0.5 * cost
+        # Using Hungarian Algorithm assign the correct detected measurements to predicted tracks
         assignment = []
         for _ in range(N):
             assignment.append(-1)
@@ -106,10 +92,10 @@ class Tracker(object):
         # Identify tracks with no assignment, if any
         un_assigned_tracks = []
         for i in range(len(assignment)):
-            if (assignment[i] != -1):
+            if assignment[i] != -1:
                 # check for cost distance threshold.
                 # If cost is very high then un_assign (delete) the track
-                if (cost[i][assignment[i]] > self.dist_thresh):
+                if cost[i][assignment[i]] > self.dist_thresh:
                     assignment[i] = -1
                     un_assigned_tracks.append(i)
                 pass
@@ -119,13 +105,13 @@ class Tracker(object):
         # If tracks are not detected for long time, remove them
         del_tracks = []
         for i in range(len(self.tracks)):
-            if (self.tracks[i].skipped_frames > self.max_frames_to_skip):
+            if self.tracks[i].skipped_frames > self.max_frames_to_skip:
                 del_tracks.append(i)
         if len(del_tracks) > 0:  # only when skipped frame exceeds max
-            for id in del_tracks:
-                if id < len(self.tracks):
-                    del self.tracks[id]
-                    del assignment[id]
+            for idx in del_tracks:
+                if idx < len(self.tracks):
+                    del self.tracks[idx]
+                    del assignment[idx]
                 else:
                     print("ERROR: id is greater than length of tracks")
 
@@ -136,29 +122,25 @@ class Tracker(object):
                     un_assigned_detects.append(i)
 
         # Start new tracks
-        if(len(un_assigned_detects) != 0):
+        if len(un_assigned_detects) != 0:
             for i in range(len(un_assigned_detects)):
-                track = Track(detections[un_assigned_detects[i]],
-                              self.trackIdCount)
-                self.trackIdCount += 1
+                track = Track(detections[un_assigned_detects[i]], self.track_id_count)
+                self.track_id_count += 1
                 self.tracks.append(track)
 
-        # Update KalmanFilter state, lastResults and tracks trace
+        # Update KalmanFilter state, last_x and tracks trace
         for i in range(len(assignment)):
             self.tracks[i].KF.predict()
 
-            if(assignment[i] != -1):
+            if assignment[i] != -1:
                 self.tracks[i].skipped_frames = 0
-                self.tracks[i].prediction = self.tracks[i].KF.correct(
-                                            detections[assignment[i]], 1)
+                self.tracks[i].prediction = self.tracks[i].KF.correct(detections[assignment[i]], use_detection=True)
             else:
-                self.tracks[i].prediction = self.tracks[i].KF.correct(
-                                            np.array([[0], [0]]), 0)
+                # Correct using previous predicted state if no detection is available for this track
+                self.tracks[i].prediction = self.tracks[i].KF.correct(np.array([[0], [0]]), use_detection=False)
 
-            if(len(self.tracks[i].trace) > self.max_trace_length):
-                for j in range(len(self.tracks[i].trace) -
-                               self.max_trace_length):
+            if len(self.tracks[i].trace) > self.max_trace_length:
+                for j in range(len(self.tracks[i].trace) - self.max_trace_length):
                     del self.tracks[i].trace[j]
 
             self.tracks[i].trace.append(self.tracks[i].prediction)
-            self.tracks[i].KF.lastResult = self.tracks[i].prediction

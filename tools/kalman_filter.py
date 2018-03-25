@@ -8,11 +8,9 @@ import numpy as np
 
 # noinspection PyPep8Naming
 class KalmanFilter(object):
-    """Kalman Filter class keeps track of the estimated state of
-    the system and the variance or uncertainty of the estimate.
-    Predict and Correct methods implement the functionality
+    """Kalman Filter class keeps track of the estimated state of the system and the variance or uncertainty of
+    the estimate. Predict and Correct methods implement the functionality.
     Reference: https://en.wikipedia.org/wiki/Kalman_filter
-    Attributes: None
     """
 
     def __init__(self):
@@ -54,7 +52,7 @@ class KalmanFilter(object):
         self.last_x = self.x  # same last predicted result
         return self.x
 
-    def correct(self, z, flag):
+    def correct(self, z, use_detection):
         """Correct or update state vector u and variance of uncertainty P (covariance).
         where,
         u: predicted state vector u
@@ -73,15 +71,15 @@ class KalmanFilter(object):
                 C.Inv is C inverse
         Args:
             z: vector of observations
-            flag: if "true" prediction result will be updated else detection
+            use_detection: if "true" prediction result will be updated else detection
         Return:
             predicted state vector x
         """
 
-        if not flag:  # update using prediction
-            self.z = self.last_x
-        else:  # update using detection
+        if use_detection:  # update using detection
             self.z = z
+        else:  # update using prediction
+            self.z = self.last_x
         aux_matrix_C = np.dot(self.M, np.dot(self.sigma_k, self.M.T)) + self.sigma_m
         kalman_gain = np.dot(self.sigma_k, np.dot(self.M.T, np.linalg.inv(aux_matrix_C)))
 
