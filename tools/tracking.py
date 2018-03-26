@@ -16,7 +16,10 @@ class Track(object):
 
     def __init__(self, prediction, track_id):
         self.track_id = track_id  # identification of each track object
-        self.KF = KalmanFilter()  # KF instance to track this object
+
+        # TODO: Fixed Kalman Filter initialization, instead inject intialization from configuration files
+        self.KF = KalmanFilter(prediction, [200, 25], [100, 25], 100.0)  # KF instance to track this object
+
         self.prediction = np.asarray(prediction)  # predicted centroids (x,y)
         self.skipped_frames = 0  # number of frames skipped undetected
         self.trace = []  # trace path

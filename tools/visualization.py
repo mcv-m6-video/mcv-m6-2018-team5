@@ -376,6 +376,7 @@ def plot_pixel_evolution(backList, first_image, pixel_pos, color, output_path):
 
     return mean_val, var_val
 
+
 def flow_to_image(flow):
     """
     Convert flow into middlebury color code image
@@ -457,6 +458,7 @@ def compute_color(u, v):
 
     return img
 
+
 def make_color_wheel():
     """
     Generate color wheel according Middlebury color code
@@ -530,7 +532,7 @@ def plot_optical_flow_histogram(optical_flow, area_search, output_path):
     plt.close()
 
 
-def draw_lines(img, lines, color=[255, 0, 0], thickness=3):
+def draw_lines(img, lines, color=(255, 0, 0), thickness=3):
     line_img = np.zeros(
         (
             img.shape[0],
@@ -549,3 +551,22 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=3):
 
     plt.imshow(img)
     plt.show()
+
+
+def show_detections(image_data, labeled_image, region_properties, save_path):
+    N, M = image_data.shape
+    fig, ax = plt.subplots(1)
+    ax.imshow(image_data, cmap='gray')
+    ax.imshow(labeled_image, alpha=0.3)
+    for reg_prop in region_properties:
+        min_row, min_col, max_row, max_col = reg_prop.bbox
+        width, height = max_col - min_col, max_row - min_row
+        rect = patches.Rectangle((min_col, min_row), width, height, linewidth=1, edgecolor='g', facecolor='none')
+        ax.add_patch(rect)
+
+        centroid_row, centroid_col = reg_prop.centroid
+        ax.scatter(centroid_col, centroid_row)
+    plt.axis('off')
+    plt.show(block=False)
+    plt.savefig(save_path)
+    plt.close()

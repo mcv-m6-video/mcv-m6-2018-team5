@@ -26,6 +26,7 @@ class KalmanFilter(object):
         assert motion_model_noise.shape == (2,), \
             'Motion model noise should be a 2D vector: [location_var, velocity_var]'
 
+        measurement_noise = float(measurement_noise)
         assert isinstance(measurement_noise, float), 'Measurement noise should be a scalar value: [measure_var]'
 
         # Constant velocity model, initialize velocities to 0

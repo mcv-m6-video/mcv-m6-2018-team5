@@ -4,11 +4,15 @@ from __future__ import division
 
 import argparse
 import logging
-import cv2 as cv
 import os
 
-from tools import background_modeling, foreground_improving
+from skimage import io as skio
+from skimage import measure as skmeasure
+from skimage import morphology as skmorph
+
+from tools import background_modeling, foreground_improving, visualization
 from tools.image_parser import get_image_list_changedetection_dataset
+from tools.tracking import Tracker
 from utils.load_configutation import Configuration
 from utils.log import log_context
 from utils.mkdirs import mkdirs
@@ -34,7 +38,11 @@ def vehicle_tracker(cf):
         foreground_img_list = image_list[(len(image_list) // 2):]
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
+        # Instantiate tracker for multi-object tracking
+        tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0)
+
         for image_path in foreground_img_list:
+
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                 image_path, mean, variance, cf.alpha, cf.rho, cf.color_space)
 
@@ -43,18 +51,31 @@ def vehicle_tracker(cf):
             foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
-            # TODO: add kalman filter
+            # Detect distinct objects in the image
+            detections = list()
+            labeled_image = skmorph.label(foreground, connectivity=foreground.ndim)
+            img_data = skio.imread(image_path, as_grey=True)
+            region_properties = skmeasure.regionprops(labeled_image, img_data)
+
+            # (Optional) Filter regions
+            filtered_region_props = region_properties
+
+            # Extract detections from region properties
+            detections = [list(x.centroid) for x in filtered_region_props]
+
+            # Update tracking
+            tracker.update(detections)
+
             # TODO: add speed estimation
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
                 image_name = os.path.splitext(image_name)[0]
 
-                image = cv.imread(image_path)
-
                 # TODO: add bounding box drawing with car id and speed
-
-                cv.imwrite(os.path.join(cf.results_path, image_name + '.' + cf.result_image_type), image)
+                # (Optional) Plot detections
+                save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
+                visualization.show_detections(img_data, labeled_image, region_properties, save_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
