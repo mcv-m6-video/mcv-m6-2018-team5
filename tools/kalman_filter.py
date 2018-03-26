@@ -13,7 +13,7 @@ class KalmanFilter(object):
     Constant velocity model, defined over a 2D space.
     """
 
-    def __init__(self, init_location, init_estimate_error, motion_model_noise, measurement_noise, dt=0.005):
+    def __init__(self, init_location, init_estimate_error, motion_model_noise, measurement_noise, dt=1):
         # Assertions
         init_location = np.array(init_location)
         assert init_location.shape == (2,), 'Initial location should be a 2D vector: [x, y]'
