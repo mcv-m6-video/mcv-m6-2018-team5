@@ -9,24 +9,58 @@ import numpy as np
 # noinspection PyPep8Naming
 class KalmanFilter(object):
     """Kalman Filter class keeps track of the estimated state of the system and the variance or uncertainty of
-    the estimate. Predict and Correct methods implement the functionality.
-    Reference: https://en.wikipedia.org/wiki/Kalman_filter
+    the estimate.
+    Constant velocity model, defined over a 2D space.
     """
 
-    def __init__(self):
-        self.dt = 0.005  # delta time
+    def __init__(self, init_location, init_estimate_error, motion_model_noise, measurement_noise, dt=0.005):
+        # Assertions
+        init_location = np.array(init_location)
+        assert init_location.shape == (2,), 'Initial location should be a 2D vector: [x, y]'
 
-        self.x = np.zeros((2, 1))  # state vector
-        self.z = np.array([[0], [255]])  # observations vector
+        init_estimate_error = np.array(init_estimate_error)
+        assert init_estimate_error.shape == (2,), \
+            'Error of the initial estimate should be a 2D vector: [init_location_var, init_velocity_var]'
 
-        self.D = np.array([[1.0, self.dt], [0.0, 1.0]])  # dynamics model
-        self.M = np.array([[1, 0], [0, 1]])  # measurement matrix
+        motion_model_noise = np.array(motion_model_noise)
+        assert motion_model_noise.shape == (2,), \
+            'Motion model noise should be a 2D vector: [location_var, velocity_var]'
 
-        self.sigma_k = np.diag((3.0, 3.0))  # covariance matrix
-        self.sigma_d = np.eye(self.u.shape[0])  # process noise matrix
-        self.sigma_m = np.eye(self.b.shape[0])  # observation noise matrix
+        assert isinstance(measurement_noise, float), 'Measurement noise should be a scalar value: [measure_var]'
 
-        self.last_x = np.array([[0], [255]])  # placeholder for last predicted state
+        # Constant velocity model, initialize velocities to 0
+        self.x = np.array([init_location[0], 0, init_location[1], 0])
+
+        # Placeholder for last measurement
+        self.z = None
+        # Placeholder for last predicted state
+        self.last_x = None
+
+        # Constant velocity motion model
+        self.dt = dt  # delta time
+        self.D = np.array(
+            [[1., self.dt, 0., 0.],
+             [0., 1., 0., 0.],
+             [0., 0., 1., self.dt],
+             [0., 0., 0., 1.]]
+        )
+
+        # Measurement model that relates current state to measurement z
+        self.M = np.array(
+            [[1., 0., 0., 0.],
+             [0., 0., 1., 0.]]
+        )
+
+        # Covariance matrix
+        self.sigma_k = np.diag(
+            [init_estimate_error[0], init_estimate_error[1], init_estimate_error[0], init_estimate_error[1]]
+        )
+        # Process noise matrix
+        self.sigma_d = np.diag(
+            [motion_model_noise[0], motion_model_noise[1], motion_model_noise[0], motion_model_noise[1]]
+        )
+        # Observation noise matrix
+        self.sigma_m = measurement_noise * np.eye(2)
 
     def predict(self):
         """Predict state vector u and variance of uncertainty P (covariance).
@@ -40,8 +74,6 @@ class KalmanFilter(object):
             P_{k|k-1} = FP_{k-1|k-1} F.T + Q
             where,
                 F.T is F transpose
-        Args:
-            None
         Return:
             vector of predicted state estimate
         """
