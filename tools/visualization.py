@@ -528,3 +528,24 @@ def plot_optical_flow_histogram(optical_flow, area_search, output_path):
     ax.set_ylabel('v')
     plt.savefig(output_path)
     plt.close()
+
+
+def draw_lines(img, lines, color=[255, 0, 0], thickness=3):
+    line_img = np.zeros(
+        (
+            img.shape[0],
+            img.shape[1],
+            3
+        ),
+        dtype=np.uint8
+    )
+    img = np.copy(img)
+    if lines is None:
+        return
+    for line in lines:
+        for x1, y1, x2, y2 in line:
+            cv.line(line_img, (x1, y1), (x2, y2), color, thickness)
+    img = cv.addWeighted(img, 0.8, line_img, 1.0, 0.0)
+
+    plt.imshow(img)
+    plt.show()
