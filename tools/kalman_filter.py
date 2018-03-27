@@ -112,7 +112,7 @@ class KalmanFilter(object):
         if use_detection:  # update using detection
             self.z = z
         else:  # update using prediction
-            self.z = self.last_x
+            self.z = np.dot(self.M, self.last_x)
         aux_matrix_C = np.dot(self.M, np.dot(self.sigma_k, self.M.T)) + self.sigma_m
         kalman_gain = np.dot(self.sigma_k, np.dot(self.M.T, np.linalg.inv(aux_matrix_C)))
 

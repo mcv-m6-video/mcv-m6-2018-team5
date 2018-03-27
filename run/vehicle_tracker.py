@@ -39,7 +39,7 @@ def vehicle_tracker(cf):
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
         # Instantiate tracker for multi-object tracking
-        tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0)
+        tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0, cf)
 
         for image_path in foreground_img_list:
 
@@ -61,8 +61,12 @@ def vehicle_tracker(cf):
             filtered_region_props = region_properties
 
             # Extract detections from region properties
-            detections = [list(x.centroid) for x in filtered_region_props]
-
+            #TODO: filter detections properly....
+            # detections = [list(x.centroid) for x in filtered_region_props]
+            detections = [list(x.centroid) if(x.convex_area>2000) else list() for x in filtered_region_props]
+            for detection in detections:
+                if detection == list():
+                    detections.remove(detection)
             # Update tracking
             tracker.update(detections)
 

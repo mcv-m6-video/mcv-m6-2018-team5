@@ -14,11 +14,10 @@ from kalman_filter import KalmanFilter
 class Track(object):
     """ Track class for every object to be tracked """
 
-    def __init__(self, prediction, track_id):
+    def __init__(self, prediction, track_id, cf):
         self.track_id = track_id  # identification of each track object
 
-        # TODO: Fixed Kalman Filter initialization, instead inject intialization from configuration files
-        self.KF = KalmanFilter(prediction, [200, 25], [100, 25], 100.0)  # KF instance to track this object
+        self.KF = KalmanFilter(prediction, cf.init_estimate_error, cf.motion_model_noise, cf.measurement_noise)  # KF instance to track this object
 
         self.prediction = np.asarray(prediction)  # predicted centroids (x,y)
         self.skipped_frames = 0  # number of frames skipped undetected
@@ -29,7 +28,7 @@ class Track(object):
 class Tracker(object):
     """ Tracker class that updates track vectors of object tracked """
 
-    def __init__(self, dist_thresh, max_frames_to_skip, max_trace_length, track_id_count):
+    def __init__(self, dist_thresh, max_frames_to_skip, max_trace_length, track_id_count, cf):
         """Initialize variable used by Tracker class
             max_trace_lenght:
             track_id_count:
@@ -45,6 +44,7 @@ class Tracker(object):
         self.tracks = []
         # identification of each track object
         self.track_id_count = track_id_count
+        self.cf = cf
 
     def update(self, detections):
         """Update tracks vector using following steps:
@@ -64,7 +64,7 @@ class Tracker(object):
         # Create tracks if no tracks vector found
         if len(self.tracks) == 0:
             for i in range(len(detections)):
-                track = Track(detections[i], self.track_id_count)
+                track = Track(detections[i], self.track_id_count, self.cf)
                 self.track_id_count += 1
                 self.tracks.append(track)
 
@@ -127,7 +127,7 @@ class Tracker(object):
         # Start new tracks
         if len(un_assigned_detects) != 0:
             for i in range(len(un_assigned_detects)):
-                track = Track(detections[un_assigned_detects[i]], self.track_id_count)
+                track = Track(detections[un_assigned_detects[i]], self.track_id_count, self.cf)
                 self.track_id_count += 1
                 self.tracks.append(track)
 
