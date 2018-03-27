@@ -31,6 +31,9 @@ area_filtering_P              = 128
 distance_threshold            = 5
 max_frames_to_skip            = 10
 max_trace_length              = 15
+init_estimate_error           = [200, 25]
+motion_model_noise            = [100, 25]
+measurement_noise             = 100.0
 
 # Save results
 save_results                 = True        # Save Log file

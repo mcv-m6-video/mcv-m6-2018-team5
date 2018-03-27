@@ -61,16 +61,20 @@ def vehicle_tracker(cf):
             filtered_region_props = region_properties
 
             # Extract detections from region properties
-            #TODO: filter detections properly....
-            # detections = [list(x.centroid) for x in filtered_region_props]
-            detections = [list(x.centroid) if(x.convex_area>2000) else list() for x in filtered_region_props]
-            for detection in detections:
-                if detection == list():
-                    detections.remove(detection)
+            # TODO: filter detections properly....
+            #detections = [list(x.centroid) for x in filtered_region_props]
+            detections = [list(x.centroid) if(x.convex_area > 2000) else list() for x in filtered_region_props]
+            idx = 0
+            while idx < len(detections):
+                if detections[idx] == list():
+                    detections.remove(detections[idx])
+                else:
+                    idx += 1
             # Update tracking
             tracker.update(detections)
 
             # TODO: add speed estimation
+
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
