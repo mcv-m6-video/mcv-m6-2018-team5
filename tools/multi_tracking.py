@@ -3,6 +3,9 @@ import numpy as np
 from kalman_filter_2 import KalmanFilter
 
 nextId = 1
+invisibleForTooLong = 20
+ageThreshold = 8
+costOfNonAssignment = 20
 
 class Track(object):
 
@@ -36,7 +39,6 @@ def detectionToTrackAssignment(tracks, centroids):
         costs.append(tracks[i].kalmanFilter.distance(centroids))
 
     # Solve the assignment problem.
-    costOfNonAssignment = 20
     assignments = [np.argmin(cost) if(np.amin(cost) < costOfNonAssignment) else -1 for cost in costs]
 
     # Identify tracks with no assignment, if any
@@ -87,9 +89,6 @@ def updateUnassignedTracks(tracks, unassignedTracks):
 def deleteLostTracks(tracks):
     if tracks == list():
         return
-
-    invisibleForTooLong = 20
-    ageThreshold = 8
 
     # Compute the fraction of the track's age for which it was visible.
     ages = np.asarray([track.age for track in tracks])
