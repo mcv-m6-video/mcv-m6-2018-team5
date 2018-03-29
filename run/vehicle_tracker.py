@@ -58,13 +58,16 @@ def vehicle_tracker(cf):
             bboxes, centroids = detection.detectObjects(image_path, foreground)
             multi_tracking.predictNewLocationsOfTracks(tracks)
             assignments, unassignedTracks, unassignedDetections = multi_tracking.detectionToTrackAssignment(tracks, centroids)
-
             multi_tracking.updateAssignedTracks(tracks, bboxes, centroids, assignments)
             multi_tracking.updateUnassignedTracks(tracks, unassignedTracks)
             multi_tracking.deleteLostTracks(tracks)
             multi_tracking.createNewTracks(tracks, bboxes, centroids, unassignedDetections)
 
-            visualization.displayTrackingResults(image_path, tracks)
+            if cf.save_results:
+                image_name = os.path.basename(image_path)
+                image_name = os.path.splitext(image_name)[0]
+                save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
+                visualization.displayTrackingResults(image_path, tracks, save_path)
 
             '''
             # Detect distinct objects in the image

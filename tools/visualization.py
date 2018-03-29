@@ -572,17 +572,18 @@ def show_detections(image_data, labeled_image, region_properties, save_path):
     plt.close()
 
 
-def displayTrackingResults(image_path, tracks):
+def displayTrackingResults(image_path, tracks, save_path):
     img = cv.imread(image_path)
 
-    minVisibleCount = 8
     if tracks != list():
 
         # Display the objects. If an object has not been detected
         # in this frame, display its predicted bounding box.
         if tracks != list():
             for track in tracks:
-                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), (0, 255, 0), 3)
-                cv.putText(img, str(track.id), (track.bbox[0]-10, track.bbox[1]-10), 0,0.3,(0,255,0))
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), (0, 255, 0), 2)
+                cv.putText(img, str(track.id), (track.bbox[0]-10, track.bbox[1]-10), 0, 0.3, (0, 255, 0))
+                cv.circle(img, (int(track.kalmanFilter.currentPositionX), int(track.kalmanFilter.currentPositionY)),
+                          3, (0, 255, 0), thickness=-1, lineType=8, shift=0)
 
-    cv.imshow('img', img)
+    cv.imwrite(save_path, img)
