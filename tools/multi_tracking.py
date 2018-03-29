@@ -5,7 +5,7 @@ from kalman_filter_2 import KalmanFilter
 nextId = 1
 invisibleForTooLong = 20
 ageThreshold = 8
-costOfNonAssignment = 20
+costOfNonAssignment = 100
 
 class Track(object):
 
@@ -27,7 +27,7 @@ def predictNewLocationsOfTracks(tracks):
         # Shift the bounding box so that its center is at the predicted location.
         predictedX = predictedCentroid[0] - bbox[2] / 2
         predictedY = predictedCentroid[1] - bbox[3] / 2
-        track.bbox = (predictedX, predictedY, bbox[2], bbox[3])
+        track.bbox = (int(predictedX), int(predictedY), int(bbox[2]), int(bbox[3]))
 
 
 def detectionToTrackAssignment(tracks, centroids):
@@ -44,7 +44,6 @@ def detectionToTrackAssignment(tracks, centroids):
     # Identify tracks with no assignment, if any
     unassignedTracks = []
     for i in range(len(assignments)):
-        tracks[i].age += 1
         if assignments[i] == -1:
             unassignedTracks.append(i)
 
@@ -93,7 +92,7 @@ def deleteLostTracks(tracks):
     # Compute the fraction of the track's age for which it was visible.
     ages = np.asarray([track.age for track in tracks])
     totalVisibleCounts = np.asarray([track.totalVisibleCount for track in tracks])
-    visibility = totalVisibleCounts / ages
+    visibility = totalVisibleCounts.astype('float32') / ages.astype('float32')
 
     # Find the indices of 'lost' tracks.
     i = 0

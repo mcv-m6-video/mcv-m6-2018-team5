@@ -582,7 +582,8 @@ def displayTrackingResults(image_path, tracks, save_path):
         if tracks != list():
             for track in tracks:
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), (0, 255, 0), 2)
-                cv.putText(img, str(track.id), (track.bbox[0]-10, track.bbox[1]-10), 0, 0.3, (0, 255, 0))
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), (0, 255, 0), -1)
+                cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
                 cv.circle(img, (int(track.kalmanFilter.currentPositionX), int(track.kalmanFilter.currentPositionY)),
                           3, (0, 255, 0), thickness=-1, lineType=8, shift=0)
 
