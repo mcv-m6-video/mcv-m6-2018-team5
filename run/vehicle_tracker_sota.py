@@ -81,11 +81,11 @@ def get_centroid(x, y, w, h):
 
 # ============================================================================
 
-def detect_vehicles(fg_mask):
+def detect_vehicles(fg_mask, cf):
     log = logging.getLogger("detect_vehicles")
 
-    MIN_CONTOUR_WIDTH = 21
-    MIN_CONTOUR_HEIGHT = 21
+    MIN_CONTOUR_WIDTH = cf.min_width
+    MIN_CONTOUR_HEIGHT = cf.min_height
 
     # Find the contours of any vehicles in the image
     contours, hierarchy = cv2.findContours(fg_mask
@@ -128,7 +128,7 @@ def filter_mask(fg_mask):
 
 # ============================================================================
 
-def process_frame(frame_number, frame, fg_mask, car_counter):
+def process_frame(frame_number, frame, fg_mask, car_counter, cf):
     log = logging.getLogger("process_frame")
 
     # Create a copy of source frame to draw into
@@ -143,7 +143,7 @@ def process_frame(frame_number, frame, fg_mask, car_counter):
     save_frame(IMAGE_DIR + "/mask_%04d.png"
         , frame_number, fg_mask, "foreground mask for frame #%d")
 
-    matches = detect_vehicles(fg_mask)
+    matches = detect_vehicles(fg_mask, cf)
 
     log.debug("Found %d valid vehicle contours.", len(matches))
     for (i, match) in enumerate(matches):
@@ -218,6 +218,7 @@ def main():
         foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
         foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
         foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
+        foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P_post)
 
         if car_counter is None:
             # We do this here, so that we can initialize with actual frame size
@@ -230,13 +231,13 @@ def main():
                 , frame_number, frame, "source frame #%d")
 
         log.debug("Processing frame #%d...", frame_number)
-        foreground = np.array(foreground, dtype=np.uint8)
-        processed = process_frame(frame_number, frame, foreground, car_counter)
+        foreground_ = np.array(foreground, dtype=np.uint8)
+        processed = process_frame(frame_number, frame, foreground_, car_counter, cf)
 
         save_frame(cf.output_folder + "/processed_%04d.png"
             , frame_number, processed, "processed frame #%d")
 
-        cv2.imshow('Source Image', frame)
+        cv2.imshow('Source Image', foreground.astype('uint8')*255)
         cv2.imshow('Processed Image', processed)
 
         log.debug("Frame #%d processed.", frame_number)

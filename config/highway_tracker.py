@@ -22,10 +22,11 @@ color_space                   = "RGB"           # RGB, HSV
 four_connectivity             = False
 opening_strel                 = 'square'
 opening_strel_size            = 5
-closing_strel                 = 'diamond'
-closing_strel_size            = 3
+closing_strel                 = 'square'
+closing_strel_size            = 10
 area_filtering                = True
 area_filtering_P              = 128
+area_filtering_P_post         = 300
 
 # Tracking parameters
 distance_threshold            = 5
@@ -34,6 +35,9 @@ max_trace_length              = 15
 init_estimate_error           = [200, 25]
 motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
+
+min_width                     = 21
+min_height                    = 21
 
 # Save results
 save_results                 = True        # Save Log file

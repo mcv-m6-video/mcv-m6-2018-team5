@@ -35,6 +35,9 @@ init_estimate_error           = [200, 25]
 motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
 
+min_width                     = 35
+min_height                    = 35
+
 # Save results
 save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test

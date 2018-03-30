@@ -85,7 +85,7 @@ class VehicleCounter(object):
     @staticmethod
     def is_valid_vector(a):
         distance, angle = a
-        threshold_distance = max(10.0, -0.008 * angle**2 + 0.4 * angle + 25.0)
+        threshold_distance = max(30.0, -0.008 * angle**2 + 0.4 * angle + 25.0)
         return (distance <= threshold_distance)
 
 
@@ -133,7 +133,7 @@ class VehicleCounter(object):
                 self.vehicle_count += 1
                 vehicle.counted = True
                 self.log.debug("Counted vehicle #%d (total count=%d)."
-                    , vehicle.id, self.vehicle_count)
+                               , vehicle.id, self.vehicle_count)
 
         # Optionally draw the vehicles on an image
         if output_image is not None:
