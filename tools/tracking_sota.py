@@ -11,6 +11,8 @@ CAR_COLOURS = [ (0,0,255), (0,106,255), (0,216,255), (0,255,182), (0,255,76)
 
 # ============================================================================
 
+#Code obtained from: https://stackoverflow.com/questions/36254452/counting-cars-opencv-python-issue
+
 class Vehicle(object):
     def __init__(self, id, position):
         self.id = id
