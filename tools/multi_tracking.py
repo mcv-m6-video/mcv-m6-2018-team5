@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from kalman_filter_2 import KalmanFilter
+from kalman_filter import KalmanFilter
 
 nextId = 1
 invisibleForTooLong = 20
@@ -12,6 +12,7 @@ class Track(object):
     def __init__(self, id, bbox, kalmanFilter):
         self.id = id
         self.bbox = bbox
+        self.positions = [[kalmanFilter.x[0], kalmanFilter.x[2]]]
         self.kalmanFilter = kalmanFilter
         self.age = 1
         self.totalVisibleCount = 1
@@ -22,11 +23,11 @@ def predictNewLocationsOfTracks(tracks):
         bbox = track.bbox
 
         # Predict the current location of the track.
-        predictedCentroid = track.kalmanFilter.predict()
+        predictedPos = track.kalmanFilter.predict()
 
         # Shift the bounding box so that its center is at the predicted location.
-        predictedX = predictedCentroid[0] - bbox[2] / 2
-        predictedY = predictedCentroid[1] - bbox[3] / 2
+        predictedX = predictedPos[0] - bbox[2] / 2
+        predictedY = predictedPos[2] - bbox[3] / 2
         track.bbox = (int(predictedX), int(predictedY), int(bbox[2]), int(bbox[3]))
 
 
@@ -66,10 +67,11 @@ def updateAssignedTracks(tracks, bboxes, centroids, assignments):
             bbox = bboxes[detectionIdx]
 
             # Correct the estimate of the object's location using the new detection.
-            tracks[trackIdx].kalmanFilter.update(centroid)
+            tracks[trackIdx].kalmanFilter.correct(centroid, True)
 
             # Replace predicted bounding box with detected bounding box.
             tracks[trackIdx].bbox = bbox
+            tracks[trackIdx].positions.append([tracks[trackIdx].kalmanFilter.x[0], tracks[trackIdx].kalmanFilter.x[2]])
 
             # Update track's age.
             tracks[trackIdx].age += 1
@@ -109,7 +111,7 @@ def createNewTracks(tracks, bboxes, centroids, unassignedDetections):
 
     for (centroid, bbox) in zip(unassignedCentroids, unassignedBboxes):
         # Create a Kalman filter object.
-        kalmanFilter = KalmanFilter(centroid)
+        kalmanFilter = KalmanFilter(centroid, [200, 50], [100, 25], 100)
 
         # Create a new track.
         newTrack = Track(nextId, bbox, kalmanFilter)

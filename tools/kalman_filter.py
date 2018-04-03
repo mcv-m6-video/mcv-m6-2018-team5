@@ -120,3 +120,11 @@ class KalmanFilter(object):
         self.sigma_k = self.sigma_k - np.dot(kalman_gain, np.dot(aux_matrix_C, kalman_gain.T))
         self.last_x = self.x
         return self.x
+
+    def distance(self, centroids):
+        cost = []
+        for centroid in centroids:
+            dist = np.sqrt(
+                np.square(centroid[0] - self.x[0]) + np.square(centroid[1] - self.x[2]))
+            cost.append(dist)
+        return cost

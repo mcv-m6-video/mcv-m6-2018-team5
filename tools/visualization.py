@@ -19,7 +19,8 @@ from tools.optical_flow import read_kitti_flow
 UNKNOWN_FLOW_THRESH = 1e7
 SMALLFLOW = 0.0
 LARGEFLOW = 1e8
-
+CAR_COLOURS = [(0, 0, 255), (0, 106, 255), (0, 216, 255), (0, 255, 182), (0, 255, 76),
+               (144, 255, 0), (255, 255, 0), (255, 148, 0), (255, 0, 178), (220, 0, 255)]
 
 def aux_plot_auc_vs_pixels(auc_highway, pixels_range, output_folder=""):
     max_auc_highway = max(auc_highway)
@@ -581,10 +582,12 @@ def displayTrackingResults(image_path, tracks, save_path):
         # in this frame, display its predicted bounding box.
         if tracks != list():
             for track in tracks:
+                car_colour = CAR_COLOURS[track.id % len(CAR_COLOURS)]
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), (0, 255, 0), 2)
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), (0, 255, 0), -1)
                 cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
-                cv.circle(img, (int(track.kalmanFilter.currentPositionX), int(track.kalmanFilter.currentPositionY)),
-                          3, (0, 255, 0), thickness=-1, lineType=8, shift=0)
+                for point in track.positions:
+                    cv.circle(img, (int(point[0]), int(point[1])), 2, car_colour, -1)
+                cv.polylines(img, [np.int32(track.positions)], False, car_colour, 1)
 
     cv.imwrite(save_path, img)
