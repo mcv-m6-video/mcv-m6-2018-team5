@@ -1,11 +1,12 @@
+import logging
+
 import cv2 as cv
 import numpy as np
 from kalman_filter import KalmanFilter
 
 nextId = 1
-invisibleForTooLong = 20
+invisibleForTooLong = 7
 ageThreshold = 8
-costOfNonAssignment = 100
 
 class Track(object):
 
@@ -13,6 +14,7 @@ class Track(object):
         self.id = id
         self.bbox = bbox
         self.positions = [[kalmanFilter.x[0], kalmanFilter.x[2]]]
+        self.predictions = [[kalmanFilter.x[0], kalmanFilter.x[2]]]
         self.kalmanFilter = kalmanFilter
         self.age = 1
         self.totalVisibleCount = 1
@@ -24,6 +26,7 @@ def predictNewLocationsOfTracks(tracks):
 
         # Predict the current location of the track.
         predictedPos = track.kalmanFilter.predict()
+        track.predictions.append([predictedPos[0], predictedPos[2]])
 
         # Shift the bounding box so that its center is at the predicted location.
         predictedX = predictedPos[0] - bbox[2] / 2
@@ -31,28 +34,33 @@ def predictNewLocationsOfTracks(tracks):
         track.bbox = (int(predictedX), int(predictedY), int(bbox[2]), int(bbox[3]))
 
 
-def detectionToTrackAssignment(tracks, centroids):
+def detectionToTrackAssignment(tracks, centroids, costOfNonAssignment):
     numTracks = len(tracks)
 
-    # Compute the cost of assigning each detection to each track.
-    costs = []
-    for i in range(numTracks):
-        costs.append(tracks[i].kalmanFilter.distance(centroids))
+    if len(centroids) != 0:
+        # Compute the cost of assigning each detection to each track.
+        costs = []
+        for i in range(numTracks):
+            costs.append(tracks[i].kalmanFilter.distance(centroids))
 
-    # Solve the assignment problem.
-    assignments = [np.argmin(cost) if(np.amin(cost) < costOfNonAssignment) else -1 for cost in costs]
+        # Solve the assignment problem.
+        assignments = [np.argmin(cost) if(np.amin(cost) < costOfNonAssignment) else -1 for cost in costs]
 
-    # Identify tracks with no assignment, if any
-    unassignedTracks = []
-    for i in range(len(assignments)):
-        if assignments[i] == -1:
-            unassignedTracks.append(i)
+        # Identify tracks with no assignment, if any
+        unassignedTracks = []
+        for i in range(len(assignments)):
+            if assignments[i] == -1:
+                unassignedTracks.append(i)
 
-    # Now look for un_assigned detects
-    unassignedDetections = []
-    for i in range(len(centroids)):
-        if i not in assignments:
-            unassignedDetections.append(i)
+        # Now look for un_assigned detects
+        unassignedDetections = []
+        for i in range(len(centroids)):
+            if i not in assignments:
+                unassignedDetections.append(i)
+    else:
+        assignments = [-1]*len(tracks)
+        unassignedTracks = range(len(tracks))
+        unassignedDetections = []
 
     return assignments, unassignedTracks, unassignedDetections
 
@@ -85,7 +93,7 @@ def updateUnassignedTracks(tracks, unassignedTracks):
     for ind in unassignedTracks:
         tracks[ind].age += 1
         tracks[ind].consecutiveInvisibleCount += 1
-
+        tracks[ind].kalmanFilter.correct([0, 0], False)
 
 def deleteLostTracks(tracks):
     if tracks == list():

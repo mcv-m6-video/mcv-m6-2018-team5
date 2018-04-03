@@ -2,7 +2,7 @@
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results/'
+results_path                 = 'datasets/highway/results'
 
 # Input Images
 nr_images                    = 300
@@ -35,6 +35,7 @@ max_trace_length              = 15
 init_estimate_error           = [200, 25]
 motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
+costOfNonAssignment           = 10
 
 min_width                     = 21
 min_height                    = 21

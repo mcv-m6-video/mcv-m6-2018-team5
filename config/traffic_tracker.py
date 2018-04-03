@@ -34,6 +34,7 @@ max_trace_length              = 15
 init_estimate_error           = [200, 25]
 motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
+costOfNonAssignment           = 50
 
 min_width                     = 35
 min_height                    = 35
