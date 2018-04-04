@@ -573,8 +573,8 @@ def show_detections(image_data, labeled_image, region_properties, save_path):
     plt.close()
 
 
-def displayTrackingResults(image_path, tracks, foreground, save_path):
-    img = cv.imread(image_path)
+def displayTrackingResults(img, tracks, foreground, save_path):
+
     foreground = 255*foreground.astype('uint8')
     foreground = cv.cvtColor(foreground, cv.COLOR_GRAY2BGR)
     cv.addWeighted(img, 0.7, foreground, 0.3, 0.0, img)

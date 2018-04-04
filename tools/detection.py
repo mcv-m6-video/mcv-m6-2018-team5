@@ -3,9 +3,8 @@ from skimage import io as skio
 from skimage import measure as skmeasure
 from skimage import morphology as skmorph
 
-def detectObjects(image_path, foreground):
+def detectObjects(img_data, foreground):
     labeled_image = skmorph.label(foreground, connectivity=foreground.ndim)
-    img_data = skio.imread(image_path, as_grey=True)
     regions_properties = skmeasure.regionprops(labeled_image, img_data)
 
     bounding_boxes = []

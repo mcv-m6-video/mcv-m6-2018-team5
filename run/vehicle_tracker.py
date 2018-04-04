@@ -7,6 +7,7 @@ import logging
 import os
 
 from skimage import io as skio
+import cv2 as cv
 from skimage import measure as skmeasure
 from skimage import morphology as skmorph
 
@@ -55,7 +56,8 @@ def vehicle_tracker(cf):
             foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
-            bboxes, centroids = detection.detectObjects(image_path, foreground)
+            image = skio.imread(image_path, as_grey=True)
+            bboxes, centroids = detection.detectObjects(image, foreground)
             multi_tracking.predictNewLocationsOfTracks(tracks)
             assignments, unassignedTracks, unassignedDetections = multi_tracking.detectionToTrackAssignment(tracks, centroids, cf.costOfNonAssignment)
             multi_tracking.updateAssignedTracks(tracks, bboxes, centroids, assignments)
@@ -67,7 +69,8 @@ def vehicle_tracker(cf):
                 image_name = os.path.basename(image_path)
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
-                visualization.displayTrackingResults(image_path, tracks, foreground, save_path)
+                image = cv.imread(image_path)
+                visualization.displayTrackingResults(image, tracks, foreground, save_path)
 
             '''
             # Detect distinct objects in the image

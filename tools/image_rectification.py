@@ -13,6 +13,10 @@ import numpy as np
 import logging
 import time
 
+from tools.image_parser import get_image_list_changedetection_dataset
+import os
+import cv2 as cv
+
 def compute_edgelets(image, sigma=3):
     """Create edgelets as in the paper.
     Uses canny edge detection and then finds (small) lines using probabilstic
@@ -304,7 +308,7 @@ def remove_inliers(model, edgelets, threshold_inlier=10):
     return edgelets
 
 
-def compute_homography_and_warp(image, vp1, vp2, clip=True, clip_factor=3):
+def compute_homography(image, vp1, vp2, clip=True, clip_factor=3):
     """Compute homography from vanishing points and warp the image.
     It is assumed that vp1 and vp2 correspond to horizontal and vertical
     directions, although the order is not assumed.
@@ -398,8 +402,12 @@ def compute_homography_and_warp(image, vp1, vp2, clip=True, clip_factor=3):
 
     final_homography = np.dot(T, inter_matrix)
 
+    return final_homography, (max_y, max_x)
+
+
+def wrap(image, final_homography, shape):
     warped_img = transform.warp(image, np.linalg.inv(final_homography),
-                                output_shape=(max_y, max_x))
+                                output_shape=shape)
     return warped_img
 
 
@@ -442,7 +450,7 @@ def vis_model(image, model, show=True):
         plt.show()
 
 
-def rectify_image(image, clip_factor=6, algorithm='independent',
+def rectify_image(image, clip_factor=10, algorithm='independent',
                   reestimate=False):
     """Rectified image with vanishing point computed using ransac.
     Parameters
@@ -493,7 +501,31 @@ def rectify_image(image, clip_factor=6, algorithm='independent',
             "Parameter 'algorithm' has to be one of {'3-line', 'independent'}")
 
     # Compute the homography and warp
-    warped_img = compute_homography_and_warp(image, vp1, vp2,
+    final_homography, (max_y, max_x) = compute_homography(image, vp1, vp2,
                                              clip_factor=clip_factor)
 
-    return warped_img
+    return final_homography, (max_y, max_x)
+
+# Entry point of the script
+if __name__ == "__main__":
+    '''image_list = get_image_list_changedetection_dataset(
+        'C:\Users\Xenia\Desktop\ComputerVision\M6\Project\mcv-m6-2018-team5\datasets\\traffic\input', 'in', '000950', 'jpg', 100)'''
+
+    image_list = get_image_list_changedetection_dataset(
+        'C:\Users\Xenia\Desktop\ComputerVision\M6\Project\mcv-m6-2018-team5\datasets\\highway\input', 'in', '001050',
+        'jpg', 300)
+
+    image = cv.imread(image_list[0])
+    image = cv.resize(image, (0, 0), fx=2, fy=2)
+    H, shape = rectify_image(image)
+    H, shape = rectify_image(image)
+    image = wrap(image, H, shape)
+    for image_path in image_list:
+        image = cv.imread(image_path)
+        image = cv.resize(image, (0, 0), fx=2, fy=2)
+        image = wrap(image, H, shape)
+        #image = image[100:, 230:]
+        image_name = os.path.basename(image_path)
+        image_name = os.path.splitext(image_name)[0]
+        save_path = os.path.join('C:\Users\Xenia\Desktop\ComputerVision\M6\Project\mcv-m6-2018-team5\datasets\\highway\\results\\rectified', image_name + '.' + 'png')
+        cv.imwrite(save_path, image*255)
