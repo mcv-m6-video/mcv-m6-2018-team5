@@ -407,7 +407,7 @@ def compute_homography(image, vp1, vp2, clip=True, clip_factor=3):
 
 def wrap(image, final_homography, shape):
     warped_img = transform.warp(image, np.linalg.inv(final_homography),
-                                output_shape=shape)
+                                output_shape=shape) * 255
     return warped_img
 
 
@@ -528,4 +528,4 @@ if __name__ == "__main__":
         image_name = os.path.basename(image_path)
         image_name = os.path.splitext(image_name)[0]
         save_path = os.path.join('C:\Users\Xenia\Desktop\ComputerVision\M6\Project\mcv-m6-2018-team5\datasets\\highway\\results\\rectified', image_name + '.' + 'png')
-        cv.imwrite(save_path, image*255)
+        cv.imwrite(save_path, image)

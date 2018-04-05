@@ -45,7 +45,7 @@ def traffic_monitoring(cf):
 
         for n,image_path in enumerate(foreground_img_list):
             image = cv.imread(image_path)
-            image = image_rectification.wrap(image, H, shape)*255
+            image = image_rectification.wrap(image, H, shape)
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                 image, mean, variance, cf.alpha, cf.rho, cf.color_space)
 
