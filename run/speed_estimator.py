@@ -5,12 +5,12 @@ from __future__ import division
 import argparse
 import logging
 import os
-from skimage import io as skio
-import cv2 as cv
-import math
 
-from tools import background_modeling, foreground_improving, detection, multi_tracking, visualization, \
-    image_rectification, traffic_parameters
+import cv2 as cv
+from skimage import io as skio
+
+from tools import background_modeling, foreground_improving, detection, visualization, image_rectification, \
+    traffic_parameters
 from tools.image_parser import get_image_list_changedetection_dataset
 from utils.load_configutation import Configuration
 from utils.log import log_context
@@ -81,7 +81,6 @@ def speed_estimator(cf):
                 image = image_rectification.wrap(image, H, shape)
                 image = image.astype('uint8')
                 visualization.displaySpeedResults(image, tracks, foreground, save_path)
-
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
