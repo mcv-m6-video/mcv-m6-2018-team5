@@ -26,7 +26,6 @@ closing_strel                 = 'square'
 closing_strel_size            = 10
 area_filtering                = True
 area_filtering_P              = 128
-area_filtering_P_post         = 300
 
 # Tracking parameters
 distance_threshold            = 5
@@ -41,8 +40,9 @@ min_width                     = 21
 min_height                    = 21
 
 # Monitoring parameters
-pixels_meter                  = 2.86
+pixels_meter                  = 3.333
 frames_second                 = 25.0
+update_speed                  = 5
 
 # Save results
 save_results                 = True        # Save Log file

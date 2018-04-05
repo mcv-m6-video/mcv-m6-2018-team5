@@ -7,6 +7,7 @@ import logging
 import os
 from skimage import io as skio
 import cv2 as cv
+import math
 
 from tools import background_modeling, foreground_improving, detection, multi_tracking, visualization, \
     image_rectification, traffic_parameters
@@ -34,20 +35,19 @@ def traffic_monitoring(cf):
 
         background_img_list = image_list[:len(image_list) // 2]
         foreground_img_list = image_list[(len(image_list) // 2):]
-        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
         H, shape = image_rectification.rectify_image(cv.imread(foreground_img_list[0]))
-
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, H, shape, cf.color_space)
         # Instantiate tracker for multi-object tracking
         #tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0, cf)
-
         tracks = []  # Create an empty array of tracks.
 
         nextId = 1  # ID of the next track
 
-        for image_path in foreground_img_list:
-
+        for n,image_path in enumerate(foreground_img_list):
+            image = cv.imread(image_path)
+            image = image_rectification.wrap(image, H, shape)*255
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
-                image_path, mean, variance, cf.alpha, cf.rho, cf.color_space)
+                image, mean, variance, cf.alpha, cf.rho, cf.color_space)
 
             foreground = foreground_improving.hole_filling(foreground, cf.four_connectivity)
             foreground = foreground_improving.remove_small_regions(foreground, cf.area_filtering_P)
@@ -56,7 +56,7 @@ def traffic_monitoring(cf):
 
             image = skio.imread(image_path, as_grey=True)
             image = image_rectification.wrap(image, H, shape)
-            foreground = image_rectification.wrap(foreground, H, shape)
+            # foreground = image_rectification.wrap(foreground, H, shape)
 
             bboxes, centroids = detection.detectObjects(image, foreground)
             multi_tracking.predictNewLocationsOfTracks(tracks)
@@ -65,8 +65,8 @@ def traffic_monitoring(cf):
             multi_tracking.updateUnassignedTracks(tracks, unassignedTracks)
             multi_tracking.deleteLostTracks(tracks)
             multi_tracking.createNewTracks(tracks, bboxes, centroids, unassignedDetections)
-
-            traffic_parameters.speed_estimation(tracks, cf.pixels_meter, cf.frames_second)
+            if n % cf.update_speed == 0:
+                traffic_parameters.speed_estimation(tracks, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
@@ -75,7 +75,7 @@ def traffic_monitoring(cf):
                 image = cv.imread(image_path)
                 image = image_rectification.wrap(image, H, shape)
                 image = (255 * image).astype('uint8')
-                visualization.displayTrackingResults(image, tracks, foreground, save_path)
+                visualization.displaySpeedResults(image, tracks, foreground, save_path)
 
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')

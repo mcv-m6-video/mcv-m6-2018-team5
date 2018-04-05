@@ -7,9 +7,15 @@ def speed_estimation(vehicles, pix_met, frame_sec, dt=1):
 
     for vehicle in vehicles:
         current = len(vehicle.positions) - 1
-        if current > dt:
-            dist = (np.sqrt(np.sum(np.square(np.asarray(vehicle.positions[current]) - np.asarray(vehicle.positions[current - dt]))))) * (1 / pix_met)
-            time = dt * (1 / frame_sec)
+        if current >= dt:
+            # dist = (np.sqrt(np.sum(np.square(np.asarray(vehicle.positions[current]) - np.asarray(vehicle.positions[current - dt]))))) * (1 / pix_met)
+            # time = dt * (1 / frame_sec)
+            # speed = (dist / time * 3600) / 1000
+            # vehicle.speed = speed
+            dist = (np.sqrt(np.sum(
+                np.square(np.asarray(vehicle.positions[current]) - np.asarray(vehicle.positions[0]))))) * (
+                   1 / pix_met)
+            time = len(vehicle.positions) * (1 / frame_sec)
             speed = (dist / time * 3600) / 1000
             vehicle.speed = speed
 

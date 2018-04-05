@@ -42,6 +42,7 @@ min_height                    = 35
 # Monitoring parameters
 pixels_meter                  = 8.57
 frames_second                 = 25.0
+update_speed                   = 5
 
 # Save results
 save_results                 = True        # Save Log file

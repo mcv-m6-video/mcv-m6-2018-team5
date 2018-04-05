@@ -5,6 +5,7 @@ import logging
 import cv2 as cv
 import numpy as np
 import time
+from tools import image_rectification
 
 
 def single_gaussian_modelling(back_list):
@@ -33,12 +34,13 @@ def single_gaussian_modelling(back_list):
     return mean, variance
 
 
-def multivariative_gaussian_modelling(back_list, color_space="RGB"):
+def multivariative_gaussian_modelling(back_list, H, shape, color_space="RGB"):
     logger = logging.getLogger(__name__)
 
     start = time.time()
 
     back_img = cv.imread(back_list[0])
+    back_img = image_rectification.wrap(back_img, H, shape)*255
     if color_space == "HSV":
         back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
         mean = np.zeros((back_img.shape[0], back_img.shape[1], 2))
@@ -49,6 +51,7 @@ def multivariative_gaussian_modelling(back_list, color_space="RGB"):
 
     for back_image in back_list:
         back_img = cv.imread(back_image)
+        back_img = image_rectification.wrap(back_img, H, shape)*255
         if color_space == "HSV":
             back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
 
@@ -61,6 +64,7 @@ def multivariative_gaussian_modelling(back_list, color_space="RGB"):
 
     for back_image in back_list:
         back_img = cv.imread(back_image)
+        back_img = image_rectification.wrap(back_img, H, shape)*255
         if color_space == "HSV":
             back_img = cv.cvtColor(back_img, cv.COLOR_BGR2HSV)
         variance[:, :, 0] = variance[:, :, 0] + np.square(back_img[:, :, 0] - mean[:, :, 0])
@@ -118,7 +122,8 @@ def adaptive_foreground_estimation(img, mean, variance, alpha, rho):
 
 
 def adaptive_foreground_estimation_color(img, mean, variance, alpha, rho, color_space):
-    img = cv.imread(img)
+    if not isinstance(img, np.ndarray):
+        img = cv.imread(img)
     if color_space == "HSV":
         img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
         img = img[:, :, 0:2]
