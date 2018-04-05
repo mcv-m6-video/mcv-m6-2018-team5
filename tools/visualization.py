@@ -588,6 +588,8 @@ def displayTrackingResults(img, tracks, foreground, save_path):
                 #cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), car_colour, 2)
                 #cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), car_colour, -1)
                 #cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
+                cv.putText(img, str(track.speed), (track.bbox[0], track.bbox[1] + 10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
+                           1)
                 for point in track.positions:
                     cv.circle(img, (int(point[0]), int(point[1])), 2, car_colour, -1)
                 cv.polylines(img, [np.int32(track.positions)], False, car_colour, 1)

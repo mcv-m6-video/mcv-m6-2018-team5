@@ -20,6 +20,8 @@ class Track(object):
         self.totalVisibleCount = 1
         self.consecutiveInvisibleCount = 0
 
+        self.speed = 0
+
 def predictNewLocationsOfTracks(tracks):
     for track in tracks:
         bbox = track.bbox

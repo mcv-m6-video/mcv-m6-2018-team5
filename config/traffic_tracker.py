@@ -39,6 +39,10 @@ costOfNonAssignment           = 50
 min_width                     = 35
 min_height                    = 35
 
+# Monitoring parameters
+pixels_meter                  = 8.57
+frames_second                 = 25.0
+
 # Save results
 save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test

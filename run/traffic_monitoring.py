@@ -9,7 +9,7 @@ from skimage import io as skio
 import cv2 as cv
 
 from tools import background_modeling, foreground_improving, detection, multi_tracking, visualization, \
-    image_rectification
+    image_rectification, traffic_parameters
 from tools.image_parser import get_image_list_changedetection_dataset
 from utils.load_configutation import Configuration
 from utils.log import log_context
@@ -65,6 +65,8 @@ def traffic_monitoring(cf):
             multi_tracking.updateUnassignedTracks(tracks, unassignedTracks)
             multi_tracking.deleteLostTracks(tracks)
             multi_tracking.createNewTracks(tracks, bboxes, centroids, unassignedDetections)
+
+            traffic_parameters.speed_estimation(tracks, cf.pixels_meter, cf.frames_second)
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)

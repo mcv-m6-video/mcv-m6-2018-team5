@@ -3,13 +3,15 @@ import cv2 as cv
 from visualization import draw_lines
 
 
-def speed_estimation(prevPos, curPos, prevFram, curFram, pix2met, fram2sec):
-    dist = (np.sqrt(np.sum(np.square(curPos - prevPos)))) * pix2met
-    time = (curFram - prevFram) * fram2sec
+def speed_estimation(vehicles, pix_met, frame_sec, dt=1):
 
-    speed = dist / time * (1 / 1000) * 3600
-
-    return speed
+    for vehicle in vehicles:
+        current = len(vehicle.positions) - 1
+        if current > dt:
+            dist = (np.sqrt(np.sum(np.square(np.asarray(vehicle.positions[current]) - np.asarray(vehicle.positions[current - dt]))))) * (1 / pix_met)
+            time = dt * (1 / frame_sec)
+            speed = (dist / time * 3600) / 1000
+            vehicle.speed = speed
 
 
 def lane_detection(image):
