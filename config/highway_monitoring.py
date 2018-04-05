@@ -41,7 +41,7 @@ min_width                     = 21
 min_height                    = 21
 
 # Monitoring parameters
-pixels_meter                  = 3.333
+pixels_meter                  = 1.95
 frames_second                 = 25.0
 update_speed                  = 5
 

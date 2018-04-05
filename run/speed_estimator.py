@@ -12,6 +12,7 @@ from skimage import io as skio
 from tools import background_modeling, foreground_improving, detection, visualization, image_rectification, \
     traffic_parameters
 from tools.image_parser import get_image_list_changedetection_dataset
+from tools.multi_tracking import MultiTracker
 from utils.load_configutation import Configuration
 from utils.log import log_context
 from utils.mkdirs import mkdirs
