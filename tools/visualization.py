@@ -573,7 +573,7 @@ def show_detections(image_data, labeled_image, region_properties, save_path):
     plt.close()
 
 
-def displayTrackingResults(img, tracks, foreground, save_path):
+def display_tracking_results(img, tracks, foreground, save_path):
 
     foreground = 255*foreground.astype('uint8')
     foreground = cv.cvtColor(foreground, cv.COLOR_GRAY2BGR)
@@ -585,20 +585,17 @@ def displayTrackingResults(img, tracks, foreground, save_path):
         if tracks != list():
             for track in tracks:
                 car_colour = CAR_COLOURS[track.id % len(CAR_COLOURS)]
-                #cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), car_colour, 2)
-                #cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), car_colour, -1)
-                #cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
-                #cv.putText(img, str(np.round(track.speed)), (track.bbox[0], track.bbox[1] + 10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
-                #           1)
                 for point in track.positions:
-                    cv.circle(img, (int(point[0]), int(point[1])), 2, car_colour, -1)
+                    cv.circle(img, (int(point[0]), int(point[1])), 2, car_colour, 1)
                 cv.polylines(img, [np.int32(track.positions)], False, car_colour, 1)
 
                 for point in track.predictions:
-                    cv.rectangle(img, (int(point[0])-2, int(point[1])-2), (int(point[0])+2, int(point[1])+2), car_colour, 1)
+                    cv.rectangle(img, (int(point[0])-2, int(point[1])-2), (int(point[0])+2, int(point[1])+2),
+                                 car_colour, 1)
                 cv.polylines(img, [np.int32(track.predictions)], False, car_colour, 1)
 
     cv.imwrite(save_path, img)
+
 
 def displaySpeedResults(img, tracks, foreground, save_path):
 

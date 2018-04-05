@@ -6,14 +6,12 @@ import argparse
 import logging
 import os
 
-from skimage import io as skio
 import cv2 as cv
-from skimage import measure as skmeasure
-from skimage import morphology as skmorph
+from skimage import io as skio
 
-from tools import background_modeling, foreground_improving, visualization, multi_tracking, detection
+from tools import background_modeling, foreground_improving, visualization, detection
 from tools.image_parser import get_image_list_changedetection_dataset
-from tools.tracking import Tracker
+from tools.multi_tracking import MultiTracker
 from utils.load_configutation import Configuration
 from utils.log import log_context
 from utils.mkdirs import mkdirs
@@ -37,14 +35,11 @@ def vehicle_tracker(cf):
 
         background_img_list = image_list[:len(image_list) // 2]
         foreground_img_list = image_list[(len(image_list) // 2):]
-        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                               color_space=cf.color_space)
 
         # Instantiate tracker for multi-object tracking
-        #tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0, cf)
-
-        tracks = []  # Create an empty array of tracks.
-
-        nextId = 1  # ID of the next track
+        multi_tracker = MultiTracker(cf.costOfNonAssignment)
 
         for image_path in foreground_img_list:
 
@@ -58,62 +53,27 @@ def vehicle_tracker(cf):
 
             image = skio.imread(image_path, as_grey=True)
             bboxes, centroids = detection.detectObjects(image, foreground)
-            multi_tracking.predictNewLocationsOfTracks(tracks)
-            assignments, unassignedTracks, unassignedDetections = multi_tracking.detectionToTrackAssignment(tracks, centroids, cf.costOfNonAssignment)
-            multi_tracking.updateAssignedTracks(tracks, bboxes, centroids, assignments)
-            multi_tracking.updateUnassignedTracks(tracks, unassignedTracks)
-            multi_tracking.deleteLostTracks(tracks)
-            multi_tracking.createNewTracks(tracks, bboxes, centroids, unassignedDetections)
+
+            # Tracking
+            multi_tracker.predict_new_locations_of_tracks()
+            multi_tracker.detection_to_track_assignment(centroids)
+            multi_tracker.update_assigned_tracks(bboxes, centroids)
+            multi_tracker.update_unassigned_tracks()
+            multi_tracker.delete_lost_tracks()
+            multi_tracker.create_new_tracks(bboxes, centroids)
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = cv.imread(image_path)
-                visualization.displayTrackingResults(image, tracks, foreground, save_path)
-
-            '''
-            # Detect distinct objects in the image
-            detections = list()
-            labeled_image = skmorph.label(foreground, connectivity=foreground.ndim)
-            img_data = skio.imread(image_path, as_grey=True)
-            region_properties = skmeasure.regionprops(labeled_image, img_data)
-
-            # (Optional) Filter regions
-            filtered_region_props = region_properties
-
-            # Extract detections from region properties
-            # TODO: filter detections properly....
-            #detections = [list(x.centroid) for x in filtered_region_props]
-            detections = [list(x.centroid) if(x.convex_area > 2000) else list() for x in filtered_region_props]
-            idx = 0
-            while idx < len(detections):
-                if detections[idx] == list():
-                    detections.remove(detections[idx])
-                else:
-                    idx += 1
-            # Update tracking
-            tracker.update(detections)
-
-            # TODO: add speed estimation
-
-
-            if cf.save_results:
-                image_name = os.path.basename(image_path)
-                image_name = os.path.splitext(image_name)[0]
-
-                # TODO: add bounding box drawing with car id and speed
-                # (Optional) Plot detections
-                save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
-                visualization.show_detections(img_data, labeled_image, filtered_region_props, save_path)
-            '''
+                visualization.display_tracking_results(image, multi_tracker.tracks, foreground, save_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
 
 # Main function
 def main():
-
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='W5 - Vehicle tracker and speed estimator [Team 5]')
     parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')
