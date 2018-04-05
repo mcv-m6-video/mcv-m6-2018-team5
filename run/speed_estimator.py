@@ -39,11 +39,9 @@ def speed_estimator(cf):
 
         H, shape = image_rectification.rectify_image(cv.imread(image_list[0]))
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, H, shape, cf.color_space)
-        # Instantiate tracker for multi-object tracking
-        #tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0, cf)
-        tracks = []  # Create an empty array of tracks.
 
-        nextId = 1  # ID of the next track
+        # Instantiate tracker for multi-object tracking
+        multi_tracker = MultiTracker(cf.costOfNonAssignment)
 
         for n, image_path in enumerate(image_list):
             print('Analysing frame %s from %s' % (n, len(image_list)))
@@ -59,15 +57,19 @@ def speed_estimator(cf):
 
             image = skio.imread(image_path, as_grey=True)
             image = image_rectification.wrap(image, H, shape)
-            # foreground = image_rectification.wrap(foreground, H, shape)
 
             bboxes, centroids = detection.detectObjects(image, foreground)
-            multi_tracking.predictNewLocationsOfTracks(tracks)
-            assignments, unassignedTracks, unassignedDetections = multi_tracking.detectionToTrackAssignment(tracks, centroids, cf.costOfNonAssignment)
-            multi_tracking.updateAssignedTracks(tracks, bboxes, centroids, assignments)
-            multi_tracking.updateUnassignedTracks(tracks, unassignedTracks)
-            multi_tracking.deleteLostTracks(tracks)
-            multi_tracking.createNewTracks(tracks, bboxes, centroids, unassignedDetections)
+
+            # Tracking
+            multi_tracker.predict_new_locations_of_tracks()
+            multi_tracker.detection_to_track_assignment(centroids)
+            multi_tracker.update_assigned_tracks(bboxes, centroids)
+            multi_tracker.update_unassigned_tracks()
+            multi_tracker.delete_lost_tracks()
+            multi_tracker.create_new_tracks(bboxes, centroids)
+
+            tracks = multi_tracker.tracks
+
             if n % cf.update_speed == 0:
                 traffic_parameters.speed_estimation(tracks, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
 
