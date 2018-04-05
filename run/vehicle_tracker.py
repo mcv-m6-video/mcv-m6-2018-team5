@@ -35,7 +35,8 @@ def vehicle_tracker(cf):
 
         background_img_list = image_list[:len(image_list) // 2]
         foreground_img_list = image_list[(len(image_list) // 2):]
-        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
+                                                                               color_space=cf.color_space)
 
         # Instantiate tracker for multi-object tracking
         multi_tracker = MultiTracker(cf.costOfNonAssignment)
@@ -66,7 +67,7 @@ def vehicle_tracker(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = cv.imread(image_path)
-                visualization.displayTrackingResults(image, multi_tracker.tracks, foreground, save_path)
+                visualization.display_tracking_results(image, multi_tracker.tracks, foreground, save_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
