@@ -35,7 +35,7 @@ def traffic_monitoring(cf):
         background_img_list = image_list[:len(image_list) // 2]
         foreground_img_list = image_list[(len(image_list) // 2):]
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
-        H, shape = image_rectification.rectify_image(mean)
+        H, shape = image_rectification.rectify_image(cv.imread(foreground_img_list[0]))
 
         # Instantiate tracker for multi-object tracking
         #tracker = Tracker(cf.distance_threshold, cf.max_frames_to_skip, cf.max_trace_length, 0, cf)
