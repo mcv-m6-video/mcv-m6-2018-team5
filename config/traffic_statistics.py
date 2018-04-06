@@ -40,10 +40,12 @@ costOfNonAssignment           = 50
 min_width                     = 35
 min_height                    = 35
 
-# Monitoring parameters
-pixels_meter                  = 8.57
+# Road statistics parameters
+pixels_meter                  = 8.89
 frames_second                 = 25.0
-update_speed                   = 5
+update_speed                  = 1
+roi_speed                   = [[5, 64], [154, 6], [309, 103], [125, 226]]
+max_speed                   = 100
 
 # Save results
 save_results                 = True        # Save Log file

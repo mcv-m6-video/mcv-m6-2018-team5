@@ -597,7 +597,7 @@ def display_tracking_results(img, tracks, foreground, save_path):
     cv.imwrite(save_path, img)
 
 
-def displaySpeedResults(img, tracks, foreground, save_path):
+def displayCurrentSpeedResults(img, tracks, foreground, save_path):
 
     foreground = 255*foreground.astype('uint8')
     foreground = cv.cvtColor(foreground, cv.COLOR_GRAY2BGR)
@@ -612,7 +612,25 @@ def displaySpeedResults(img, tracks, foreground, save_path):
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), car_colour, 2)
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), car_colour, -1)
                 #cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
-                cv.putText(img, str(np.round(track.speed)), (track.bbox[0], track.bbox[1] + 10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
+                cv.putText(img, str(np.round(track.current_speed)), (track.bbox[0], track.bbox[1] + 10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
                            1)
 
+    cv.imwrite(save_path, img)
+
+def displaySpeedResults(img, tracks, max_speed, save_path):
+
+    if tracks != list():
+
+        # Display the objects. If an object has not been detected
+        # in this frame, display its predicted bounding box.
+        if tracks != list():
+            for track in tracks:
+                if track.current_speed > 0:
+                    if track.current_speed > max_speed:
+                        color = (255, 0, 0)
+                    elif track.current_speed < max_speed * 0.8:
+                        color = (0, 0, 255)
+                    else:
+                        color = (0, 255, 0)
+                    cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), color, 2)
     cv.imwrite(save_path, img)

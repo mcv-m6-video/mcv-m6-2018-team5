@@ -8,7 +8,7 @@ import os
 
 import cv2 as cv
 from skimage import io as skio
-
+import numpy as np
 from tools import background_modeling, foreground_improving, detection, visualization, image_rectification, \
     traffic_parameters
 from tools.image_parser import get_image_list_changedetection_dataset
@@ -21,7 +21,7 @@ EPSILON = 1e-8
 
 
 # noinspection PyUnboundLocalVariable
-def speed_estimator(cf):
+def road_statistics(cf):
     with log_context(cf.log_file):
         logger = logging.getLogger(__name__)
         logger.info(' ---> Init test: ' + cf.test_name + ' <---')
@@ -38,8 +38,7 @@ def speed_estimator(cf):
             cf.dataset_path, 'in', cf.first_back, cf.image_type, cf.nr_back
         )
 
-        H, shape = image_rectification.rectify_image(cv.imread(image_list[0]))
-        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space, H, shape)
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
         # Instantiate tracker for multi-object tracking
         multi_tracker = MultiTracker(cf.costOfNonAssignment)
@@ -47,7 +46,6 @@ def speed_estimator(cf):
         for n, image_path in enumerate(image_list):
             print('Analysing frame %s from %s' % (n, len(image_list)))
             image = cv.imread(image_path)
-            image = image_rectification.wrap(image, H, shape)
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                 image, mean, variance, cf.alpha, cf.rho, cf.color_space)
 
@@ -57,8 +55,6 @@ def speed_estimator(cf):
             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
             image_gray = skio.imread(image_path, as_grey=True)
-            image_gray = image_rectification.wrap(image_gray, H, shape)
-
             bboxes, centroids = detection.detectObjects(image_gray, foreground)
 
             # Tracking
@@ -73,14 +69,16 @@ def speed_estimator(cf):
 
             if n % cf.update_speed == 0:
                 for track in tracks:
-                    traffic_parameters.speed_estimation(track, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
+                    if traffic_parameters.is_inside_speed_roi(track.positions[-1], cf.roi_speed):
+                        traffic_parameters.speed(track, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
+                        track.speeds.append(track.current_speed)
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.displayCurrentSpeedResults(image, tracks, foreground, save_path)
+                visualization.displaySpeedResults(image, tracks, cf.max_speed, save_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
@@ -89,7 +87,7 @@ def speed_estimator(cf):
 def main():
 
     # Get parameters from arguments
-    parser = argparse.ArgumentParser(description='W5 - Speed estimator [Team 5]')
+    parser = argparse.ArgumentParser(description='Road statistics [Team 5]')
     parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')
     parser.add_argument('-t', '--test-name', type=str, required=True, help='Name of the test')
 
@@ -107,7 +105,7 @@ def main():
     cf = configuration.load()
 
     # Run task
-    speed_estimator(cf)
+    road_statistics(cf)
 
 
 # Entry point of the script

@@ -40,7 +40,7 @@ costOfNonAssignment           = 10
 min_width                     = 21
 min_height                    = 21
 
-# Monitoring parameters
+# Speed parameters
 pixels_meter                  = 1.95
 frames_second                 = 25.0
 update_speed                  = 5

@@ -34,7 +34,7 @@ def single_gaussian_modelling(back_list):
     return mean, variance
 
 
-def multivariative_gaussian_modelling(back_list, H=None, shape=None, color_space="RGB"):
+def multivariative_gaussian_modelling(back_list, color_space="RGB", H=None, shape=None):
     logger = logging.getLogger(__name__)
 
     start = time.time()

@@ -35,8 +35,7 @@ def vehicle_tracker(cf):
 
         background_img_list = image_list[:len(image_list) // 2]
         foreground_img_list = image_list[(len(image_list) // 2):]
-        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list,
-                                                                               color_space=cf.color_space)
+        mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
         # Instantiate tracker for multi-object tracking
         multi_tracker = MultiTracker(cf.costOfNonAssignment)
@@ -51,8 +50,8 @@ def vehicle_tracker(cf):
             foreground = foreground_improving.image_opening(foreground, cf.opening_strel, cf.opening_strel_size)
             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
-            image = skio.imread(image_path, as_grey=True)
-            bboxes, centroids = detection.detectObjects(image, foreground)
+            image_gray = skio.imread(image_path, as_grey=True)
+            bboxes, centroids = detection.detectObjects(image_gray, foreground)
 
             # Tracking
             multi_tracker.predict_new_locations_of_tracks()
@@ -75,7 +74,7 @@ def vehicle_tracker(cf):
 # Main function
 def main():
     # Get parameters from arguments
-    parser = argparse.ArgumentParser(description='W5 - Vehicle tracker and speed estimator [Team 5]')
+    parser = argparse.ArgumentParser(description='W5 - Vehicle tracker [Team 5]')
     parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')
     parser.add_argument('-t', '--test-name', type=str, required=True, help='Name of the test')
 

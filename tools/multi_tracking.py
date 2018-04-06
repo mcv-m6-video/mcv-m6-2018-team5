@@ -6,15 +6,19 @@ from kalman_filter import KalmanFilter
 class Track(object):
 
     def __init__(self, idx, bbox, kalman_filter):
-        self.id = idx
-        self.bbox = bbox
+        # Kalman filter
         self.positions = [[kalman_filter.x[0], kalman_filter.x[2]]]
         self.predictions = [[kalman_filter.x[0], kalman_filter.x[2]]]
         self.kalman_filter = kalman_filter
         self.age = 1
         self.total_visible_count = 1
         self.consecutive_invisible_count = 0
-        self.speed = 0
+
+        # Vehicle
+        self.id = idx
+        self.bbox = bbox
+        self.current_speed = 0
+        self.speeds = []
 
 
 class MultiTracker(object):
