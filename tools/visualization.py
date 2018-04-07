@@ -617,7 +617,7 @@ def displayCurrentSpeedResults(img, tracks, foreground, save_path):
 
     cv.imwrite(save_path, img)
 
-def displaySpeedResults(img, tracks, max_speed, save_path):
+def displaySpeedResults(img, tracks, max_speed, lane_count, save_path):
 
     if tracks != list():
 
@@ -633,4 +633,6 @@ def displaySpeedResults(img, tracks, max_speed, save_path):
                     else:
                         color = (0, 255, 0)
                     cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), color, 2)
+
+    cv.putText(img, str(lane_count), (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
     cv.imwrite(save_path, img)

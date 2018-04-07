@@ -42,6 +42,7 @@ def road_statistics(cf):
 
         # Instantiate tracker for multi-object tracking
         multi_tracker = MultiTracker(cf.costOfNonAssignment)
+        lane_count = np.zeros((len(cf.lanes), 1))
 
         for n, image_path in enumerate(image_list):
             print('Analysing frame %s from %s' % (n, len(image_list)))
@@ -72,13 +73,18 @@ def road_statistics(cf):
                     if traffic_parameters.is_inside_speed_roi(track.positions[-1], cf.roi_speed):
                         traffic_parameters.speed(track, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
                         track.speeds.append(track.current_speed)
+                    if track.lane == -1:
+                        vehicle_lane = traffic_parameters.lane_detection(track.positions[-1], cf.lanes)
+                        if vehicle_lane != -1:
+                            track.lane = vehicle_lane
+                            lane_count[vehicle_lane] += 1
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.displaySpeedResults(image, tracks, cf.max_speed, save_path)
+                visualization.displaySpeedResults(image, tracks, cf.max_speed, lane_count, save_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

@@ -44,8 +44,9 @@ min_height                    = 35
 pixels_meter                  = 8.89
 frames_second                 = 25.0
 update_speed                  = 1
-roi_speed                   = [[5, 64], [154, 6], [309, 103], [125, 226]]
-max_speed                   = 100
+roi_speed                     = [[5, 64], [154, 6], [309, 103], [125, 226]]
+lanes                         = [[[0, 0], [45, 0], [311, 238], [138, 238], [4, 56]], [[58, 0], [152, 0], [317, 100], [317, 222]]]
+max_speed                     = 100
 
 # Save results
 save_results                 = True        # Save Log file

@@ -33,12 +33,10 @@ def speed(vehicle, pix_met, frame_sec, dt=1):
         vehicle.current_speed = speed
 
 
-def lane_detection(image):
-    gray_image = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
-    blur_image = cv.blur(gray_image, (3, 3))
-    cannyed_image = cv.Canny(blur_image, 100, 200)
-
-    lines = cv.HoughLinesP(cannyed_image, rho=6, theta=np.pi / 60, threshold=120, lines=np.array([]), minLineLength=10,
-                           maxLineGap=10)
-    draw_lines(image, lines, thickness=5)
+def lane_detection(position, lanes):
+    for idx in range(len(lanes)):
+        polygon = path.Path(np.asarray(lanes[idx]))
+        if polygon.contains_point(position):
+            return idx
+    return -1
 

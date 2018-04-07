@@ -19,6 +19,7 @@ class Track(object):
         self.bbox = bbox
         self.current_speed = 0
         self.speeds = []
+        self.lane = -1
 
 
 class MultiTracker(object):
