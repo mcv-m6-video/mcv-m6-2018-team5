@@ -617,22 +617,48 @@ def displayCurrentSpeedResults(img, tracks, foreground, save_path):
 
     cv.imwrite(save_path, img)
 
-def displaySpeedResults(img, tracks, max_speed, lane_count, save_path):
+def displaySpeedResults(img, tracks, max_speed, lane_counts, save_path, roi):
 
+    # Display the objects. If an object has not been detected
+    # in this frame, display its predicted bounding box.
     if tracks != list():
-
-        # Display the objects. If an object has not been detected
-        # in this frame, display its predicted bounding box.
-        if tracks != list():
-            for track in tracks:
-                if track.current_speed > 0:
-                    if track.current_speed > max_speed:
-                        color = (255, 0, 0)
-                    elif track.current_speed < max_speed * 0.8:
-                        color = (0, 0, 255)
-                    else:
-                        color = (0, 255, 0)
-                    cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), color, 2)
-
-    cv.putText(img, str(lane_count), (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+        for track in tracks:
+            if track.current_speed > 0:
+                if track.current_speed > max_speed:
+                    color = (0, 0, 255)
+                elif track.current_speed < max_speed * 0.8:
+                    color = (255, 0, 0)
+                else:
+                    color = (0, 255, 0)
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), color, 2)
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), color, -1)
+                cv.putText(img, str(np.round(track.current_speed)), (track.bbox[0], track.bbox[1] + 10),
+                           cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
+                           1)
+    cv.line(img, (roi[0][0], roi[0][1]), (roi[1][0], roi[1][1]), (255, 255, 0), 2)
+    cv.line(img, (roi[2][0], roi[2][1]), (roi[3][0], roi[3][1]), (255, 255, 0), 2)
+    #cv.putText(img, str(lane_count), (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+    text = ', '.join('Lane{}: {}'.format(n, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace('[', '').replace(']', '').replace('.', '')
+    cv.putText(img, (text) , (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
     cv.imwrite(save_path, img)
+
+def visualizeLanes(img, lanes, save_path):
+    plt.imshow(img)
+    colors = cl.BASE_COLORS.values()
+    for idx in range(len(lanes)):
+        pol = patches.Polygon(lanes[idx], alpha= 0.4, facecolor=colors[idx])
+        plt.gca().add_artist(pol)
+    plt.axis('off')
+    plt.show(block=False)
+    plt.savefig(save_path)
+    plt.close()
+
+def visualizeROI(img, roi, save_path):
+    plt.imshow(img)
+    colors = cl.BASE_COLORS.values()
+    pol = patches.Polygon(roi, alpha= 0.4, facecolor=colors[6])
+    plt.gca().add_artist(pol)
+    plt.axis('off')
+    plt.show(block=False)
+    plt.savefig(save_path)
+    plt.close()

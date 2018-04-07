@@ -40,6 +40,12 @@ def road_statistics(cf):
             cf.dataset_path, 'in', cf.first_back, cf.image_type, cf.nr_back
         )
 
+        visualization.visualizeLanes(cv.imread(background_img_list[0]), cf.lanes,
+                                     (background_img_list[0].replace('input', 'results').replace('in', 'lane')))
+
+        visualization.visualizeROI(cv.imread(background_img_list[0]), cf.roi_speed,
+                                   (background_img_list[0].replace('input', 'results').replace('in', 'roi')))
+
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
         # Instantiate tracker for multi-object tracking
@@ -91,7 +97,7 @@ def road_statistics(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.displaySpeedResults(image, tracks, cf.max_speed, lane_count, save_path)
+                visualization.displaySpeedResults(image, tracks, cf.max_speed, lane_count, save_path, cf.roi_speed)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
