@@ -8,6 +8,7 @@ import os
 
 import cv2 as cv
 from skimage import io as skio
+from tqdm import tqdm
 
 from tools import background_modeling, foreground_improving, detection, visualization, image_rectification, \
     traffic_parameters
@@ -42,10 +43,15 @@ def speed_estimator(cf):
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space, H, shape)
 
         # Instantiate tracker for multi-object tracking
-        multi_tracker = MultiTracker(cf.costOfNonAssignment)
+        kalman_init_params = {
+            'init_estimate_error': cf.init_estimate_error,
+            'motion_model_noise': cf.motion_model_noise,
+            'measurement_noise': cf.measurement_noise
+        }
+        multi_tracker = MultiTracker(cf.cost_of_non_assignment, cf.invisible_too_long,
+                                     cf.min_age_threshold, kalman_init_params)
 
-        for n, image_path in enumerate(image_list):
-            print('Analysing frame %s from %s' % (n, len(image_list)))
+        for n, image_path in tqdm(enumerate(image_list)):
             image = cv.imread(image_path)
             image = image_rectification.wrap(image, H, shape)
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(

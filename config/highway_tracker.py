@@ -27,15 +27,17 @@ closing_strel_size            = 10
 area_filtering                = True
 area_filtering_P              = 128
 
-# Tracking parameters
-distance_threshold            = 5
-max_frames_to_skip            = 10
-max_trace_length              = 15
+# Kalman Filter
 init_estimate_error           = [200, 25]
 motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
-costOfNonAssignment           = 10
 
+# Multi-tracking parameters
+cost_of_non_assignment        = 10
+invisible_too_long            = 7
+min_age_threshold             = 15
+
+# Alternative tracking (SOTA)
 min_width                     = 21
 min_height                    = 21
 

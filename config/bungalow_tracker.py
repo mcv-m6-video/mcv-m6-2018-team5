@@ -1,11 +1,11 @@
 # Dataset
-dataset_name                 = 'highway'                        # Dataset name
-dataset_path                 = 'datasets/highway/input'         # Dataset path
-gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
-results_path                 = 'datasets/highway/results'
+dataset_name                 = 'bungalows'                        # Dataset name
+dataset_path                 = 'datasets/bungalows/input'         # Dataset path
+gt_path                      = 'datasets/bungalows/groundtruth'   # Ground truth path
+results_path                 = 'datasets/bungalows/results'
 
 # Input Images
-nr_images                    = 1700
+nr_images                    = 600
 first_image                  = '000001'         # Fist image filename
 image_type                   = 'jpg'            # Input image type
 gt_image_type                = 'png'            # Ground truth image type
@@ -14,8 +14,7 @@ result_image_type            = 'png'
 # Background Modelling
 alpha                         = 3.051
 rho                           = 0.211
-first_back                    = '000469'
-nr_back                       = 25
+
 modelling_method              = 'adaptive'      # adaptive, non-adaptive
 color_space                   = "RGB"           # RGB, HSV
 
@@ -24,9 +23,9 @@ four_connectivity             = False
 opening_strel                 = 'square'
 opening_strel_size            = 5
 closing_strel                 = 'square'
-closing_strel_size            = 10
-area_filtering                = True
-area_filtering_P              = 128
+closing_strel_size            = 15
+area_filtering                = False
+area_filtering_P              = 70
 
 # Kalman Filter
 init_estimate_error           = [200, 25]
@@ -34,17 +33,18 @@ motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
 
 # Multi-tracking parameters
-cost_of_non_assignment        = 10
+cost_of_non_assignment        = 50
 invisible_too_long            = 7
 min_age_threshold             = 15
 
-# Speed parameters
-pixels_meter                  = 4.97
+# Alternative tracking (SOTA)
+min_width                     = 21
+min_height                    = 21
+
+# Monitoring parameters
+pixels_meter                  = 3.333
 frames_second                 = 25.0
-update_speed                  = 1
-roi_speed                     = [[104, 119], [262, 119], [252, 222], [7, 222]]
-lanes                         = [[[205, 12], [235, 12], [112, 237], [5, 237]], [[243, 12], [267, 12], [245, 237], [127, 237]]]
-max_speed                     = 80
+update_speed                  = 5
 
 # Save results
 save_results                 = True        # Save Log file

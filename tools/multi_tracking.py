@@ -24,7 +24,7 @@ class Track(object):
 
 class MultiTracker(object):
 
-    def __init__(self, cost_of_non_assignment, invisible_too_long=7, age_threshold=8):
+    def __init__(self, cost_of_non_assignment, invisible_too_long, min_age_threshold, kalman_init_parameters):
         self.next_id = 1
 
         # Placeholders
@@ -35,8 +35,11 @@ class MultiTracker(object):
 
         # Parameters
         self.invisible_too_long = invisible_too_long
-        self.age_threshold = age_threshold
+        self.min_age_threshold = min_age_threshold
         self.cost_of_non_assignment = cost_of_non_assignment
+
+        # Kalman init parameters
+        self.kalman_init_parameters = kalman_init_parameters
 
     def create_new_tracks(self, bboxes, centroids):
         unassigned_centroids = [centroids[i] for i in range(len(centroids)) if (i in self.unassigned_detections)]
@@ -44,7 +47,7 @@ class MultiTracker(object):
 
         for (centroid, bbox) in zip(unassigned_centroids, unassigned_bboxes):
             # Create a Kalman filter object.
-            kalman_filter = KalmanFilter(centroid, [200, 50], [100, 25], 100)
+            kalman_filter = KalmanFilter(centroid, **self.kalman_init_parameters)
 
             # Create a new track.
             new_track = Track(self.next_id, bbox, kalman_filter)
@@ -67,7 +70,7 @@ class MultiTracker(object):
         # Find the indices of 'lost' tracks.
         i = 0
         while i < len(self.tracks):
-            if (ages[i] < self.age_threshold and visibility[i] < 0.6) or \
+            if (ages[i] < self.min_age_threshold and visibility[i] < 0.6) or \
                     (self.tracks[i].consecutive_invisible_count >= self.invisible_too_long):
                 del self.tracks[i]
             else:

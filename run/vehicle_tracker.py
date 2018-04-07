@@ -8,6 +8,7 @@ import os
 
 import cv2 as cv
 from skimage import io as skio
+from tqdm import tqdm
 
 from tools import background_modeling, foreground_improving, visualization, detection
 from tools.image_parser import get_image_list_changedetection_dataset
@@ -38,9 +39,15 @@ def vehicle_tracker(cf):
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
         # Instantiate tracker for multi-object tracking
-        multi_tracker = MultiTracker(cf.costOfNonAssignment)
+        kalman_init_params = {
+            'init_estimate_error': cf.init_estimate_error,
+            'motion_model_noise': cf.motion_model_noise,
+            'measurement_noise': cf.measurement_noise
+        }
+        multi_tracker = MultiTracker(cf.cost_of_non_assignment, cf.invisible_too_long,
+                                     cf.min_age_threshold, kalman_init_params)
 
-        for image_path in foreground_img_list:
+        for image_path in tqdm(foreground_img_list):
 
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
                 image_path, mean, variance, cf.alpha, cf.rho, cf.color_space)
