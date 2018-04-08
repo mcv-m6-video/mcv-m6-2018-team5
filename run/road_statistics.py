@@ -82,8 +82,15 @@ def road_statistics(cf):
 
             if n % cf.update_speed == 0:
                 for track in tracks:
+                    if isinstance(cf.pixels_meter, list):
+                        if track.lane != -1:
+                            pix_meter = cf.pixels_meter[track.lane]
+                        else:
+                            pix_meter = sum(cf.pixels_meter)
+                    else:
+                        pix_meter = cf.pixels_meter
                     if traffic_parameters.is_inside_speed_roi(track.positions[-1], cf.roi_speed):
-                        traffic_parameters.speed(track, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
+                        traffic_parameters.speed(track, pix_meter, cf.frames_second, dt=cf.update_speed)
                         track.speeds.append(track.current_speed)
                     if track.lane == -1:
                         vehicle_lane = traffic_parameters.lane_detection(track.positions[-1], cf.lanes)
@@ -97,6 +104,15 @@ def road_statistics(cf):
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
                 visualization.displaySpeedResults(image, tracks, cf.max_speed, lane_count, save_path, cf.roi_speed)
+        for n, n_lanes in enumerate(lane_count):
+            if n+1 == 1:
+                logger.info('A total of {} vehicles have passed through the {}st lane'.format(n_lanes, n+1))
+            elif n + 1 == 2:
+                logger.info('A total of {} vehicles have passed through the {}nd lane'.format(n_lanes, n + 1))
+            elif n + 1 == 3:
+                logger.info('A total of {} vehicles have passed through the {}rd lane'.format(n_lanes, n + 1))
+            else:
+                logger.info('A total of {} vehicles have passed through the {}th lane'.format(n_lanes, n + 1))
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

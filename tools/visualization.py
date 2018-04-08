@@ -638,8 +638,14 @@ def displaySpeedResults(img, tracks, max_speed, lane_counts, save_path, roi):
     cv.line(img, (roi[0][0], roi[0][1]), (roi[1][0], roi[1][1]), (255, 255, 0), 2)
     cv.line(img, (roi[2][0], roi[2][1]), (roi[3][0], roi[3][1]), (255, 255, 0), 2)
     #cv.putText(img, str(lane_count), (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
-    text = ', '.join('Lane{}: {}'.format(n, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace('[', '').replace(']', '').replace('.', '')
-    cv.putText(img, (text) , (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+    text = ', '.join('Lane{}: {}'.format(n+1, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace('[', '').replace(']', '').replace('.', '')
+    if len(text)>18:
+        text1 = text[:18]
+        text2 = text[20:]
+        cv.putText(img, (text1), (20, 15), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+        cv.putText(img, (text2), (20, img.shape[0]-5), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+    else:
+        cv.putText(img, (text) , (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
     cv.imwrite(save_path, img)
 
 def visualizeLanes(img, lanes, save_path):
