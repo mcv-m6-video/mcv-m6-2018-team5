@@ -7,12 +7,11 @@ import logging
 import os
 
 import cv2 as cv
-from skimage import io as skio
 import numpy as np
+from skimage import io as skio
 from tqdm import tqdm
 
-from tools import background_modeling, foreground_improving, detection, visualization, image_rectification, \
-    traffic_parameters
+from tools import background_modeling, foreground_improving, detection, visualization, traffic_parameters
 from tools.image_parser import get_image_list_changedetection_dataset
 from tools.multi_tracking import MultiTracker
 from utils.load_configutation import Configuration
