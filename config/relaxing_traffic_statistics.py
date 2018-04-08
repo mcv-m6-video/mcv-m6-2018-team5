@@ -12,8 +12,8 @@ image_type                   = 'jpg'            # Input image type
 gt_image_type                = 'png'            # Ground truth image type
 result_image_type            = 'png'
 # Background images
-first_back                    = '1428'
-nr_back                       = 19
+first_back                    = '1405'
+nr_back                       = 97
 
 # Background Modelling
 alpha                         = 3.7627
@@ -23,12 +23,12 @@ color_space                   = "RGB"           # RGB, HSV
 
 # Foreground Modelling
 four_connectivity             = False
-opening_strel                 = 'diagonal'
+opening_strel                 = 'square'
 opening_strel_size            = 10
-closing_strel                 = 'diamond'
+closing_strel                 = 'square'
 closing_strel_size            = 10
 area_filtering                = True
-area_filtering_P              = 820
+area_filtering_P              = 100
 
 # Kalman Filter
 init_estimate_error           = [200, 25]
@@ -44,9 +44,16 @@ min_age_threshold             = 15
 pixels_meter                  = 8.89
 frames_second                 = 30
 update_speed                  = 1
-roi_speed                     = [[84, 189], [294, 189], [339, 242], [46, 242]]
-lanes                         = [[[140, 120], [174, 120], [133, 253], [38, 253]], [[182, 120], [208, 120], [238, 253], [147, 253]], [[219, 120], [246, 120], [343, 253], [253, 253]]]
-max_speed                     = 100
+roi_speed                     = [
+                                    [0, 280], [226, 102], [343, 102], [479, 294],
+                                ]
+lanes                         = [
+                                    [[0, 280], [226, 102], [250, 102], [90, 295]],
+                                    [[91, 295], [251, 102], [273, 102], [197, 295]],
+                                    [[351, 295], [305, 102], [324, 102], [453, 295]],
+                                    [[454, 294], [325, 102], [343, 102], [479, 294]],
+                                ]
+max_speed                     = 120
 
 # Save results
 save_results                 = True        # Save Log file
