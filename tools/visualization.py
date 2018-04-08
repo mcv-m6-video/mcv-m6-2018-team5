@@ -22,6 +22,7 @@ LARGEFLOW = 1e8
 CAR_COLOURS = [(0, 0, 255), (0, 106, 255), (0, 216, 255), (0, 255, 182), (0, 255, 76),
                (144, 255, 0), (255, 255, 0), (255, 148, 0), (255, 0, 178), (220, 0, 255)]
 
+
 def aux_plot_auc_vs_pixels(auc_highway, pixels_range, output_folder=""):
     max_auc_highway = max(auc_highway)
     index_p = np.where(auc_highway == max_auc_highway)
@@ -405,8 +406,8 @@ def flow_to_image(flow):
     rad = np.sqrt(u ** 2 + v ** 2)
     maxrad = max(-1, np.max(rad))
 
-    u = u/(maxrad + np.finfo(float).eps)
-    v = v/(maxrad + np.finfo(float).eps)
+    u = u / (maxrad + np.finfo(float).eps)
+    v = v / (maxrad + np.finfo(float).eps)
 
     img = compute_color(u, v)
 
@@ -432,30 +433,30 @@ def compute_color(u, v):
     colorwheel = make_color_wheel()
     ncols = np.size(colorwheel, 0)
 
-    rad = np.sqrt(u**2+v**2)
+    rad = np.sqrt(u ** 2 + v ** 2)
 
     a = np.arctan2(-v, -u) / np.pi
 
-    fk = (a+1) / 2 * (ncols - 1) + 1
+    fk = (a + 1) / 2 * (ncols - 1) + 1
 
     k0 = np.floor(fk).astype(int)
 
     k1 = k0 + 1
-    k1[k1 == ncols+1] = 1
+    k1[k1 == ncols + 1] = 1
     f = fk - k0
 
-    for i in range(0, np.size(colorwheel,1)):
+    for i in range(0, np.size(colorwheel, 1)):
         tmp = colorwheel[:, i]
-        col0 = tmp[k0-1] / 255
-        col1 = tmp[k1-1] / 255
-        col = (1-f) * col0 + f * col1
+        col0 = tmp[k0 - 1] / 255
+        col1 = tmp[k1 - 1] / 255
+        col = (1 - f) * col0 + f * col1
 
         idx = rad <= 1
-        col[idx] = 1-rad[idx]*(1-col[idx])
+        col[idx] = 1 - rad[idx] * (1 - col[idx])
         notidx = np.logical_not(idx)
 
         col[notidx] *= 0.75
-        img[:, :, i] = np.uint8(np.floor(255 * col*(1-nanIdx)))
+        img[:, :, i] = np.uint8(np.floor(255 * col * (1 - nanIdx)))
 
     return img
 
@@ -480,32 +481,32 @@ def make_color_wheel():
 
     # RY
     colorwheel[0:RY, 0] = 255
-    colorwheel[0:RY, 1] = np.transpose(np.floor(255*np.arange(0, RY) / RY))
+    colorwheel[0:RY, 1] = np.transpose(np.floor(255 * np.arange(0, RY) / RY))
     col += RY
 
     # YG
-    colorwheel[col:col+YG, 0] = 255 - np.transpose(np.floor(255*np.arange(0, YG) / YG))
-    colorwheel[col:col+YG, 1] = 255
+    colorwheel[col:col + YG, 0] = 255 - np.transpose(np.floor(255 * np.arange(0, YG) / YG))
+    colorwheel[col:col + YG, 1] = 255
     col += YG
 
     # GC
-    colorwheel[col:col+GC, 1] = 255
-    colorwheel[col:col+GC, 2] = np.transpose(np.floor(255*np.arange(0, GC) / GC))
+    colorwheel[col:col + GC, 1] = 255
+    colorwheel[col:col + GC, 2] = np.transpose(np.floor(255 * np.arange(0, GC) / GC))
     col += GC
 
     # CB
-    colorwheel[col:col+CB, 1] = 255 - np.transpose(np.floor(255*np.arange(0, CB) / CB))
-    colorwheel[col:col+CB, 2] = 255
+    colorwheel[col:col + CB, 1] = 255 - np.transpose(np.floor(255 * np.arange(0, CB) / CB))
+    colorwheel[col:col + CB, 2] = 255
     col += CB
 
     # BM
-    colorwheel[col:col+BM, 2] = 255
-    colorwheel[col:col+BM, 0] = np.transpose(np.floor(255*np.arange(0, BM) / BM))
+    colorwheel[col:col + BM, 2] = 255
+    colorwheel[col:col + BM, 0] = np.transpose(np.floor(255 * np.arange(0, BM) / BM))
     col += + BM
 
     # MR
-    colorwheel[col:col+MR, 2] = 255 - np.transpose(np.floor(255 * np.arange(0, MR) / MR))
-    colorwheel[col:col+MR, 0] = 255
+    colorwheel[col:col + MR, 2] = 255 - np.transpose(np.floor(255 * np.arange(0, MR) / MR))
+    colorwheel[col:col + MR, 0] = 255
 
     return colorwheel
 
@@ -574,8 +575,7 @@ def show_detections(image_data, labeled_image, region_properties, save_path):
 
 
 def display_tracking_results(img, tracks, foreground, save_path):
-
-    foreground = 255*foreground.astype('uint8')
+    foreground = 255 * foreground.astype('uint8')
     foreground = cv.cvtColor(foreground, cv.COLOR_GRAY2BGR)
     cv.addWeighted(img, 0.7, foreground, 0.3, 0.0, img)
     if tracks != list():
@@ -590,16 +590,15 @@ def display_tracking_results(img, tracks, foreground, save_path):
                 cv.polylines(img, [np.int32(track.positions)], False, car_colour, 1)
 
                 for point in track.predictions:
-                    cv.rectangle(img, (int(point[0])-2, int(point[1])-2), (int(point[0])+2, int(point[1])+2),
+                    cv.rectangle(img, (int(point[0]) - 2, int(point[1]) - 2), (int(point[0]) + 2, int(point[1]) + 2),
                                  car_colour, 1)
                 cv.polylines(img, [np.int32(track.predictions)], False, car_colour, 1)
 
     cv.imwrite(save_path, img)
 
 
-def displayCurrentSpeedResults(img, tracks, foreground, save_path):
-
-    foreground = 255*foreground.astype('uint8')
+def display_current_speed_results(img, tracks, foreground, save_path):
+    foreground = 255 * foreground.astype('uint8')
     foreground = cv.cvtColor(foreground, cv.COLOR_GRAY2BGR)
     cv.addWeighted(img, 0.7, foreground, 0.3, 0.0, img)
     if tracks != list():
@@ -609,16 +608,19 @@ def displayCurrentSpeedResults(img, tracks, foreground, save_path):
         if tracks != list():
             for track in tracks:
                 car_colour = CAR_COLOURS[track.id % len(CAR_COLOURS)]
-                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0]+track.bbox[2], track.bbox[1]+track.bbox[3]), car_colour, 2)
-                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), car_colour, -1)
-                #cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
-                cv.putText(img, str(np.round(track.current_speed)), (track.bbox[0], track.bbox[1] + 10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]),
+                             (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), car_colour, 2)
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), car_colour,
+                             -1)
+                # cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
+                cv.putText(img, str(np.round(track.current_speed)), (track.bbox[0], track.bbox[1] + 10),
+                           cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
                            1)
 
     cv.imwrite(save_path, img)
 
-def displaySpeedResults(img, tracks, max_speed, lane_counts, save_path, roi):
 
+def display_speed_results(img, tracks, max_speed, lane_counts, save_path, roi):
     # Display the objects. If an object has not been detected
     # in this frame, display its predicted bounding box.
     if tracks != list():
@@ -630,41 +632,43 @@ def displaySpeedResults(img, tracks, max_speed, lane_counts, save_path, roi):
                     color = (255, 0, 0)
                 else:
                     color = (0, 255, 0)
-                cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), color, 2)
+                cv.rectangle(img, (track.bbox[0], track.bbox[1]),
+                             (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), color, 2)
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), color, -1)
                 cv.putText(img, str(np.round(track.current_speed)), (track.bbox[0], track.bbox[1] + 10),
                            cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
                            1)
     cv.line(img, (roi[0][0], roi[0][1]), (roi[1][0], roi[1][1]), (255, 255, 0), 2)
     cv.line(img, (roi[2][0], roi[2][1]), (roi[3][0], roi[3][1]), (255, 255, 0), 2)
-    #cv.putText(img, str(lane_count), (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
-    text = ', '.join('Lane{}: {}'.format(n+1, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace('[', '').replace(']', '').replace('.', '')
-    if len(text)>18:
-        text_1 = text.split(',')[:2]
-        text1 = ', '.join(txt for txt in text_1)
-        text_2 = text.split(',')[2:]
-        text2 = ', '.join(txt for txt in text_2)
-        cv.putText(img, (text1), (20, 15), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
-        cv.putText(img, (text2), (20, img.shape[0]-5), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+    text = ', '.join('Lane{}: {}'.format(n + 1, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace(
+        '[', '').replace(']', '').replace('.', '')
+    split_num = 22
+    if len(text) > split_num:
+        text1 = text[:split_num]
+        text2 = text[split_num:]
+        cv.putText(img, text1, (20, 15), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        cv.putText(img, text2, (20, img.shape[0] - 5), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
     else:
-        cv.putText(img, (text) , (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+        cv.putText(img, text, (20, 20), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
     cv.imwrite(save_path, img)
 
-def visualizeLanes(img, lanes, save_path):
+
+def visualize_lanes(img, lanes, save_path):
     plt.imshow(img)
     colors = cl.BASE_COLORS.values()
     for idx in range(len(lanes)):
-        pol = patches.Polygon(lanes[idx], alpha= 0.4, facecolor=colors[idx])
+        pol = patches.Polygon(lanes[idx], alpha=0.4, facecolor=colors[idx])
         plt.gca().add_artist(pol)
     plt.axis('off')
     plt.show(block=False)
     plt.savefig(save_path)
     plt.close()
 
-def visualizeROI(img, roi, save_path):
+
+def visualize_roi(img, roi, save_path):
     plt.imshow(img)
     colors = cl.BASE_COLORS.values()
-    pol = patches.Polygon(roi, alpha= 0.4, facecolor=colors[6])
+    pol = patches.Polygon(roi, alpha=0.4, facecolor=colors[6])
     plt.gca().add_artist(pol)
     plt.axis('off')
     plt.show(block=False)
