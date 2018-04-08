@@ -33,18 +33,18 @@ def road_statistics(cf):
             mkdirs(cf.results_path)
 
         image_list = get_image_list_changedetection_dataset(
-            cf.dataset_path, 'in', cf.first_image, cf.image_type, cf.nr_images
+            cf.dataset_path, cf.input_prefix, cf.first_image, cf.image_type, cf.nr_images
         )
 
         background_img_list = get_image_list_changedetection_dataset(
-            cf.dataset_path, 'in', cf.first_back, cf.image_type, cf.nr_back
+            cf.dataset_path, cf.input_prefix, cf.first_back, cf.image_type, cf.nr_back
         )
 
         visualization.visualizeLanes(cv.imread(background_img_list[0]), cf.lanes,
-                                     (background_img_list[0].replace('input', 'results').replace('in', 'lane')))
+                                     (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'lane')))
 
         visualization.visualizeROI(cv.imread(background_img_list[0]), cf.roi_speed,
-                                   (background_img_list[0].replace('input', 'results').replace('in', 'roi')))
+                                   (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'roi')))
 
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 

@@ -1,6 +1,7 @@
 # Dataset
 dataset_name                 = 'highway'                        # Dataset name
 dataset_path                 = 'datasets/highway/input'         # Dataset path
+input_prefix                 = 'in'
 gt_path                      = 'datasets/highway/groundtruth'   # Ground truth path
 results_path                 = 'datasets/highway/results'
 
