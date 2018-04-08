@@ -1,6 +1,7 @@
 # Dataset
 dataset_name                 = 'street_light'                        # Dataset name
 dataset_path                 = 'datasets/street_light/input'         # Dataset path
+input_prefix                 = 'in'
 gt_path                      = ''   # Ground truth path
 results_path                 = 'datasets/street_light/results'
 
@@ -10,12 +11,13 @@ first_image                  = '000001'         # Fist image filename
 image_type                   = 'jpg'            # Input image type
 gt_image_type                = 'png'            # Ground truth image type
 result_image_type            = 'png'
+# Background images
+first_back                    = '000111'
+nr_back                       = 11
 
 # Background Modelling
 alpha                         = 3.051
 rho                           = 0.211
-first_back                    = '000111'
-nr_back                       = 11
 modelling_method              = 'adaptive'      # adaptive, non-adaptive
 color_space                   = "RGB"           # RGB, HSV
 
@@ -39,7 +41,7 @@ invisible_too_long            = 7
 min_age_threshold             = 15
 
 # Speed parameters
-pixels_meter                  = [9.9, 9.17, 8.7, 8.42]  #8.05
+pixels_meter                  = [9.9, 9.17, 8.7, 8.05]  #8.05
 frames_second                 = 25.0
 update_speed                  = 1
 roi_speed                     = [[219, 120], [228, 49], [59, 40], [11, 98]]

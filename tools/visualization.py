@@ -640,8 +640,10 @@ def displaySpeedResults(img, tracks, max_speed, lane_counts, save_path, roi):
     #cv.putText(img, str(lane_count), (20, 20), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
     text = ', '.join('Lane{}: {}'.format(n+1, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace('[', '').replace(']', '').replace('.', '')
     if len(text)>18:
-        text1 = text[:18]
-        text2 = text[20:]
+        text_1 = text.split(',')[:2]
+        text1 = ', '.join(txt for txt in text_1)
+        text_2 = text.split(',')[2:]
+        text2 = ', '.join(txt for txt in text_2)
         cv.putText(img, (text1), (20, 15), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
         cv.putText(img, (text2), (20, img.shape[0]-5), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
     else:
