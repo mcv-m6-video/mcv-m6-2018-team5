@@ -86,7 +86,7 @@ def speed_estimator(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.displayCurrentSpeedResults(image, tracks, foreground, save_path)
+                visualization.display_current_speed_results(image, tracks, foreground, save_path)
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

@@ -10,12 +10,13 @@ nr_images                    = 839
 first_image                  = '0001'     # Fist image filename
 image_type                   = 'jpg'        # Input image type
 result_image_type            = 'png'
+# Background images
+first_back                    = '0517'
+nr_back                       = 18
 
 # Background Modelling
 alpha                         = 3.3627
 rho                           = 0.1578
-first_back                    = '0517'
-nr_back                       = 18
 modelling_method              = 'adaptive'      # adaptive, non-adaptive
 color_space                   = "RGB"           # RGB, HSV
 

@@ -7,12 +7,11 @@ import logging
 import os
 
 import cv2 as cv
-from skimage import io as skio
 import numpy as np
+from skimage import io as skio
 from tqdm import tqdm
 
-from tools import background_modeling, foreground_improving, detection, visualization, image_rectification, \
-    traffic_parameters
+from tools import background_modeling, foreground_improving, detection, visualization, traffic_parameters
 from tools.image_parser import get_image_list_changedetection_dataset
 from tools.multi_tracking import MultiTracker
 from utils.load_configutation import Configuration
@@ -40,11 +39,11 @@ def road_statistics(cf):
             cf.dataset_path, cf.input_prefix, cf.first_back, cf.image_type, cf.nr_back
         )
 
-        visualization.visualizeLanes(cv.imread(background_img_list[0]), cf.lanes,
-                                     (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'lane')))
+        visualization.visualize_lanes(cv.imread(background_img_list[0]), cf.lanes,
+                                      (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'lane')))
 
-        visualization.visualizeROI(cv.imread(background_img_list[0]), cf.roi_speed,
-                                   (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'roi')))
+        visualization.visualize_roi(cv.imread(background_img_list[0]), cf.roi_speed,
+                                    (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'roi')))
 
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
@@ -83,8 +82,20 @@ def road_statistics(cf):
 
             if n % cf.update_speed == 0:
                 for track in tracks:
+                    if isinstance(cf.pixels_meter, list):
+                        if track.lane != -1:
+                            pix_meter = cf.pixels_meter[track.lane]
+                        else:
+                            pix_meter = sum(cf.pixels_meter)
+                    else:
+                        pix_meter = cf.pixels_meter
                     if traffic_parameters.is_inside_speed_roi(track.positions[-1], cf.roi_speed):
-                        traffic_parameters.speed(track, cf.pixels_meter, cf.frames_second, dt=cf.update_speed)
+                        try:
+                            run_avg_alpha = cf.speed_estimate_running_avg
+                        except AttributeError:
+                            run_avg_alpha = 0.2  # Default value
+                        traffic_parameters.speed(track, pix_meter, cf.frames_second,
+                                                 dt=cf.update_speed, alpha=run_avg_alpha)
                         track.speeds.append(track.current_speed)
                     if track.lane == -1:
                         vehicle_lane = traffic_parameters.lane_detection(track.positions[-1], cf.lanes)
@@ -97,7 +108,16 @@ def road_statistics(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.displaySpeedResults(image, tracks, cf.max_speed, lane_count, save_path, cf.roi_speed)
+                visualization.display_speed_results(image, tracks, cf.max_speed, lane_count, save_path, cf.roi_speed)
+        for n, n_lanes in enumerate(lane_count):
+            if n+1 == 1:
+                logger.info('A total of {} vehicles have passed through the {}st lane'.format(n_lanes, n+1))
+            elif n + 1 == 2:
+                logger.info('A total of {} vehicles have passed through the {}nd lane'.format(n_lanes, n + 1))
+            elif n + 1 == 3:
+                logger.info('A total of {} vehicles have passed through the {}rd lane'.format(n_lanes, n + 1))
+            else:
+                logger.info('A total of {} vehicles have passed through the {}th lane'.format(n_lanes, n + 1))
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
