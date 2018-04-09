@@ -15,14 +15,14 @@ first_back                    = '0517'
 nr_back                       = 18
 
 # Background Modelling
-alpha                         = 3.3627
+alpha                         = 3.7627
 rho                           = 0.1578
 modelling_method              = 'adaptive'      # adaptive, non-adaptive
 color_space                   = "RGB"           # RGB, HSV
 
 # Foreground Modelling
 four_connectivity             = False
-opening_strel                 = 'diagonal'
+opening_strel                 = 'diamond'
 opening_strel_size            = 10
 closing_strel                 = 'diamond'
 closing_strel_size            = 10
@@ -40,7 +40,7 @@ invisible_too_long            = 7
 min_age_threshold             = 15
 
 # Road statistics parameters
-pixels_meter                  = 5
+pixels_meter                  = 5.0
 frames_second                 = 15.0
 update_speed                  = 1
 roi_speed                     = [[84, 189], [294, 189], [339, 242], [46, 242]]
