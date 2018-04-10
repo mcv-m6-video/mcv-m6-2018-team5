@@ -13,7 +13,7 @@ def speed_estimation(vehicle, pix_met, frame_sec, dt=1):
                1 / pix_met)
         time = len(vehicle.positions) * (1 / frame_sec)
         speed = (dist / time * 3600) / 1000
-        vehicle.speed = speed
+        vehicle.current_speed = speed
 
 
 def is_inside_speed_roi(position, speed_roi):
