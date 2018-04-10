@@ -28,7 +28,7 @@ opening_strel_size            = 5
 closing_strel                 = 'square'
 closing_strel_size            = 1
 area_filtering                = True
-area_filtering_P              = 150
+area_filtering_P              = 400
 
 # Kalman Filter
 init_estimate_error           = [200, 25]
@@ -36,7 +36,7 @@ motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
 
 # Multi-tracking parameters
-cost_of_non_assignment        = 75
+cost_of_non_assignment        = 25
 invisible_too_long            = 10
 min_age_threshold             = 15
 

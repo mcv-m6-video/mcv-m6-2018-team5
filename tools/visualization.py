@@ -671,7 +671,6 @@ def visualize_lanes(img, lanes, save_path):
         pol = patches.Polygon(lanes[idx], alpha=0.4, facecolor=colors[idx])
         plt.gca().add_artist(pol)
     plt.axis('off')
-    plt.show(block=False)
     plt.savefig(save_path)
     plt.close()
 
@@ -682,6 +681,5 @@ def visualize_roi(img, roi, save_path):
     pol = patches.Polygon(roi, alpha=0.4, facecolor=colors[6])
     plt.gca().add_artist(pol)
     plt.axis('off')
-    plt.show(block=False)
     plt.savefig(save_path)
     plt.close()

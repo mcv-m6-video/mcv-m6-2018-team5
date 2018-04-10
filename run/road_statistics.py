@@ -6,6 +6,8 @@ import argparse
 import logging
 import os
 
+import matplotlib.pyplot as plt
+
 import cv2 as cv
 from skimage import io as skio
 from tqdm import tqdm
@@ -71,6 +73,10 @@ def road_statistics(cf):
                                      cf.min_age_threshold, kalman_init_params)
         lanes = [Lane() for _ in range(len(cf.lanes))]
 
+        # Tracking folder to save results
+        tracking_folder = os.path.join(cf.results_path, 'tracking')
+        mkdirs(tracking_folder)
+
         for n, image_path in tqdm(enumerate(image_list)):
             image = cv.imread(image_path)
             foreground, mean, variance = background_modeling.adaptive_foreground_estimation_color(
@@ -82,6 +88,7 @@ def road_statistics(cf):
             foreground = foreground_improving.image_closing(foreground, cf.closing_strel, cf.closing_strel_size)
 
             image_gray = skio.imread(image_path, as_grey=True)
+
             bboxes, centroids = detection.detectObjects(image_gray, foreground)
 
             # Tracking
@@ -107,6 +114,7 @@ def road_statistics(cf):
                     else:
                         pix_meter = cf.pixels_meter
                     if traffic_parameters.is_inside_speed_roi(track.positions[-1], cf.roi_speed):
+                        # Compute speed using running average
                         try:
                             run_avg_alpha = cf.speed_estimate_running_avg
                         except AttributeError:
@@ -115,18 +123,18 @@ def road_statistics(cf):
                                                  dt=cf.update_speed, alpha=run_avg_alpha)
                         track.speeds.append(track.current_speed)
 
-                        # Update speeds of the lane if track assigned to a lane
-                        if track.lane != -1:
-                            if len(track.speeds) > 0:
-                                lanes[vehicle_lane].sum_vehicles += 1
-                                lanes[vehicle_lane].sum_velocities += track.current_speed
-
-                    # Lane assignment to track
-                    if track.lane == -1:
+                        # Detect and assign lane
                         vehicle_lane = traffic_parameters.lane_detection(track.positions[-1], cf.lanes)
-                        if vehicle_lane != -1:
-                            track.lane = vehicle_lane
-                            lanes[vehicle_lane].total_vehicles += 1
+                        if vehicle_lane != -1 and track.lane == -1:
+                                track.lane = vehicle_lane
+                                lanes[vehicle_lane].total_vehicles += 1
+
+                        # Update speeds of the lane assigned to this track
+                        if track.lane != -1:
+                            # noinspection PyTypeChecker
+                            lanes[track.lane].sum_vehicles += 1
+                            # noinspection PyTypeChecker
+                            lanes[track.lane].sum_velocities += track.current_speed
 
                 for lane in lanes:
                     if lane.current_vehicles > cf.high_density:
@@ -139,7 +147,10 @@ def road_statistics(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed, cf.margin)
+                visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed,
+                                                    cf.margin)
+                save_path = os.path.join(tracking_folder, image_name + '_tracking.' + cf.result_image_type)
+                visualization.display_tracking_results(image, tracks, foreground, save_path)
         for n, lane in enumerate(lanes):
             if n + 1 == 1:
                 logger.info(
