@@ -49,6 +49,9 @@ lanes                         = [[[140, 120], [174, 120], [133, 253], [38, 253]]
 max_speed                     = 100
 high_density                  = 5
 
+#Visualization
+margin = 50
+
 # Save results
 save_results                 = True        # Save Log file
 output_folder                = 'results'   # Output folder to save the results of the test

@@ -47,6 +47,10 @@ update_speed                  = 1
 roi_speed                     = [[104, 119], [262, 119], [252, 222], [7, 222]]
 lanes                         = [[[205, 12], [235, 12], [112, 237], [5, 237]], [[243, 12], [267, 12], [245, 237], [127, 237]]]
 max_speed                     = 80
+high_density                  = 5
+
+#Visualization
+margin = 0
 
 # Save results
 save_results                 = True        # Save Log file

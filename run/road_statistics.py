@@ -96,7 +96,7 @@ def road_statistics(cf):
                         if track.lane != -1:
                             pix_meter = cf.pixels_meter[track.lane]
                         else:
-                            pix_meter = sum(cf.pixels_meter)
+                            pix_meter = sum(cf.pixels_meter)/len(cf.pixels_meter)
                     else:
                         pix_meter = cf.pixels_meter
                     if traffic_parameters.is_inside_speed_roi(track.positions[-1], cf.roi_speed):
@@ -130,7 +130,7 @@ def road_statistics(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed)
+                visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed, cf.margin)
         for n, lane in enumerate(lanes):
             if n+1 == 1:
                 logger.info('{}st lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))

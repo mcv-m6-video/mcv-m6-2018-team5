@@ -55,6 +55,10 @@ lanes                         = [
                                     [[325, 102], [343, 102], [563, 294], [454, 294]],
                                 ]
 max_speed                     = 120
+high_density                  = 5
+
+#Visualization
+margin = 150
 
 # Save results
 save_results                 = True        # Save Log file

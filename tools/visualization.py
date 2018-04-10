@@ -620,7 +620,7 @@ def display_current_speed_results(img, tracks, foreground, save_path):
     cv.imwrite(save_path, img)
 
 
-def display_speed_results(img, tracks, max_speed, lanes, save_path, roi):
+def display_speed_results(img, tracks, max_speed, lanes, save_path, roi, margin):
     # Display the objects. If an object has not been detected
     # in this frame, display its predicted bounding box.
     if tracks != list():
@@ -640,7 +640,7 @@ def display_speed_results(img, tracks, max_speed, lanes, save_path, roi):
                            1)
     cv.line(img, (roi[0][0], roi[0][1]), (roi[1][0], roi[1][1]), (255, 255, 0), 2)
     cv.line(img, (roi[2][0], roi[2][1]), (roi[3][0], roi[3][1]), (255, 255, 0), 2)
-    copy = cv.copyMakeBorder(img, 0, 100, 0, 100, cv.BORDER_CONSTANT)
+    copy = cv.copyMakeBorder(img, 0, 75, margin, margin, cv.BORDER_CONSTANT)
 
     for n, lane in enumerate(lanes):
 
