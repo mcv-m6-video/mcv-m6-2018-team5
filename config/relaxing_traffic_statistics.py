@@ -6,8 +6,7 @@ results_path                 = 'datasets/relaxing_traffic/results'
 input_prefix                 = 'frame_'
 
 # Input Images
-# FIXME: Set nr_images to 1500
-nr_images                    = 500
+nr_images                    = 1500
 first_image                  = '0001'         # Fist image filename
 image_type                   = 'jpg'            # Input image type
 gt_image_type                = 'png'            # Ground truth image type
@@ -42,7 +41,7 @@ invisible_too_long            = 10
 min_age_threshold             = 15
 
 # Road statistics parameters
-pixels_meter                  = [8.5, 7.5, 7, 7.5]
+pixels_meter                  = [8.5, 7.5, 6.75, 8]
 frames_second                 = 30
 update_speed                  = 1
 speed_estimate_running_avg    = 0.9
