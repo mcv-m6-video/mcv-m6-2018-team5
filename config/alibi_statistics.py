@@ -43,6 +43,7 @@ min_age_threshold             = 15
 pixels_meter                  = 5.0
 frames_second                 = 15.0
 update_speed                  = 1
+speed_estimate_running_avg    = 0.9
 roi_speed                     = [[84, 189], [294, 189], [339, 242], [46, 242]]
 lanes                         = [[[140, 120], [174, 120], [133, 253], [38, 253]], [[182, 120], [208, 120], [238, 253], [147, 253]], [[219, 120], [246, 120], [343, 253], [253, 253]]]
 max_speed                     = 100
