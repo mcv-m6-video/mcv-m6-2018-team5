@@ -57,8 +57,8 @@ lanes                         = [
 max_speed                     = 120
 high_density                  = 5
 
-#Visualization
-margin = 150
+# Visualization
+margin = 5
 
 # Save results
 save_results                 = True        # Save Log file
