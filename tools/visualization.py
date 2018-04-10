@@ -629,7 +629,7 @@ def display_speed_results(img, tracks, max_speed, lanes, save_path, roi, margin)
     if tracks != list():
         for track in tracks:
             if track.current_speed > 0:
-                if track.current_speed > max_speed:
+                if track.current_speed > 1.1*max_speed:
                     color = (0, 0, 255)
                 elif track.current_speed < max_speed * 0.8:
                     color = (255, 0, 0)

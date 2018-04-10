@@ -41,7 +41,7 @@ invisible_too_long            = 7
 min_age_threshold             = 15
 
 # Speed parameters
-pixels_meter                  = [9.9, 9.17, 8.7, 8.05]  #8.05
+pixels_meter                  = [8.05, 8.7, 9.17, 9.9]  #8.05
 frames_second                 = 25.0
 update_speed                  = 1
 roi_speed                     = [[219, 120], [228, 49], [59, 40], [11, 98]]

@@ -130,7 +130,7 @@ def road_statistics(cf):
                                 lanes[vehicle_lane].total_vehicles += 1
 
                         # Update speeds of the lane assigned to this track
-                        if track.lane != -1:
+                        if track.lane != -1 and track.current_speed != 0:
                             # noinspection PyTypeChecker
                             lanes[track.lane].sum_vehicles += 1
                             # noinspection PyTypeChecker
