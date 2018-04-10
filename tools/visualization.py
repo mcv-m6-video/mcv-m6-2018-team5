@@ -652,14 +652,14 @@ def display_speed_results(img, tracks, max_speed, lanes, save_path, roi, margin)
         else:
             lane_current_velocity = 0
 
-        cv.putText(copy, 'Lane {}:'.format(n + 1), (150 * n + 2, img.shape[0] + 15), cv.FONT_HERSHEY_PLAIN,
-                   1.2, (255, 255, 0), 1)
+        cv.putText(copy, 'Lane {}:'.format(n + 1), (150 * n + 2, img.shape[0] + 15),
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 255), 1)
         cv.putText(copy, '  {:.0f} vehicles'.format(lane.total_vehicles), (150 * n + 2, img.shape[0] + 35),
-                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 255), 1)
         cv.putText(copy, '  {} density'.format(lane.density), (150 * n + 2, img.shape[0] + 50),
-                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 255), 1)
         cv.putText(copy, '  {:.0f} km/h'.format(lane_current_velocity), (150 * n + 2, img.shape[0] + 65),
-                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 255), 1)
 
     cv.imwrite(save_path, copy)
 

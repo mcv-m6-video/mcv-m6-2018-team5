@@ -147,10 +147,11 @@ def road_statistics(cf):
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
+                image_copy = image.copy()
                 visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed,
                                                     cf.margin)
                 save_path = os.path.join(tracking_folder, image_name + '_tracking.' + cf.result_image_type)
-                visualization.display_tracking_results(image, tracks, foreground, save_path)
+                visualization.display_tracking_results(image_copy, tracks, foreground, save_path)
         for n, lane in enumerate(lanes):
             average_velocity = lane.sum_velocities / lane.sum_vehicles
 
