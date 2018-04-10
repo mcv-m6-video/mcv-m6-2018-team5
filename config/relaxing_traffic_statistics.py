@@ -41,7 +41,7 @@ invisible_too_long            = 10
 min_age_threshold             = 15
 
 # Road statistics parameters
-pixels_meter                  = [7.5, 6.5, 4, 8]
+pixels_meter                  = [8.5, 7, 4, 8]
 frames_second                 = 30
 update_speed                  = 1
 speed_estimate_running_avg    = 0.95
