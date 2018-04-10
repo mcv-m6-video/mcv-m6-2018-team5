@@ -20,6 +20,12 @@ from utils.mkdirs import mkdirs
 
 EPSILON = 1e-8
 
+class Lane:
+    def __init__(self):
+        self.total_vehicles = 0
+        self.current_vehicles = 0
+        self.average_velocity = 0.0
+        self.density = 'low'
 
 # noinspection PyUnboundLocalVariable
 def road_statistics(cf):
@@ -55,7 +61,7 @@ def road_statistics(cf):
         }
         multi_tracker = MultiTracker(cf.cost_of_non_assignment, cf.invisible_too_long,
                                      cf.min_age_threshold, kalman_init_params)
-        lane_count = np.zeros((len(cf.lanes), 1))
+        lanes = [Lane() for idx in range(len(cf.lanes))]
 
         for n, image_path in tqdm(enumerate(image_list)):
             image = cv.imread(image_path)
@@ -81,6 +87,10 @@ def road_statistics(cf):
             tracks = multi_tracker.tracks
 
             if n % cf.update_speed == 0:
+                for lane in lanes:
+                    lane.current_vehicles = 0
+                    lane.average_velocity = 0
+
                 for track in tracks:
                     if isinstance(cf.pixels_meter, list):
                         if track.lane != -1:
@@ -101,23 +111,35 @@ def road_statistics(cf):
                         vehicle_lane = traffic_parameters.lane_detection(track.positions[-1], cf.lanes)
                         if vehicle_lane != -1:
                             track.lane = vehicle_lane
-                            lane_count[vehicle_lane] += 1
+                            lanes[vehicle_lane].total_vehicles += 1
+                    if track.lane != -1:
+                        lanes[vehicle_lane].current_vehicles += 1
+                        if len(track.speeds) > 0:
+                            lanes[vehicle_lane].average_velocity += np.sum(np.asarray(track.speeds)) / len(track.speeds)
+
+                for lane in lanes:
+                    if lane.current_vehicles > cf.high_density:
+                        lane.density = 'high'
+                    else:
+                        lane.density = 'low'
+                    if lane.total_vehicles != 0:
+                        lane.average_velocity = lane.average_velocity / float(lane.total_vehicles)
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
                 image_name = os.path.splitext(image_name)[0]
                 save_path = os.path.join(cf.results_path, image_name + '.' + cf.result_image_type)
                 image = image.astype('uint8')
-                visualization.display_speed_results(image, tracks, cf.max_speed, lane_count, save_path, cf.roi_speed)
-        for n, n_lanes in enumerate(lane_count):
+                visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed)
+        for n, lane in enumerate(lanes):
             if n+1 == 1:
-                logger.info('A total of {} vehicles have passed through the {}st lane'.format(n_lanes, n+1))
+                logger.info('{}st lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
             elif n + 1 == 2:
-                logger.info('A total of {} vehicles have passed through the {}nd lane'.format(n_lanes, n + 1))
+                logger.info('{}nd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
             elif n + 1 == 3:
-                logger.info('A total of {} vehicles have passed through the {}rd lane'.format(n_lanes, n + 1))
+                logger.info('{}rd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
             else:
-                logger.info('A total of {} vehicles have passed through the {}th lane'.format(n_lanes, n + 1))
+                logger.info('{}th lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 

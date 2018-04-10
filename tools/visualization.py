@@ -620,7 +620,7 @@ def display_current_speed_results(img, tracks, foreground, save_path):
     cv.imwrite(save_path, img)
 
 
-def display_speed_results(img, tracks, max_speed, lane_counts, save_path, roi):
+def display_speed_results(img, tracks, max_speed, lanes, save_path, roi):
     # Display the objects. If an object has not been detected
     # in this frame, display its predicted bounding box.
     if tracks != list():
@@ -640,17 +640,17 @@ def display_speed_results(img, tracks, max_speed, lane_counts, save_path, roi):
                            1)
     cv.line(img, (roi[0][0], roi[0][1]), (roi[1][0], roi[1][1]), (255, 255, 0), 2)
     cv.line(img, (roi[2][0], roi[2][1]), (roi[3][0], roi[3][1]), (255, 255, 0), 2)
-    text = ', '.join('Lane{}: {}'.format(n + 1, str(lane_count)) for n, lane_count in enumerate(lane_counts)).replace(
-        '[', '').replace(']', '').replace('.', '')
-    split_num = 22
-    if len(text) > split_num:
-        text1 = text[:split_num]
-        text2 = text[split_num:]
-        cv.putText(img, text1, (20, 15), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
-        cv.putText(img, text2, (20, img.shape[0] - 5), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
-    else:
-        cv.putText(img, text, (20, 20), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
-    cv.imwrite(save_path, img)
+    copy = cv.copyMakeBorder(img, 0, 100, 0, 100, cv.BORDER_CONSTANT)
+
+    for n, lane in enumerate(lanes):
+
+        cv.putText(copy, 'Lane {}:'.format(n + 1), (150 * n + 2, img.shape[0] + 15), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        cv.putText(copy, '  {} vehicles'.format(lane.total_vehicles), (150 * n + 2, img.shape[0] + 35), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        cv.putText(copy, '  {} density'.format(lane.density), (150 * n + 2, img.shape[0] + 50), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        cv.putText(copy, '  {} km/h'.format(np.round(lane.average_velocity)), (150 * n + 2, img.shape[0] + 65), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+
+
+    cv.imwrite(save_path, copy)
 
 
 def visualize_lanes(img, lanes, save_path):
