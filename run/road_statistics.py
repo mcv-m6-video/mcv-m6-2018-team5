@@ -152,26 +152,36 @@ def road_statistics(cf):
                 save_path = os.path.join(tracking_folder, image_name + '_tracking.' + cf.result_image_type)
                 visualization.display_tracking_results(image, tracks, foreground, save_path)
         for n, lane in enumerate(lanes):
+            average_velocity = lane.sum_velocities / lane.sum_vehicles
+
             if n + 1 == 1:
                 logger.info(
-                    '{}st lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
-                                                                                                               lane.total_vehicles,
-                                                                                                               lane.average_velocity))
+                    '{}st lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(
+                        n + 1,
+                        lane.total_vehicles,
+                        average_velocity)
+                )
             elif n + 1 == 2:
                 logger.info(
-                    '{}nd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
-                                                                                                               lane.total_vehicles,
-                                                                                                               lane.average_velocity))
+                    '{}nd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(
+                        n + 1,
+                        lane.total_vehicles,
+                        average_velocity
+                    ))
             elif n + 1 == 3:
                 logger.info(
-                    '{}rd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
-                                                                                                               lane.total_vehicles,
-                                                                                                               lane.average_velocity))
+                    '{}rd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(
+                        n + 1,
+                        lane.total_vehicles,
+                        average_velocity
+                    ))
             else:
                 logger.info(
-                    '{}th lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
-                                                                                                               lane.total_vehicles,
-                                                                                                               lane.average_velocity))
+                    '{}th lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(
+                        n + 1,
+                        lane.total_vehicles,
+                        average_velocity
+                    ))
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
