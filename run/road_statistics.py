@@ -7,7 +7,6 @@ import logging
 import os
 
 import cv2 as cv
-import numpy as np
 from skimage import io as skio
 from tqdm import tqdm
 
@@ -20,12 +19,19 @@ from utils.mkdirs import mkdirs
 
 EPSILON = 1e-8
 
+
 class Lane:
     def __init__(self):
         self.total_vehicles = 0
         self.current_vehicles = 0
-        self.average_velocity = 0.0
+
+        # Variables to compute streaming velocity
+        self.sum_vehicles = 0
+        self.sum_velocities = 0
+
+        # Current density of the lane
         self.density = 'low'
+
 
 # noinspection PyUnboundLocalVariable
 def road_statistics(cf):
@@ -46,10 +52,12 @@ def road_statistics(cf):
         )
 
         visualization.visualize_lanes(cv.imread(background_img_list[0]), cf.lanes,
-                                      (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'lane')))
+                                      (background_img_list[0].replace('input', 'results').replace(cf.input_prefix,
+                                                                                                  'lane')))
 
         visualization.visualize_roi(cv.imread(background_img_list[0]), cf.roi_speed,
-                                    (background_img_list[0].replace('input', 'results').replace(cf.input_prefix, 'roi')))
+                                    (background_img_list[0].replace('input', 'results').replace(cf.input_prefix,
+                                                                                                'roi')))
 
         mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
@@ -61,7 +69,7 @@ def road_statistics(cf):
         }
         multi_tracker = MultiTracker(cf.cost_of_non_assignment, cf.invisible_too_long,
                                      cf.min_age_threshold, kalman_init_params)
-        lanes = [Lane() for idx in range(len(cf.lanes))]
+        lanes = [Lane() for _ in range(len(cf.lanes))]
 
         for n, image_path in tqdm(enumerate(image_list)):
             image = cv.imread(image_path)
@@ -89,7 +97,6 @@ def road_statistics(cf):
             if n % cf.update_speed == 0:
                 for lane in lanes:
                     lane.current_vehicles = 0
-                    lane.average_velocity = 0
 
                 for track in tracks:
                     if isinstance(cf.pixels_meter, list):
@@ -107,23 +114,25 @@ def road_statistics(cf):
                         traffic_parameters.speed(track, pix_meter, cf.frames_second,
                                                  dt=cf.update_speed, alpha=run_avg_alpha)
                         track.speeds.append(track.current_speed)
+
+                        # Update speeds of the lane if track assigned to a lane
+                        if track.lane != -1:
+                            if len(track.speeds) > 0:
+                                lanes[vehicle_lane].sum_vehicles += 1
+                                lanes[vehicle_lane].sum_velocities += track.current_speed
+
+                    # Lane assignment to track
                     if track.lane == -1:
                         vehicle_lane = traffic_parameters.lane_detection(track.positions[-1], cf.lanes)
                         if vehicle_lane != -1:
                             track.lane = vehicle_lane
                             lanes[vehicle_lane].total_vehicles += 1
-                    if track.lane != -1:
-                        lanes[vehicle_lane].current_vehicles += 1
-                        if len(track.speeds) > 0:
-                            lanes[vehicle_lane].average_velocity += np.sum(np.asarray(track.speeds)) / len(track.speeds)
 
                 for lane in lanes:
                     if lane.current_vehicles > cf.high_density:
                         lane.density = 'high'
                     else:
                         lane.density = 'low'
-                    if lane.total_vehicles != 0:
-                        lane.average_velocity = lane.average_velocity / float(lane.total_vehicles)
 
             if cf.save_results:
                 image_name = os.path.basename(image_path)
@@ -132,21 +141,32 @@ def road_statistics(cf):
                 image = image.astype('uint8')
                 visualization.display_speed_results(image, tracks, cf.max_speed, lanes, save_path, cf.roi_speed, cf.margin)
         for n, lane in enumerate(lanes):
-            if n+1 == 1:
-                logger.info('{}st lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
+            if n + 1 == 1:
+                logger.info(
+                    '{}st lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
+                                                                                                               lane.total_vehicles,
+                                                                                                               lane.average_velocity))
             elif n + 1 == 2:
-                logger.info('{}nd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
+                logger.info(
+                    '{}nd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
+                                                                                                               lane.total_vehicles,
+                                                                                                               lane.average_velocity))
             elif n + 1 == 3:
-                logger.info('{}rd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
+                logger.info(
+                    '{}rd lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
+                                                                                                               lane.total_vehicles,
+                                                                                                               lane.average_velocity))
             else:
-                logger.info('{}th lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1, lane.total_vehicles, lane.average_velocity))
+                logger.info(
+                    '{}th lane: a total of {} vehicles have passed with an average velocity of {} km/h'.format(n + 1,
+                                                                                                               lane.total_vehicles,
+                                                                                                               lane.average_velocity))
 
         logger.info(' ---> Finish test: ' + cf.test_name + ' <---')
 
 
 # Main function
 def main():
-
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Road statistics [Team 5]')
     parser.add_argument('-c', '--config-path', type=str, required=True, help='Configuration file path')

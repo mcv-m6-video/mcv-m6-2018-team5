@@ -28,7 +28,7 @@ opening_strel_size            = 5
 closing_strel                 = 'square'
 closing_strel_size            = 1
 area_filtering                = True
-area_filtering_P              = 100
+area_filtering_P              = 150
 
 # Kalman Filter
 init_estimate_error           = [200, 25]
@@ -36,7 +36,7 @@ motion_model_noise            = [100, 25]
 measurement_noise             = 100.0
 
 # Multi-tracking parameters
-cost_of_non_assignment        = 50
+cost_of_non_assignment        = 75
 invisible_too_long            = 10
 min_age_threshold             = 15
 
@@ -44,7 +44,7 @@ min_age_threshold             = 15
 pixels_meter                  = [8.5, 7.5, 6.75, 8]
 frames_second                 = 30
 update_speed                  = 1
-speed_estimate_running_avg    = 0.9
+speed_estimate_running_avg    = 0.95
 roi_speed                     = [
                                     [70, 220], [480, 220], [540, 275], [0, 275]
                                 ]

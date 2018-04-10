@@ -1,3 +1,5 @@
+from __future__ import division
+
 import os
 import time
 
@@ -612,7 +614,8 @@ def display_current_speed_results(img, tracks, foreground, save_path):
                              (track.bbox[0] + track.bbox[2], track.bbox[1] + track.bbox[3]), car_colour, 2)
                 cv.rectangle(img, (track.bbox[0], track.bbox[1]), (track.bbox[0] + 20, track.bbox[1] + 10), car_colour,
                              -1)
-                # cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 1)
+                # cv.putText(img, str(track.id), (track.bbox[0], track.bbox[1]+10), cv.FONT_HERSHEY_PLAIN, 1,
+                # (0, 0, 0), 1)
                 cv.putText(img, str(np.round(track.current_speed)), (track.bbox[0], track.bbox[1] + 10),
                            cv.FONT_HERSHEY_PLAIN, 1, (0, 0, 0),
                            1)
@@ -644,11 +647,19 @@ def display_speed_results(img, tracks, max_speed, lanes, save_path, roi, margin)
 
     for n, lane in enumerate(lanes):
 
-        cv.putText(copy, 'Lane {}:'.format(n + 1), (150 * n + 2, img.shape[0] + 15), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
-        cv.putText(copy, '  {} vehicles'.format(lane.total_vehicles), (150 * n + 2, img.shape[0] + 35), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
-        cv.putText(copy, '  {} density'.format(lane.density), (150 * n + 2, img.shape[0] + 50), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
-        cv.putText(copy, '  {} km/h'.format(np.round(lane.average_velocity)), (150 * n + 2, img.shape[0] + 65), cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        if lane.sum_vehicles > 0:
+            lane_current_velocity = lane.sum_velocities / lane.sum_vehicles
+        else:
+            lane_current_velocity = 0
 
+        cv.putText(copy, 'Lane {}:'.format(n + 1), (150 * n + 2, img.shape[0] + 15), cv.FONT_HERSHEY_PLAIN,
+                   1.2, (255, 255, 0), 1)
+        cv.putText(copy, '  {:.0f} vehicles'.format(lane.total_vehicles), (150 * n + 2, img.shape[0] + 35),
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        cv.putText(copy, '  {} density'.format(lane.density), (150 * n + 2, img.shape[0] + 50),
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
+        cv.putText(copy, '  {:.0f} km/h'.format(lane_current_velocity), (150 * n + 2, img.shape[0] + 65),
+                   cv.FONT_HERSHEY_PLAIN, 1.2, (255, 255, 0), 1)
 
     cv.imwrite(save_path, copy)
 
