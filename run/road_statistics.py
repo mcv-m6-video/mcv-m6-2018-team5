@@ -92,12 +92,12 @@ def road_statistics(cf):
             bboxes, centroids = detection.detectObjects(image_gray, foreground)
 
             # Tracking
-            multi_tracker.predict_new_locations_of_tracks()
             multi_tracker.detection_to_track_assignment(centroids)
             multi_tracker.update_assigned_tracks(bboxes, centroids)
             multi_tracker.update_unassigned_tracks()
             multi_tracker.delete_lost_tracks()
             multi_tracker.create_new_tracks(bboxes, centroids)
+            multi_tracker.predict_new_locations_of_tracks()
 
             tracks = multi_tracker.tracks
 

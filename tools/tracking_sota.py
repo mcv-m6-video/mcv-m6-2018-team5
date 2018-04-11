@@ -6,12 +6,13 @@ import numpy as np
 
 # ============================================================================
 
-CAR_COLOURS = [ (0,0,255), (0,106,255), (0,216,255), (0,255,182), (0,255,76)
-    , (144,255,0), (255,255,0), (255,148,0), (255,0,178), (220,0,255) ]
+CAR_COLOURS = [(0, 0, 255), (0, 106, 255), (0, 216, 255), (0, 255, 182), (0, 255, 76),
+               (144, 255, 0), (255, 255, 0), (255, 148, 0), (255, 0, 178), (220, 0, 255)]
+
 
 # ============================================================================
 
-#Code obtained from: https://stackoverflow.com/questions/36254452/counting-cars-opencv-python-issue
+# Code obtained from: https://stackoverflow.com/questions/36254452/counting-cars-opencv-python-issue
 
 class Vehicle(object):
     def __init__(self, id, position):
@@ -33,7 +34,7 @@ class Vehicle(object):
         for point in self.positions:
             cv2.circle(output_image, point, 2, car_colour, -1)
             cv2.polylines(output_image, [np.int32(self.positions)]
-                , False, car_colour, 1)
+                          , False, car_colour, 1)
 
 
 # ============================================================================
@@ -50,7 +51,6 @@ class VehicleCounter(object):
         self.vehicle_count = 0
         self.max_unseen_frames = 7
 
-
     @staticmethod
     def get_vector(a, b):
         """Calculate vector (distance, angle in degrees) from point a to point b.
@@ -62,10 +62,10 @@ class VehicleCounter(object):
         dx = float(b[0] - a[0])
         dy = float(b[1] - a[1])
 
-        distance = math.sqrt(dx**2 + dy**2)
+        distance = math.sqrt(dx ** 2 + dy ** 2)
 
         if dy > 0:
-            angle = math.degrees(math.atan(-dx/dy))
+            angle = math.degrees(math.atan(-dx / dy))
         elif dy == 0:
             if dx < 0:
                 angle = 90.0
@@ -75,21 +75,19 @@ class VehicleCounter(object):
                 angle = 0.0
         else:
             if dx < 0:
-                angle = 180 - math.degrees(math.atan(dx/dy))
+                angle = 180 - math.degrees(math.atan(dx / dy))
             elif dx > 0:
-                angle = -180 - math.degrees(math.atan(dx/dy))
+                angle = -180 - math.degrees(math.atan(dx / dy))
             else:
                 angle = 180.0
 
         return distance, angle
 
-
     @staticmethod
     def is_valid_vector(a):
         distance, angle = a
-        threshold_distance = max(30.0, -0.008 * angle**2 + 0.4 * angle + 25.0)
-        return (distance <= threshold_distance)
-
+        threshold_distance = max(30.0, -0.008 * angle ** 2 + 0.4 * angle + 25.0)
+        return distance <= threshold_distance
 
     def update_vehicle(self, vehicle, matches):
         # Find if any of the matches fits this vehicle
@@ -100,18 +98,17 @@ class VehicleCounter(object):
             if self.is_valid_vector(vector):
                 vehicle.add_position(centroid)
                 self.log.debug("Added match (%d, %d) to vehicle #%d. vector=(%0.2f,%0.2f)"
-                    , centroid[0], centroid[1], vehicle.id, vector[0], vector[1])
+                               , centroid[0], centroid[1], vehicle.id, vector[0], vector[1])
                 return i
 
         # No matches fit...
         vehicle.frames_since_seen += 1
         self.log.debug("No match for vehicle #%d. frames_since_seen=%d"
-            , vehicle.id, vehicle.frames_since_seen)
+                       , vehicle.id, vehicle.frames_since_seen)
 
         return None
 
-
-    def update_count(self, matches, output_image = None):
+    def update_count(self, matches, output_image=None):
         self.log.debug("Updating count using %d matches...", len(matches))
 
         # First update all the existing vehicles
@@ -127,7 +124,7 @@ class VehicleCounter(object):
             self.next_vehicle_id += 1
             self.vehicles.append(new_vehicle)
             self.log.debug("Created new vehicle #%d from match (%d, %d)."
-                , new_vehicle.id, centroid[0], centroid[1])
+                           , new_vehicle.id, centroid[0], centroid[1])
 
         # Count any uncounted vehicles that are past the divider
         for vehicle in self.vehicles:
@@ -143,13 +140,13 @@ class VehicleCounter(object):
                 vehicle.draw(output_image)
 
             cv2.putText(output_image, ("%02d" % self.vehicle_count), (142, 10)
-                , cv2.FONT_HERSHEY_PLAIN, 0.7, (127, 255, 255), 1)
+                        , cv2.FONT_HERSHEY_PLAIN, 0.7, (127, 255, 255), 1)
 
         # Remove vehicles that have not been seen long enough
-        removed = [ v.id for v in self.vehicles
-            if v.frames_since_seen >= self.max_unseen_frames ]
-        self.vehicles[:] = [ v for v in self.vehicles
-            if not v.frames_since_seen >= self.max_unseen_frames ]
+        removed = [v.id for v in self.vehicles
+                   if v.frames_since_seen >= self.max_unseen_frames]
+        self.vehicles[:] = [v for v in self.vehicles
+                            if not v.frames_since_seen >= self.max_unseen_frames]
         for id in removed:
             self.log.debug("Removed vehicle #%d.", id)
 

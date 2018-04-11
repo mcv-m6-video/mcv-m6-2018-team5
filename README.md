@@ -6,6 +6,12 @@
 
 **TODO**
 
+## Materials
+
+[**Slides**](https://docs.google.com/presentation/d/e/2PACX-1vQDxBlWMZOfcwImQG1Ge9C6QdzOAURoWQMcF4wx6sxOSdvlpBduN4AF-CIoIpM2lTrNiGxtyf75M5sw/pub?start=false&loop=false&delayms=3000)
+
+**Resport**: Work in Progress 
+
 ## Running the code
 
 Check the README file in the `run` folder for further details on how to prepare the running environment and how to 

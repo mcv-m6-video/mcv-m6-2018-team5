@@ -1,16 +1,14 @@
+import argparse
 import logging
 import logging.handlers
-import os
-import time
 import sys
-import argparse
 
 import cv2
 import numpy as np
 
-from tools.tracking_sota import VehicleCounter
-from tools.image_parser import get_image_list_changedetection_dataset
 from tools import background_modeling, foreground_improving
+from tools.image_parser import get_image_list_changedetection_dataset
+from tools.tracking_sota import VehicleCounter
 from utils.load_configutation import Configuration
 
 # ============================================================================
@@ -21,12 +19,12 @@ IMAGE_FILENAME_FORMAT = IMAGE_DIR + "/frame_%04d.png"
 # Support either video file or individual frames
 CAPTURE_FROM_VIDEO = False
 if CAPTURE_FROM_VIDEO:
-    IMAGE_SOURCE = "traffic.avi" # Video file
+    IMAGE_SOURCE = "traffic.avi"  # Video file
 else:
-    IMAGE_SOURCE = IMAGE_FILENAME_FORMAT # Image sequence
+    IMAGE_SOURCE = IMAGE_FILENAME_FORMAT  # Image sequence
 
 # Time to wait between frames, 0=forever
-WAIT_TIME = 1 # 250 # ms
+WAIT_TIME = 1  # 250 # ms
 
 LOG_TO_FILE = True
 
@@ -34,6 +32,7 @@ LOG_TO_FILE = True
 DIVIDER_COLOUR = (255, 255, 0)
 BOUNDING_BOX_COLOUR = (255, 0, 0)
 CENTROID_COLOUR = (0, 0, 255)
+
 
 # ============================================================================
 
@@ -50,14 +49,15 @@ def init_logging():
 
     if LOG_TO_FILE:
         handler_file = logging.handlers.RotatingFileHandler("debug.log"
-            , maxBytes = 2**24
-            , backupCount = 10)
+                                                            , maxBytes=2 ** 24
+                                                            , backupCount=10)
         handler_file.setFormatter(formatter)
         main_logger.addHandler(handler_file)
 
     main_logger.setLevel(logging.DEBUG)
 
     return main_logger
+
 
 # ============================================================================
 
@@ -67,6 +67,7 @@ def save_frame(file_name_format, frame_number, frame, label_format):
 
     log.debug("Saving %s as '%s'", label, file_name)
     cv2.imwrite(file_name, frame)
+
 
 # ============================================================================
 
@@ -79,6 +80,7 @@ def get_centroid(x, y, w, h):
 
     return (cx, cy)
 
+
 # ============================================================================
 
 def detect_vehicles(fg_mask, cf):
@@ -89,8 +91,8 @@ def detect_vehicles(fg_mask, cf):
 
     # Find the contours of any vehicles in the image
     contours, hierarchy = cv2.findContours(fg_mask
-        , cv2.RETR_EXTERNAL
-        , cv2.CHAIN_APPROX_SIMPLE)
+                                           , cv2.RETR_EXTERNAL
+                                           , cv2.CHAIN_APPROX_SIMPLE)
 
     log.debug("Found %d vehicle contours.", len(contours))
 
@@ -100,7 +102,7 @@ def detect_vehicles(fg_mask, cf):
         contour_valid = (w >= MIN_CONTOUR_WIDTH) and (h >= MIN_CONTOUR_HEIGHT)
 
         log.debug("Contour #%d: pos=(x=%d, y=%d) size=(w=%d, h=%d) valid=%s"
-            , i, x, y, w, h, contour_valid)
+                  , i, x, y, w, h, contour_valid)
 
         if not contour_valid:
             continue
@@ -110,6 +112,7 @@ def detect_vehicles(fg_mask, cf):
         matches.append(((x, y, w, h), centroid))
 
     return matches
+
 
 # ============================================================================
 
@@ -122,9 +125,10 @@ def filter_mask(fg_mask):
     opening = cv2.morphologyEx(closing, cv2.MORPH_OPEN, kernel)
 
     # Dilate to merge adjacent blobs
-    dilation = cv2.dilate(opening, kernel, iterations = 2)
+    dilation = cv2.dilate(opening, kernel, iterations=2)
 
     return dilation
+
 
 # ============================================================================
 
@@ -141,7 +145,7 @@ def process_frame(frame_number, frame, fg_mask, car_counter, cf):
     fg_mask = filter_mask(fg_mask)
 
     save_frame(IMAGE_DIR + "/mask_%04d.png"
-        , frame_number, fg_mask, "foreground mask for frame #%d")
+               , frame_number, fg_mask, "foreground mask for frame #%d")
 
     matches = detect_vehicles(fg_mask, cf)
 
@@ -162,6 +166,7 @@ def process_frame(frame_number, frame, fg_mask, car_counter, cf):
     car_counter.update_count(matches, processed)
 
     return processed
+
 
 # ============================================================================
 
@@ -195,9 +200,7 @@ def main():
     log.debug("Pre-training the background subtractor...")
     mean, variance = background_modeling.multivariative_gaussian_modelling(background_img_list, cf.color_space)
 
-    car_counter = None # Will be created after first frame is captured
-
-
+    car_counter = None  # Will be created after first frame is captured
 
     frame_width = cv2.imread(background_img_list[0]).shape[1]
     frame_height = cv2.imread(background_img_list[0]).shape[0]
@@ -228,16 +231,16 @@ def main():
         # Archive raw frames from video to disk for later inspection/testing
         if CAPTURE_FROM_VIDEO:
             save_frame(IMAGE_FILENAME_FORMAT
-                , frame_number, frame, "source frame #%d")
+                       , frame_number, frame, "source frame #%d")
 
         log.debug("Processing frame #%d...", frame_number)
         foreground_ = np.array(foreground, dtype=np.uint8)
         processed = process_frame(frame_number, frame, foreground_, car_counter, cf)
 
         save_frame(cf.output_folder + "/processed_%04d.png"
-            , frame_number, processed, "processed frame #%d")
+                   , frame_number, processed, "processed frame #%d")
 
-        cv2.imshow('Source Image', foreground.astype('uint8')*255)
+        cv2.imshow('Source Image', foreground.astype('uint8') * 255)
         cv2.imshow('Processed Image', processed)
 
         log.debug("Frame #%d processed.", frame_number)
@@ -251,10 +254,10 @@ def main():
     cv2.destroyAllWindows()
     log.debug("Done.")
 
+
 # ============================================================================
 
 if __name__ == "__main__":
     log = init_logging()
-
 
     main()
