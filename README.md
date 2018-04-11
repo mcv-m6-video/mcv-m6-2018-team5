@@ -89,6 +89,17 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Block Matching Stabilization vs Other Techniques
 - [x] Stabilize your own video
 
+### Week 5 - Region tracking and Kalman filter
+1. Vehicle tracker
+- [x] Vehicle tracker with Kalman filter
+- [x] Vehicle tracker with other tools
+2. Speed estimator
+- [x] Estimate the speed of the vehicles
+3. Road statistics
+- [x] Check the speed limit
+- [x] Check the road density of vehicles
+- [x] Compute the average speed per lane
+
 ## Running the code
 
 Check the README file in the `run` folder for further details on how to prepare the running environment and how to 

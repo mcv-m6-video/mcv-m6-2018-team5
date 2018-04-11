@@ -113,3 +113,29 @@ The datasets needed to run the code and their folder organization are the follow
 | *kitti//image_0/*|  Kitti dataset input images |
 | *kitti/flow_noc/*|  Kitti dataset ground truth |
 | *kitti/results/*|  Kitti dataset results |
+
+
+### Week 5
+
+For task 1 with Kalman filter, for each of the sequences:
+
+- `python cli/vehicle_tracker.py --config-path config/highway_tracker.py --test-name highway`
+- `python cli/vehicle_tracker.py --config-path config/traffic_tracker.py --test-name traffic`
+
+For task 1 with other tools, for each of the sequences:
+
+- `python cli/vehicle_tracker_sota.py --config-path config/highway_tracker.py --test-name highway`
+- `python cli/vehicle_tracker_sota.py --config-path config/traffic_tracker.py --test-name traffic`
+
+For task 2 using homography, for each of the sequences:
+
+- `python cli/speed_estimator.py --config-path config/highway_speed.py --test-name highway`
+- `python cli/speed_estimator.py --config-path config/traffic_speed.py --test-name traffic`
+
+For task 3, for each of the sequences:
+
+- `python cli/road_statistics.py --config-path config/highway_statistics.py --test-name highway`
+- `python cli/road_statistics.py --config-path config/traffic_statistics.py --test-name traffic`
+- `python cli/road_statistics.py --config-path config/alibi_statistics.py --test-name alibi`
+- `python cli/road_statistics.py --config-path config/relaxing_traffic_statistics.py --test-name relaxing_traffic`
+- `python cli/road_statistics.py --config-path config/street_statistics.py --test-name street`
