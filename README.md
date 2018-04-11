@@ -1,20 +1,15 @@
-# Video Surveillance for Road Traffic Monitoring
-
-The goal of this project is to learn the basic concepts and techniques related to video sequences and apply them for surveillance applications
-
-## Team 5:
-
-| Name | E-mail | GitHub |
-| :---: | :---: | :---: |
-| [Lidia Garrucho](https://www.linkedin.com/in/lidia-garrucho-moras-77961a8a/) | lidiaxu.3@gmail.com | [LidiaGarrucho](https://github.com/LidiaGarrucho) |
-| [Anna Martí](https://www.linkedin.com/in/annamartiaguilera/) | annamartiaguilera@gmail.com | [amartia](https://github.com/amartia) |
-| [Santi Puch](https://www.linkedin.com/in/santipuch/) | santiago.puch.giner@gmail.com | [santipuch590](https://github.com/santipuch590) |
-| [Xènia Salinas](https://www.linkedin.com/in/x%C3%A8nia-salinas-ventall%C3%B3-509081156/) | salinasxenia@gmail.com | [XeniaSalinas](https://github.com/XeniaSalinas) |
-
-
-## Description
+# Road Traffic Monitoring System
 
 **TODO**
+
+## System overview
+
+**TODO**
+
+## Running the code
+
+Check the README file in the `run` folder for further details on how to prepare the running environment and how to 
+run the code.
 
 ## Project milestones 
 
@@ -100,7 +95,11 @@ The goal of this project is to learn the basic concepts and techniques related t
 - [x] Check the road density of vehicles
 - [x] Compute the average speed per lane
 
-## Running the code
+## Contributors
 
-Check the README file in the `run` folder for further details on how to prepare the running environment and how to 
-run the code.
+| Name | E-mail | GitHub |
+| :---: | :---: | :---: |
+| [Lidia Garrucho](https://www.linkedin.com/in/lidia-garrucho-moras-77961a8a/) | lidiaxu.3@gmail.com | [LidiaGarrucho](https://github.com/LidiaGarrucho) |
+| [Anna Martí](https://www.linkedin.com/in/annamartiaguilera/) | annamartiaguilera@gmail.com | [amartia](https://github.com/amartia) |
+| [Santi Puch](https://www.linkedin.com/in/santipuch/) | santiago.puch.giner@gmail.com | [santipuch590](https://github.com/santipuch590) |
+| [Xènia Salinas](https://www.linkedin.com/in/x%C3%A8nia-salinas-ventall%C3%B3-509081156/) | salinasxenia@gmail.com | [XeniaSalinas](https://github.com/XeniaSalinas) |
