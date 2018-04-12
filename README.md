@@ -1,6 +1,6 @@
 # Road Traffic Monitoring System
 
-**TODO**
+The goal of this project is to implement a Video Surveillance System for Traffic monitoring,  that allows to monitor the current state of the roads, being this the traffic density, mean speed and some other features of interest.
 
 ## System overview
 
