@@ -4,13 +4,22 @@
 
 ## System overview
 
-**TODO**
+<img align="left" width="370" height="300" src="https://github.com/mcv-m6-video/mcv-m6-2018-team5/blob/master/System_overview.PNG">
+
+The first block of the system consists in a **Background Subtraction** algorithm based on adaptive Gaussian model defined in RGB space. On this step, we separate the vehicles from the environment.
+
+The second block is a **Foreground Improvement** algorithm. The mask obtained in the previous step is improved with a morphology pipeline composed by a hole-filling step, area filtering, an opening and finally a closing.
+
+The third block is a **Vehicle Tracker** based on Kalman Filter. The previous steps are executed for each frame independently; with this step, we obtain the path that follows each vehicle along the different frames.
+
+Finally, the fourth block performs different **Road Statistics**. It estimates the speed of each detected vehicle and checks if it is below the speed limit of the road and some statistics per lane. Specifically it computes the total number of vehicles on each lane, the density of vehicles and the average speed.
+
 
 ## Materials
 
 [**Slides**](https://docs.google.com/presentation/d/e/2PACX-1vQDxBlWMZOfcwImQG1Ge9C6QdzOAURoWQMcF4wx6sxOSdvlpBduN4AF-CIoIpM2lTrNiGxtyf75M5sw/pub?start=false&loop=false&delayms=3000)
 
-**Resport**: Work in Progress 
+**Report**: Work in Progress 
 
 ## Running the code
 
