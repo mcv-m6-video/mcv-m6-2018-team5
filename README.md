@@ -19,7 +19,7 @@ Finally, the fourth block performs different **Road Statistics**. It estimates t
 
 [**Slides**](https://docs.google.com/presentation/d/e/2PACX-1vQDxBlWMZOfcwImQG1Ge9C6QdzOAURoWQMcF4wx6sxOSdvlpBduN4AF-CIoIpM2lTrNiGxtyf75M5sw/pub?start=false&loop=false&delayms=3000)
 
-**Report**: Work in Progress 
+[**Report**](https://github.com/mcv-m6-video/mcv-m6-2018-team5/blob/master/Road_traffic_monitoring_Team5.pdf) 
 
 ## Running the code
 
